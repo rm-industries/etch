@@ -134,8 +134,8 @@ interactive privilege scheduling. A resource name is not a destination ownership
 | Plugin fact namespacing | scoped instances distinct from provider types; #8 |
 | Plugin fact refresh semantics | same stale/lazy refresh path as core; #18 |
 | Provider-inferred refresh | explicit refresh first; narrowly proven derivation #21 |
-| Version extraction | #9, including the baseline's tool-version fixtures |
-| Version suffix comparison | #9; specify before implementation |
+| Version extraction | First version token on first nonempty line; stdout then stderr; see [version decisions](../versions.md) |
+| Version suffix comparison | Single-letter patch suffixes after unsuffixed release, numeric patch counters; see [version decisions](../versions.md) |
 | Fact dependency relationships | #11/#18 |
 | Installer schema | #16 |
 | Installer timeouts/retries | #16 |
