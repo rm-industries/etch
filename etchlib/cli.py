@@ -8,7 +8,7 @@ from etchlib import __version__
 from etchlib.config import ConfigError, load_repository
 from etchlib.plugins.loader import load_plugins
 from etchlib.plugins.metadata import PluginError
-from etchlib.facts.core import core_registry
+from etchlib.core import core_registry
 
 
 def main(argv: Optional[List[str]] = None) -> int:

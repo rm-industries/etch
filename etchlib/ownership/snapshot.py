@@ -43,7 +43,8 @@ def validate_snapshot(repository, selections, registry, facts=None, fact_links=(
             if len(providers) != 1:
                 raise OwnershipError("{}: action must declare exactly one provider".format(key))
             name = next(iter(providers))
-            context = Context(repository.root, module.root, module.name, MappingProxyType(deepcopy(facts or {})))
+            context = Context(repository.root, module.root, module.name, MappingProxyType(deepcopy(facts or {})),
+                              MappingProxyType(deepcopy(repository.defaults.get("defaults", {}))))
             plan = plan_action(registry.action(name), deepcopy(action[name]), context)
             if plan.elevated and key not in allowed:
                 raise OwnershipError("{}: privilege escalation has not been authorized".format(key))
