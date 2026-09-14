@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from tests.plugin_fixtures import write_plugin
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -96,14 +97,23 @@ runpy.run_path(entry, run_name='__main__')
         run_git(source, "add", ".")
         run_git(source, "commit", "-m", "Test engine snapshot")
         revision = run_git(source, "rev-parse", "HEAD")
+        plugin = write_plugin(self.root / "plugin source")
+        run_git(plugin, "init")
+        run_git(plugin, "add", ".")
+        run_git(plugin, "commit", "-m", "Test plugin snapshot")
+        plugin_revision = run_git(plugin, "rev-parse", "HEAD")
         run_git(self.consumer, "init")
         run_git(self.consumer, "submodule", "add", str(source), "vendor/etch")
+        run_git(self.consumer, "submodule", "add", str(plugin), "vendor/example")
+        (self.consumer / "defaults.conf").write_text("{'schema_version': 1, 'plugins': ['vendor/example']}")
         run_git(self.consumer, "add", ".")
         run_git(self.consumer, "commit", "-m", "Test consumer")
         clone = self.root / "cloned consumer"
         run_git(self.root, "clone", "--recurse-submodules", str(self.consumer), str(clone))
         self.assertEqual(run_git(clone / "vendor" / "etch", "rev-parse", "HEAD"), revision)
+        self.assertEqual(run_git(clone / "vendor" / "example", "rev-parse", "HEAD"), plugin_revision)
         # Git was used only for fixture construction. Runtime PATH contains Python alone.
         result = self.run_install("doctor", "--profile", "developer", consumer=clone)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn(str(clone.resolve()), result.stdout)
+        self.assertIn("Plugin example 1.2.3 (API 1)", result.stdout)

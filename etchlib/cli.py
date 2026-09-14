@@ -6,6 +6,9 @@ from typing import List, Optional
 
 from etchlib import __version__
 from etchlib.config import ConfigError, load_repository
+from etchlib.plugins.loader import load_plugins
+from etchlib.plugins.metadata import PluginError
+from etchlib.providers.registry import Registry
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -22,11 +25,14 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 0
     try:
         repository = load_repository(args.repo, args.profile, args.modules)
-    except ConfigError as exc:
+        loaded = load_plugins(repository.root, repository.defaults.get("plugins", []), Registry())
+    except (ConfigError, PluginError) as exc:
         print("Etch: {}".format(exc), file=sys.stderr)
         return 1
     print("Configuration structure OK: {}".format(repository.root))
     for module in repository.modules:
         print("  {}".format(module.name))
-    print("Provider schemas, plugins, dependencies, facts and destination conflicts are not checked yet.")
+    for plugin in loaded.plugins:
+        print("Plugin {} {} (API {}): {}".format(plugin.name, plugin.version, plugin.api, plugin.root))
+    print("Provider schemas, dependencies, facts and destination conflicts are not checked yet.")
     return 0

@@ -21,7 +21,7 @@ while the engine and first integrations are built.
 from etchlib.providers.registry import Origin, Registry
 
 registry = Registry()
-# Implementations are instantiated by core or, later, the explicit plugin loader.
+# Implementations are instantiated by core or the explicit plugin loader.
 registry.register(Origin("etch-example", "0.1.0"),
                   actions=[example_action], facts=[example_fact])
 entry = registry.action("example")
@@ -75,7 +75,7 @@ payloads need provider-specific normalization; the registry does not assume a sc
 
 The tests run stateful core-origin and external-origin fixtures through the same
 registration, validation, inspection, planning and explicit application interfaces.
-These are test fixtures, not shipped core providers. Concrete providers, plugin
-discovery/API compatibility, repository-wide preflight, scheduling and complete
-doctor diagnostics remain in their own roadmap issues. The CLI continues to report
-structural configuration checks only.
+These are test fixtures, not shipped core providers. Explicit plugin loading and
+API compatibility checks are implemented; see [plugin loading](plugins.md).
+Concrete providers, repository-wide preflight, scheduling and complete doctor
+diagnostics remain in their own roadmap issues.
