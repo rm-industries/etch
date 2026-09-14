@@ -8,8 +8,9 @@ the configuration that makes a machine yours.
 ## Development status
 
 Etch is being built. This foundation provides a checkout-local CLI and structural
-configuration checks with explicit plugin loading. It does **not** apply changes yet. Provider payload validation,
-facts, dependency planning and execution are upcoming work in the
+configuration checks with explicit plugin loading and a scoped fact API. It does
+**not** apply changes yet. Provider payload validation, fact CLI diagnostics,
+dependency planning and execution are upcoming work in the
 [roadmap](https://github.com/rm-industries/etch/issues/2).
 
 ## Run from source
@@ -59,6 +60,9 @@ The [provider contracts](docs/providers.md) define shared action/fact interfaces
 typed plans and observations, and deterministic registration with origin metadata.
 Core and external implementations use the same interfaces. Explicit plugin loading
 is supported; engine integration is still under development.
+
+The [fact system](docs/facts.md) supplies core platform, command, environment and
+filesystem observations plus a lazy scoped cache shared with plugin facts.
 
 ## Source plugins
 

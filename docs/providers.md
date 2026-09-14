@@ -60,7 +60,8 @@ does not add an executor or an apply CLI.
 UNAVAILABLE and ERROR require explanations and cannot contain values. VALUE may
 legitimately contain `None`; STALE may retain an earlier observation. Fact references
 use separate module/name fields, so identical local names in different modules
-remain distinct. Caching, invalidation and selective refresh are subsequent work.
+remain distinct. A `None` module denotes global built-ins. The [fact store](facts.md)
+implements lazy caching and invalidation; executor-driven refresh is upcoming.
 
 Records have frozen fields and plan metadata uses tuples. Provider-owned payloads,
 observed values and the context's fact mapping are not recursively frozen; providers
