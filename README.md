@@ -65,6 +65,8 @@ The [fact system](docs/facts.md) supplies core platform, command, environment an
 filesystem observations plus a lazy scoped cache shared with plugin facts.
 The [version provider](docs/versions.md) gathers tool versions using argv commands
 and supports numeric comparisons with documented patch-suffix ordering.
+The [condition evaluator](docs/conditions.md) selects module/action behavior with
+TRUE, FALSE and DEFERRED results, preserving work that waits on an earlier producer.
 
 ## Source plugins
 
