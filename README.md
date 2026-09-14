@@ -32,6 +32,29 @@ through `ast.literal_eval()`. Configuration is data; plugins and scripts are cod
 Literal evaluation prevents arbitrary code execution, but is not a sandbox for
 hostile resource-exhaustion input.
 
+Schema 1 accepts dictionaries with string keys, lists, strings, numbers, booleans,
+and `None`. Duplicate dictionary keys are errors, including inside provider payloads.
+Tuples, sets, bytes, complex numbers, and ellipsis are unsupported. Unknown outer
+fields are rejected so spelling errors cannot silently disable configuration.
+Each action has exactly one provider key plus optional `when`, `requires`, `after`,
+and `refresh` metadata. Each declared fact has one provider key. Conditions must
+be nonempty dictionaries; evaluating their contents belongs to the condition engine.
+Provider payloads are preserved for later provider-specific validation.
+
+Module assets stay within their module root. The destination resolver expands `~`,
+anchors relative destinations to the consumer repository, and preserves an existing
+final symlink rather than following it to the file it points to. Environment-variable
+interpolation is not supported. Resolving paths does not itself apply changes or
+establish ownership claims.
+
+Provider implementations can use `etchlib.config.compose_defaults` with an explicit
+list of allowed default keys. Action options override defaults by replacing the whole
+value, including dictionaries and lists. Inputs are copied, never mutated. For example,
+an action's `env: {"NEW": "value"}` replaces a default `env: {"OLD": "value"}`;
+the result does not retain `OLD`. Providers validate the composed options and normalize
+non-dictionary payloads themselves. The loader preserves defaults without applying
+them globally; registry integration follows in #6.
+
 ## Consumer bootstrap
 
 Copy `examples/minimal/install` to the root of your configuration repository and

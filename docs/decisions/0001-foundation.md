@@ -30,7 +30,8 @@ The root defaults document will hold `plugins: ["vendor/etch-vscode"]` and
 `defaults: {"link": {...}}`. Each provider declares which options accept defaults.
 An action overrides individual allowed default keys; lists replace rather than
 concatenate, and nested merge is unsupported unless a provider documents it.
-The initial loader checks defaults shape only; composition awaits provider contracts.
+The loader checks defaults shape; `compose_defaults` provides opt-in atomic replacement
+for provider implementations. Wiring providers to this helper awaits #6.
 
 Use `etch <command> [module ... | --profile NAME] --repo PATH`. Both selectors
 together are invalid. No implicit profile is applied. Doctor inspects all modules
@@ -40,7 +41,10 @@ identity, including unselected modules; provider applicability is resolved later
 
 Assets resolve against the module root. Absolute paths, traversal and resolved
 symlink escapes are rejected by the asset resolver. Destination expansion is
-provider work; it must never use the asset resolver for user-owned destinations.
+handled by a separate resolver: expand `~`, anchor relative paths at the consumer
+root, resolve parents and preserve the final symlink. Providers must use this shared
+resolver rather than the asset resolver for user-owned destinations. Ownership and
+conflict semantics remain provider/planner work.
 
 ## Provider contracts to implement in #6–#7
 
@@ -144,6 +148,7 @@ interactive privilege scheduling. A resource name is not a destination ownership
 
 This branch implements runtime and structural loading, not a provider registry or
 complete doctor. Plugin code is not loaded by the current checker. Defaults are
-not composed yet. No shell commands, installers or filesystem changes are applied.
+not automatically composed by the loader; providers must opt into the composition
+helper. No shell commands, installers or filesystem changes are applied.
 Follow-on work should expand validation without misrepresenting this foundation as
 a completed plan/apply engine.
