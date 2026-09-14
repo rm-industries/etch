@@ -6,6 +6,7 @@ from etchlib.config import Module, compose_defaults, destination
 from etchlib.providers.observations import Inspection, InspectionState
 from etchlib.providers.plans import ApplyResult, ClaimKind, PathClaim, Plan, PlanStatus
 from .state import check_parent, kind
+from .receipts import record
 
 
 @dataclass(frozen=True)
@@ -99,5 +100,6 @@ class LinkProvider:
             if kind(link.destination) == "link":
                 link.destination.unlink()
             link.destination.symlink_to(link.source)
+            record(context.repo_root, link.destination, context.module_name)
             changed = True
         return ApplyResult(changed, "Links updated" if changed else "Links already correct")
