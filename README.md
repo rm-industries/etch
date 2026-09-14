@@ -67,6 +67,8 @@ The [version provider](docs/versions.md) gathers tool versions using argv comman
 and supports numeric comparisons with documented patch-suffix ordering.
 The [condition evaluator](docs/conditions.md) selects module/action behavior with
 TRUE, FALSE and DEFERRED results, preserving work that waits on an earlier producer.
+The [action graph](docs/graph.md) enforces dependencies, detects cycles and provides
+validated predecessor evidence for deferred facts while retaining stable ordering.
 
 ## Source plugins
 

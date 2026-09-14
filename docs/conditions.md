@@ -46,7 +46,8 @@ actionable error. Merely declaring a fact or refresh target does not enable defe
 
 The caller must provide only producer paths validated as eligible and earlier for
 this consumer. The evaluator does not infer ordering or treat every installer as
-eligible. Establishing that evidence against the DAG belongs to #11. Once a producer
+eligible. The [action graph](graph.md) establishes that evidence from validated
+predecessor paths. Once a producer
 has run, invalidate the affected observations, remove it from pending evidence and
 reevaluate. A producer that still leaves a required fact unavailable then yields an
 unresolved error rather than endless deferral.
