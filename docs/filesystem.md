@@ -30,6 +30,8 @@ Destinations use the common destination resolver. Links point to the resolved
 absolute source; moving a module and planning again uses its new location.
 An existing equivalent link is SKIP. A missing destination is created. Different
 or broken symlinks require `relink: True`; files and directories are never replaced.
+Successful creation/relinking records local ownership for the [clean provider](clean.md).
+Already-correct links are not automatically adopted.
 `create: True` allows missing destination parents to be created. Both options default
 to False and can be set in provider defaults:
 
