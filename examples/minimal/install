@@ -1,0 +1,23 @@
+#!/bin/sh
+# Copy this launcher into the root of a consuming repository.
+set -e
+
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "Etch requires Python 3.9 or newer." >&2
+    exit 1
+fi
+
+# Shell parameter expansion avoids requiring an external dirname utility.
+case "$0" in
+    */*) repo_dir=${0%/*} ;;
+    *) repo_dir=. ;;
+esac
+CDPATH= cd -- "$repo_dir"
+
+if [ ! -f vendor/etch/etch ]; then
+    echo "Etch source is missing from vendor/etch." >&2
+    echo "Initialize the repository's submodules or vendor Etch source there." >&2
+    exit 1
+fi
+
+exec python3 -S vendor/etch/etch "$@"
