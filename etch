@@ -1,0 +1,12 @@
+#!/usr/bin/env python3
+"""Run directly from a checkout; keep the version guard parseable on older Python."""
+import sys
+
+if sys.version_info < (3, 9):
+    sys.stderr.write("Etch requires Python 3.9 or newer.\n")
+    sys.exit(1)
+
+from etchlib.cli import main
+
+if __name__ == "__main__":
+    sys.exit(main())
