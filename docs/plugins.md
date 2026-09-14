@@ -69,7 +69,8 @@ themselves. Review plugin source before declaring it, including when running doc
 
 `etch doctor` loads declared plugins and reports their name, release, compatible API
 and resolved root. It still checks module structure rather than provider-specific
-payloads, facts, graph correctness or destination conflicts. Core providers are not
+payloads, facts, graph correctness or destination conflicts. Core fact providers are
+registered before plugins. Core action providers are not
 yet shipped, so doctor does not yet require every declared action name to resolve.
 
 The implementation separates metadata validation (`metadata.py`), Python imports

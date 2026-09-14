@@ -8,7 +8,7 @@ from etchlib import __version__
 from etchlib.config import ConfigError, load_repository
 from etchlib.plugins.loader import load_plugins
 from etchlib.plugins.metadata import PluginError
-from etchlib.providers.registry import Registry
+from etchlib.facts.core import core_registry
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -25,7 +25,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 0
     try:
         repository = load_repository(args.repo, args.profile, args.modules)
-        loaded = load_plugins(repository.root, repository.defaults.get("plugins", []), Registry())
+        loaded = load_plugins(repository.root, repository.defaults.get("plugins", []), core_registry())
     except (ConfigError, PluginError) as exc:
         print("Etch: {}".format(exc), file=sys.stderr)
         return 1

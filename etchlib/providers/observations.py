@@ -30,11 +30,11 @@ class FactState(Enum):
 
 @dataclass(frozen=True)
 class FactRef:
-    module: str
+    module: Optional[str]
     name: str
 
     def __post_init__(self):
-        if not isinstance(self.module, str) or not self.module.strip():
+        if self.module is not None and (not isinstance(self.module, str) or not self.module.strip()):
             raise ValueError("fact reference requires a module")
         if not isinstance(self.name, str) or not self.name.strip():
             raise ValueError("fact reference requires a local name")
