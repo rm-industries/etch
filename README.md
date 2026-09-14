@@ -69,6 +69,8 @@ The [condition evaluator](docs/conditions.md) selects module/action behavior wit
 TRUE, FALSE and DEFERRED results, preserving work that waits on an earlier producer.
 The [action graph](docs/graph.md) enforces dependencies, detects cycles and provides
 validated predecessor evidence for deferred facts while retaining stable ordering.
+The [ownership validator](docs/ownership.md) checks active destination claims and
+rebuilds provider/graph validation when conditions activate new work.
 
 ## Source plugins
 
