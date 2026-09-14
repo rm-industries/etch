@@ -49,7 +49,8 @@ conflict semantics remain provider/planner work.
 ## Provider contracts and plugin loading
 
 The shared registry and result types are implemented; see
-[provider contracts](../providers.md). Plugin loading remains #7.
+[provider contracts](../providers.md). Explicit [plugin loading](../plugins.md)
+and API compatibility checks are also implemented.
 
 Separate ActionProvider and FactProvider protocols. Core registers providers
 through the same registry as external bundles, without a public/internal plugin
@@ -150,7 +151,7 @@ interactive privilege scheduling. A resource name is not a destination ownership
 ## Current limits
 
 Runtime, structural loading and shared provider contracts are implemented. A
-complete doctor is still pending. Plugin code is not loaded by the current checker. Defaults are
+complete doctor is still pending. Doctor loads explicitly declared plugin code. Defaults are
 not automatically composed by the loader; providers must opt into the composition
 helper. No shell commands, installers or filesystem changes are applied.
 Follow-on work should expand validation without misrepresenting this foundation as

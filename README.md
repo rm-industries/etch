@@ -8,8 +8,8 @@ the configuration that makes a machine yours.
 ## Development status
 
 Etch is being built. This foundation provides a checkout-local CLI and structural
-configuration checks. It does **not** apply changes yet. Provider validation,
-plugins, facts, dependency planning and execution are upcoming work in the
+configuration checks with explicit plugin loading. It does **not** apply changes yet. Provider payload validation,
+facts, dependency planning and execution are upcoming work in the
 [roadmap](https://github.com/rm-industries/etch/issues/2).
 
 ## Run from source
@@ -57,8 +57,23 @@ them globally; provider implementations opt in during option normalization.
 
 The [provider contracts](docs/providers.md) define shared action/fact interfaces,
 typed plans and observations, and deterministic registration with origin metadata.
-Core and external implementations use the same interfaces. Plugin loading and
-engine integration are still under development.
+Core and external implementations use the same interfaces. Explicit plugin loading
+is supported; engine integration is still under development.
+
+## Source plugins
+
+Declare plugin roots in `defaults.conf` using `"plugins": ["vendor/etch-example"]`.
+Each root contains `etch_plugin.py`, a `PLUGIN` dictionary with `name`, `version`,
+and integer `api: 1`, plus `actions()` and `facts()` factories (return an empty list
+for capabilities the plugin does not provide). Repository-local source, vendored
+source, and initialized Git submodules use the same loader. Paths resolve against
+the consumer root; explicit absolute paths are also accepted but are not portable.
+
+`doctor` imports only declared plugins and reports compatible metadata. **Plugins
+are trusted executable Python, including during diagnostics.** Entrypoint code runs
+before metadata can be checked; the loader does not sandbox it or undo its side
+effects. Factories run after compatibility checks, but action application and fact
+gathering are not invoked by loading. See [plugin loading](docs/plugins.md) for details.
 
 ## Consumer bootstrap
 

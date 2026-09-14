@@ -74,3 +74,9 @@ class Registry:
 
     def entries(self) -> Tuple[Registration, ...]:
         return tuple(self._entries.values())
+
+    def copy(self) -> "Registry":
+        """Copy registrations, retaining the same trusted provider instances."""
+        registry = Registry()
+        registry._entries = self._entries.copy()
+        return registry
