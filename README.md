@@ -71,6 +71,8 @@ The [action graph](docs/graph.md) enforces dependencies, detects cycles and prov
 validated predecessor evidence for deferred facts while retaining stable ordering.
 The [ownership validator](docs/ownership.md) checks active destination claims and
 rebuilds provider/graph validation when conditions activate new work.
+Core [create and link providers](docs/filesystem.md) implement idempotent filesystem
+changes through the provider API; CLI application is still upcoming.
 
 ## Source plugins
 

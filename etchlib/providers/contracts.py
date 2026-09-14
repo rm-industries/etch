@@ -1,5 +1,5 @@
 """Structural protocols: provider implementations need no shared base class."""
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Mapping, Protocol
 
@@ -13,6 +13,7 @@ class Context:
     module_root: Path
     module_name: str
     facts: Mapping[FactRef, FactResult]
+    defaults: Mapping[str, Any] = field(default_factory=dict)
 
 
 class ActionProvider(Protocol):
