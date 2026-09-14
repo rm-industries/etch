@@ -51,8 +51,9 @@ accidental cache mutation. Plugin values must support deepcopy. Context snapshot
 have read-only mappings and fully qualified keys; trusted plugins can inspect
 other cached facts, so this is scope correctness rather than access control.
 
-The store is synchronous. Concurrent access, action-driven refresh, fact dependency
-graphs and deferred conditions are executor work. The planner will decide whether
+The store is synchronous. Concurrent access, action-driven refresh and fact dependency
+graphs are executor work. The [condition evaluator](conditions.md) supports deferral
+using explicit earlier-producer evidence. The planner will decide whether
 a required unavailable fact has a producer or is an unresolved error. Version
 probes are implemented; the facts CLI remains #22. Arbitrary shell/Python gatherers are
 not core configuration features; explicitly loaded plugins are executable code.
