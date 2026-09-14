@@ -17,11 +17,13 @@ forthcoming planner and diagnostics; doctor does not yet gather module facts.
 | path_exists | path | Boolean; follows symlinks |
 | file_exists | path | Boolean; regular file after following symlinks |
 | directory_exists | path | Boolean; directory after following symlinks |
+| version | command argv and optional timeout | Extracted version string |
 
 Command names use process PATH. Explicit relative command paths and filesystem
 paths use the module root; paths support `~`. These are observations, not owned
-assets: paths may point outside the module. No discovered command or shell
-expression is executed. Distro reads `/etc/os-release`, falling back to
+assets: paths may point outside the module. Presence probes execute no commands;
+the [version probe](versions.md) explicitly executes its declared argv without a shell.
+Distro reads `/etc/os-release`, falling back to
 `/usr/lib/os-release` if absent, without shell evaluation.
 
 ## Scope and lifecycle
@@ -52,7 +54,7 @@ other cached facts, so this is scope correctness rather than access control.
 The store is synchronous. Concurrent access, action-driven refresh, fact dependency
 graphs and deferred conditions are executor work. The planner will decide whether
 a required unavailable fact has a producer or is an unresolved error. Version
-probes remain #9; the facts CLI remains #22. Arbitrary shell/Python gatherers are
+probes are implemented; the facts CLI remains #22. Arbitrary shell/Python gatherers are
 not core configuration features; explicitly loaded plugins are executable code.
 
 Platform probes, local probes, core registration, repository binding and scoped

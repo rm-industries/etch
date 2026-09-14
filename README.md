@@ -63,6 +63,8 @@ is supported; engine integration is still under development.
 
 The [fact system](docs/facts.md) supplies core platform, command, environment and
 filesystem observations plus a lazy scoped cache shared with plugin facts.
+The [version provider](docs/versions.md) gathers tool versions using argv commands
+and supports numeric comparisons with documented patch-suffix ordering.
 
 ## Source plugins
 
