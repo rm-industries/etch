@@ -31,7 +31,7 @@ The root defaults document will hold `plugins: ["vendor/etch-vscode"]` and
 An action overrides individual allowed default keys; lists replace rather than
 concatenate, and nested merge is unsupported unless a provider documents it.
 The loader checks defaults shape; `compose_defaults` provides opt-in atomic replacement
-for provider implementations. Wiring providers to this helper awaits #6.
+for provider implementations. Providers opt in during their own option normalization.
 
 Use `etch <command> [module ... | --profile NAME] --repo PATH`. Both selectors
 together are invalid. No implicit profile is applied. Doctor inspects all modules
@@ -46,7 +46,10 @@ root, resolve parents and preserve the final symlink. Providers must use this sh
 resolver rather than the asset resolver for user-owned destinations. Ownership and
 conflict semantics remain provider/planner work.
 
-## Provider contracts to implement in #6–#7
+## Provider contracts and plugin loading
+
+The shared registry and result types are implemented; see
+[provider contracts](../providers.md). Plugin loading remains #7.
 
 Separate ActionProvider and FactProvider protocols. Core registers providers
 through the same registry as external bundles, without a public/internal plugin
@@ -146,8 +149,8 @@ interactive privilege scheduling. A resource name is not a destination ownership
 
 ## Current limits
 
-This branch implements runtime and structural loading, not a provider registry or
-complete doctor. Plugin code is not loaded by the current checker. Defaults are
+Runtime, structural loading and shared provider contracts are implemented. A
+complete doctor is still pending. Plugin code is not loaded by the current checker. Defaults are
 not automatically composed by the loader; providers must opt into the composition
 helper. No shell commands, installers or filesystem changes are applied.
 Follow-on work should expand validation without misrepresenting this foundation as

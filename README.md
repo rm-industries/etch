@@ -53,7 +53,12 @@ value, including dictionaries and lists. Inputs are copied, never mutated. For e
 an action's `env: {"NEW": "value"}` replaces a default `env: {"OLD": "value"}`;
 the result does not retain `OLD`. Providers validate the composed options and normalize
 non-dictionary payloads themselves. The loader preserves defaults without applying
-them globally; registry integration follows in #6.
+them globally; provider implementations opt in during option normalization.
+
+The [provider contracts](docs/providers.md) define shared action/fact interfaces,
+typed plans and observations, and deterministic registration with origin metadata.
+Core and external implementations use the same interfaces. Plugin loading and
+engine integration are still under development.
 
 ## Consumer bootstrap
 

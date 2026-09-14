@@ -113,7 +113,7 @@ class FoundationTests(unittest.TestCase):
         self.assertIn("Python 3.9 or newer", result.stderr)
 
     def test_python39_grammar(self):
-        for path in list((ROOT / "etchlib").glob("*.py")) + [ROOT / "etch"]:
+        for path in list((ROOT / "etchlib").rglob("*.py")) + [ROOT / "etch"]:
             ast.parse(path.read_text(), filename=str(path), feature_version=(3, 9))
 
 
