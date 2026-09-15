@@ -79,6 +79,8 @@ The [clean provider](docs/clean.md) uses local link receipts to remove proven br
 or explicitly retired links while preserving unowned content.
 Core [shell and script providers](docs/commands.md) support imperative commands,
 module-owned scripts, checks, environment metadata and explicit privilege requests.
+The [installer provider](docs/installers.md) downloads and validates upstream scripts
+before executing a temporary local copy, with per-download TLS and checksum controls.
 
 ## Source plugins
 
