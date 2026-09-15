@@ -11,7 +11,7 @@ from etchlib.ownership.snapshot import validate_snapshot
 
 
 class FilesystemSnapshotTests(unittest.TestCase):
-    def test_core_providers_defaults_and_conflicting_claims(self):
+    def test_core_providers_defaults_and_conflicting_claims(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp).resolve()
             (root / "source").write_text("hello")

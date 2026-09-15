@@ -1,6 +1,7 @@
 """Register core observations through the same registry used by plugins."""
 
 from etchlib import __version__
+from etchlib.providers.contracts import FactProvider
 from etchlib.providers.registry import Origin, Registry
 
 from .platform import PlatformProbe
@@ -10,9 +11,9 @@ from .version import VersionProbe
 BUILTINS = ("os", "distro", "arch")
 
 
-def core_registry():
+def core_registry() -> Registry:
     registry = Registry()
-    providers = [PlatformProbe(name) for name in BUILTINS]
+    providers: list[FactProvider] = [PlatformProbe(name) for name in BUILTINS]
     providers.extend(
         LocalProbe(name)
         for name in (

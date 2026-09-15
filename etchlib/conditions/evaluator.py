@@ -1,8 +1,9 @@
 """Evaluate scoped conditions; scheduling evidence is supplied by the planner."""
 
 from dataclasses import dataclass
-from typing import Mapping, Optional, Tuple
+from typing import Any, Iterable, Iterator, Mapping, Optional, Tuple
 
+from etchlib.facts.store import FactStore
 from etchlib.providers.contracts import Context
 from etchlib.providers.errors import ProviderError
 from etchlib.providers.lifecycle import gather_fact
@@ -19,9 +20,11 @@ class _Pending:
     unresolved: Tuple[str, ...] = ()
 
 
-def _combine(parts, conjunction):
+def _combine(parts: Iterable[_Pending], conjunction: bool) -> _Pending:
     decisive = Outcome.FALSE if conjunction else Outcome.TRUE
-    waiting, reasons, unresolved = [], [], []
+    waiting: list[FactRef] = []
+    reasons: list[str] = []
+    unresolved: list[str] = []
     for part in parts:
         if part.result.outcome is decisive:
             return _Pending(Result(decisive))
@@ -39,10 +42,10 @@ def _combine(parts, conjunction):
 class Evaluator:
     def __init__(
         self,
-        store,
+        store: FactStore,
         context: Context,
         earlier_refresh: Optional[Mapping[FactRef, str]] = None,
-    ):
+    ) -> None:
         self.store = store
         self.context = context
         # Entries identify an earlier eligible producer, not merely a refresh declaration.
@@ -57,7 +60,7 @@ class Evaluator:
                 "earlier refresh evidence must map fact references to producer identifiers"
             )
 
-    def evaluate(self, condition) -> Result:
+    def evaluate(self, condition: Any) -> Result:
         validate(condition)
         try:
             pending = self._dictionary(condition)
@@ -69,8 +72,8 @@ class Evaluator:
             )
         return pending.result
 
-    def _dictionary(self, condition):
-        def clauses():
+    def _dictionary(self, condition: Mapping[str, Any]) -> _Pending:
+        def clauses() -> Iterator[_Pending]:
             for key, value in condition.items():
                 if key == "not":
                     child = self._dictionary(value)
@@ -89,7 +92,7 @@ class Evaluator:
 
         return _combine(clauses(), True)
 
-    def _leaf(self, key, value):
+    def _leaf(self, key: str, value: Any) -> _Pending:
         if key == "fact":
             ref = FactRef(self.context.module_name, value["name"])
             cached = self.store.peek(ref)
@@ -144,7 +147,7 @@ class Evaluator:
                 accepted = observation.value == expected
         return _Pending(Result(Outcome.TRUE if accepted else Outcome.FALSE))
 
-    def _missing(self, ref, reason):
+    def _missing(self, ref: FactRef, reason: str) -> _Pending:
         producer = self.earlier_refresh.get(ref)
         if producer is not None:
             return _Pending(

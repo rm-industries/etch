@@ -1,8 +1,11 @@
 """Conservative cleanup of receipt-backed broken or explicitly retired links."""
 
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Optional
 
 from etchlib.config import destination
+from etchlib.providers.contracts import Context
 from etchlib.providers.observations import Inspection, InspectionState
 from etchlib.providers.plans import ApplyResult, PathClaim, Plan, PlanStatus
 
@@ -12,12 +15,12 @@ from .state import kind
 
 @dataclass(frozen=True)
 class Removal:
-    path: object
-    proof: dict
+    path: Path
+    proof: Optional[dict[str, object]]
     retired: bool
 
 
-def options(config, context):
+def options(config: Any, context: Context) -> tuple[tuple[Path, ...], set[Path]]:
     value = {"paths": config} if isinstance(config, list) else config
     if not isinstance(value, dict) or set(value) - {"paths", "obsolete"}:
         raise ValueError("clean expects directories or {paths, obsolete}")
@@ -39,7 +42,7 @@ def options(config, context):
     return roots, set(retired)
 
 
-def broken(path):
+def broken(path: Path) -> bool:
     try:
         path.stat()
     except FileNotFoundError:
@@ -51,10 +54,10 @@ def broken(path):
 class CleanProvider:
     name = "clean"
 
-    def validate(self, config, context):
+    def validate(self, config: Any, context: Context) -> None:
         options(config, context)
 
-    def inspect(self, config, context):
+    def inspect(self, config: Any, context: Context) -> Inspection:
         roots, retired = options(config, context)
         removals = []
         for root in roots:
@@ -77,7 +80,7 @@ class CleanProvider:
             tuple(removals),
         )
 
-    def plan(self, config, observation, context):
+    def plan(self, config: Any, observation: Inspection, context: Context) -> Plan:
         return Plan(
             PlanStatus.CHANGE if observation.data else PlanStatus.SKIP,
             "Remove managed links: "
@@ -88,7 +91,7 @@ class CleanProvider:
             claims=tuple(PathClaim(item.path) for item in observation.data),
         )
 
-    def apply(self, plan, context):
+    def apply(self, plan: Plan, context: Context) -> ApplyResult:
         pending = []
         for item in plan.payload:
             if destination(str(item.path), context.repo_root) != item.path:

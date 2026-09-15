@@ -7,11 +7,11 @@ from .results import ConditionError
 KEYS = {"os", "distro", "arch", "command", "env", "fact", "not"}
 
 
-def _name(value):
+def _name(value: object) -> bool:
     return isinstance(value, str) and bool(value.strip()) and "\x00" not in value
 
 
-def validate(condition):
+def validate(condition: object) -> None:
     if not isinstance(condition, dict) or not condition:
         raise ConditionError("condition must be a nonempty dictionary")
     if any(key not in KEYS for key in condition):

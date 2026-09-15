@@ -1,6 +1,9 @@
 """Idempotent directory creation, with shared ownership requirements."""
 
+from typing import Any
+
 from etchlib.config import destination
+from etchlib.providers.contracts import Context
 from etchlib.providers.observations import Inspection, InspectionState
 from etchlib.providers.plans import ApplyResult, ClaimKind, PathClaim, Plan, PlanStatus
 
@@ -10,7 +13,7 @@ from .state import directory_needed
 class CreateProvider:
     name = "create"
 
-    def validate(self, config, context):
+    def validate(self, config: Any, context: Context) -> None:
         if not isinstance(config, list) or not config:
             raise ValueError("create expects a nonempty list of directory paths")
         if context.defaults.get(self.name):
@@ -19,14 +22,14 @@ class CreateProvider:
         if len(set(paths)) != len(paths):
             raise ValueError("duplicate create destinations")
 
-    def inspect(self, config, context):
+    def inspect(self, config: Any, context: Context) -> Inspection:
         paths = tuple(destination(value, context.repo_root) for value in config)
         needed = [directory_needed(path) for path in paths]
         return Inspection(
             InspectionState.CHANGE if any(needed) else InspectionState.SATISFIED, paths
         )
 
-    def plan(self, config, observation, context):
+    def plan(self, config: Any, observation: Inspection, context: Context) -> Plan:
         return Plan(
             PlanStatus.SKIP
             if observation.state is InspectionState.SATISFIED
@@ -38,7 +41,7 @@ class CreateProvider:
             ),
         )
 
-    def apply(self, plan, context):
+    def apply(self, plan: Plan, context: Context) -> ApplyResult:
         paths = plan.payload
         # Preflight the entire action before the first mutation, including old SKIP plans.
         for path in paths:

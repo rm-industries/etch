@@ -12,7 +12,7 @@ from tests.plugin_fixtures import write_plugin
 
 
 class RepositoryFactTests(unittest.TestCase):
-    def test_scoped_declarations_use_core_and_plugin_providers(self):
+    def test_scoped_declarations_use_core_and_plugin_providers(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             shutil.copytree(

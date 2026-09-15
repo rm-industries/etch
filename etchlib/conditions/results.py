@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Tuple
+from typing import NoReturn, Tuple
 
 from etchlib.providers.observations import FactRef
 
@@ -23,5 +23,5 @@ class Result:
     waiting: Tuple[FactRef, ...] = ()
     reasons: Tuple[str, ...] = ()
 
-    def __bool__(self):
+    def __bool__(self) -> NoReturn:
         raise TypeError("inspect Result.outcome explicitly; DEFERRED is not a boolean")

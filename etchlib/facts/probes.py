@@ -4,19 +4,21 @@ import os
 import shutil
 import stat
 from pathlib import Path
+from typing import Any
 
+from etchlib.providers.contracts import Context
 from etchlib.providers.observations import FactResult, FactState
 
 
 class LocalProbe:
-    def __init__(self, name):
+    def __init__(self, name: str) -> None:
         self.name = name
 
-    def validate(self, config, context):
+    def validate(self, config: Any, context: Context) -> None:
         if not isinstance(config, str) or not config or "\x00" in config:
             raise ValueError("{} expects a nonempty string".format(self.name))
 
-    def gather(self, config, context):
+    def gather(self, config: Any, context: Context) -> FactResult:
         try:
             if self.name in ("command", "command_path"):
                 command = config

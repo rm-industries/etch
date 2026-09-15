@@ -1,4 +1,5 @@
 import unittest
+from typing import Any
 
 from etchlib.conditions.module import Selection
 from etchlib.conditions.results import Outcome, Result
@@ -10,7 +11,7 @@ from tests.graph_fixtures import inputs, module
 
 
 class GraphTests(unittest.TestCase):
-    def test_stable_profile_order_and_action_order(self):
+    def test_stable_profile_order_and_action_order(self) -> None:
         data = inputs(module("zsh", [{"test": {}}, {"test": {}}]), module("git"))
         graph = build_graph(*data)
         actions = [key for key in graph.order() if key.kind == "action"]
@@ -23,7 +24,7 @@ class GraphTests(unittest.TestCase):
             ],
         )
 
-    def test_hard_dependency_overrides_profile_order(self):
+    def test_hard_dependency_overrides_profile_order(self) -> None:
         graph = build_graph(
             *inputs(module("consumer", requires=["base"]), module("base"))
         )
@@ -32,7 +33,7 @@ class GraphTests(unittest.TestCase):
             graph.order().index(NodeId("consumer", "start")),
         )
 
-    def test_empty_dependency_module_has_completion_barrier(self):
+    def test_empty_dependency_module_has_completion_barrier(self) -> None:
         graph = build_graph(
             *inputs(module("consumer", requires=["base"]), module("base", []))
         )
@@ -40,14 +41,14 @@ class GraphTests(unittest.TestCase):
             NodeId("base", "finish"), graph.ancestors(NodeId("consumer", "action", 0))
         )
 
-    def test_missing_requires_fails_missing_after_warns(self):
+    def test_missing_requires_fails_missing_after_warns(self) -> None:
         with self.assertRaisesRegex(GraphError, "requires target 'missing'"):
             build_graph(*inputs(module("consumer", requires=["missing"])))
         graph = build_graph(*inputs(module("consumer", after=["missing"])))
         self.assertEqual(len(graph.warnings), 1)
         self.assertIn("after target 'missing'", graph.warnings[0])
 
-    def test_inactive_dependency_is_not_satisfied(self):
+    def test_inactive_dependency_is_not_satisfied(self) -> None:
         repository, selections, plans = inputs(
             module("consumer", requires=["base"]), module("base")
         )
@@ -56,7 +57,7 @@ class GraphTests(unittest.TestCase):
         with self.assertRaisesRegex(GraphError, "inactive"):
             build_graph(repository, selections, plans)
 
-    def test_conditioned_edges_only_activate_with_action(self):
+    def test_conditioned_edges_only_activate_with_action(self) -> None:
         repository, selections, plans = inputs(
             module("consumer", [{"test": {}, "requires": ["missing"]}])
         )
@@ -76,7 +77,7 @@ class GraphTests(unittest.TestCase):
         with self.assertRaises(GraphError):
             build_graph(repository, selections, plans)
 
-    def test_provider_dependencies_and_resources_are_retained(self):
+    def test_provider_dependencies_and_resources_are_retained(self) -> None:
         repository, selections, plans = inputs(module("consumer"), module("base"))
         key = NodeId("consumer", "action", 0)
         plans[key] = Plan(
@@ -84,26 +85,29 @@ class GraphTests(unittest.TestCase):
         )
         graph = build_graph(repository, selections, plans)
         self.assertIn(NodeId("base", "finish"), graph.ancestors(key))
-        self.assertEqual(graph.node(key).plan.resources, ("network",))
+        plan = graph.node(key).plan
+        assert plan is not None
+        self.assertEqual(plan.resources, ("network",))
 
-    def test_cycles_report_nodes_for_hard_and_soft_edges(self):
+    def test_cycles_report_nodes_for_hard_and_soft_edges(self) -> None:
         for field in ("requires", "after"):
+            options: dict[str, Any] = {field: ["two"]}
             with (
                 self.subTest(field=field),
                 self.assertRaisesRegex(GraphError, "dependency cycle:.*one.*two"),
             ):
                 build_graph(
                     *inputs(
-                        module("one", **{field: ["two"]}),
+                        module("one", **options),
                         module("two", requires=["one"]),
                     )
                 )
 
-    def test_self_dependency_is_a_cycle(self):
+    def test_self_dependency_is_a_cycle(self) -> None:
         with self.assertRaisesRegex(GraphError, "dependency cycle"):
             build_graph(*inputs(module("one", requires=["one"])))
 
-    def test_bad_selection_and_extra_plans_fail(self):
+    def test_bad_selection_and_extra_plans_fail(self) -> None:
         repository, selections, plans = inputs(module("one"))
         with self.assertRaisesRegex(GraphError, "exactly"):
             build_graph(repository, {})
@@ -111,7 +115,7 @@ class GraphTests(unittest.TestCase):
         with self.assertRaisesRegex(GraphError, "action count"):
             build_graph(repository, selections)
 
-    def test_long_cycles_do_not_exhaust_python_recursion(self):
+    def test_long_cycles_do_not_exhaust_python_recursion(self) -> None:
         graph = ActionGraph()
         keys = [NodeId("long", "action", index) for index in range(1200)]
         for key in keys:

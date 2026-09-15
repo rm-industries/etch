@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any, Optional
 
 from etchlib.conditions.module import Selection
 from etchlib.conditions.results import Outcome, Result
@@ -7,7 +8,9 @@ from etchlib.graph.model import NodeId
 from etchlib.providers.plans import Plan, PlanStatus
 
 
-def module(name, actions=None, **options):
+def module(
+    name: str, actions: Optional[list[dict[str, Any]]] = None, **options: Any
+) -> Module:
     return Module(
         name,
         Path("/repo/modules") / name,
@@ -17,7 +20,9 @@ def module(name, actions=None, **options):
     )
 
 
-def inputs(*modules):
+def inputs(
+    *modules: Module,
+) -> tuple[Repository, dict[str, Selection], dict[NodeId, Plan]]:
     repository = Repository(Path("/repo"), modules, {})
     selections = {
         m.name: Selection(

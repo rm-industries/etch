@@ -4,8 +4,11 @@ import os
 import stat
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Mapping, TypeVar
 
-from etchlib.providers.plans import ClaimKind
+from etchlib.providers.plans import ClaimKind, PathClaim, Plan
+
+Owner = TypeVar("Owner")
 
 
 class OwnershipError(ValueError):
@@ -15,11 +18,11 @@ class OwnershipError(ValueError):
 @dataclass(frozen=True)
 class OwnedClaim:
     owner: object
-    claim: object
-    paths: tuple
+    claim: PathClaim
+    paths: tuple[Path, ...]
 
 
-def normalize(owner, claim):
+def normalize(owner: object, claim: PathClaim) -> OwnedClaim:
     try:
         lexical = Path(os.path.normpath(str(claim.path)))
         resolved = claim.path.parent.resolve() / claim.path.name
@@ -61,9 +64,9 @@ def normalize(owner, claim):
         ) from exc
 
 
-def validate_claims(plans):
+def validate_claims(plans: Mapping[Owner, Plan]) -> tuple[OwnedClaim, ...]:
     """Include every active plan, even SKIP: satisfied state still has an owner."""
-    claims = []
+    claims: list[OwnedClaim] = []
     for owner, plan in plans.items():
         for claim in plan.claims:
             current = normalize(owner, claim)

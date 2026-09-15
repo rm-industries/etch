@@ -11,7 +11,7 @@ from tests.plugin_fixtures import ENTRY, write_plugin
 
 
 class PluginLoadingTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
@@ -24,7 +24,7 @@ class PluginLoadingTests(unittest.TestCase):
             ]
         )
 
-    def test_local_and_vendored_source(self):
+    def test_local_and_vendored_source(self) -> None:
         for location in ["local/example", "vendor/example"]:
             with self.subTest(location=location):
                 write_plugin(self.root / location)
@@ -37,7 +37,7 @@ class PluginLoadingTests(unittest.TestCase):
                 self.assertEqual(gather_fact(entry, {}, context).value, "from plugin")
                 self.assertEqual(entry.origin.name, "example")
 
-    def test_only_declared_entrypoint_executes(self):
+    def test_only_declared_entrypoint_executes(self) -> None:
         write_plugin(self.root / "declared")
         write_plugin(self.root / "undeclared", "raise RuntimeError('must not run')")
         (self.root / "declared" / "unrelated.py").write_text(
@@ -47,7 +47,7 @@ class PluginLoadingTests(unittest.TestCase):
             len(load_plugins(self.root, ["declared"], Registry()).plugins), 1
         )
 
-    def test_relative_imports_do_not_collide(self):
+    def test_relative_imports_do_not_collide(self) -> None:
         write_plugin(self.root / "one")
         write_plugin(self.root / "two", ENTRY.replace('"example"', '"second"'))
         helper = self.root / "two" / "implementation.py"
@@ -60,7 +60,7 @@ class PluginLoadingTests(unittest.TestCase):
         )
         self.assertEqual(sys.path, original_path)
 
-    def test_empty_bundle_and_no_declarations(self):
+    def test_empty_bundle_and_no_declarations(self) -> None:
         write_plugin(
             self.root / "empty", ENTRY.replace("return [ExampleFact()]", "return []")
         )
@@ -69,7 +69,7 @@ class PluginLoadingTests(unittest.TestCase):
         )
         self.assertEqual(load_plugins(self.root, [], Registry()).plugins, ())
 
-    def test_action_factory_registers_without_running_provider(self):
+    def test_action_factory_registers_without_running_provider(self) -> None:
         entry = (
             ENTRY
             + """

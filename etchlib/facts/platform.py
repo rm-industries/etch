@@ -3,11 +3,13 @@
 import platform
 import shlex
 from pathlib import Path
+from typing import Any, Optional
 
+from etchlib.providers.contracts import Context
 from etchlib.providers.observations import FactResult, FactState
 
 
-def distro_id():
+def distro_id() -> Optional[str]:
     for path in (Path("/etc/os-release"), Path("/usr/lib/os-release")):
         try:
             text = path.read_text(encoding="utf-8")
@@ -25,16 +27,17 @@ def distro_id():
 
 
 class PlatformProbe:
-    def __init__(self, name):
+    def __init__(self, name: str) -> None:
         self.name = name
 
-    def validate(self, config, context):
+    def validate(self, config: Any, context: Context) -> None:
         if config != {}:
             raise ValueError("{} expects an empty options dictionary".format(self.name))
 
-    def gather(self, config, context):
+    def gather(self, config: Any, context: Context) -> FactResult:
         try:
             system = platform.system().lower()
+            value: Optional[str]
             if self.name == "os":
                 value = {"darwin": "macos"}.get(system, system)
             elif self.name == "arch":

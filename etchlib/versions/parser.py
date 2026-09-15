@@ -13,7 +13,7 @@ class Version:
     suffix: str = ""
     suffix_number: int = 0
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if (
             not isinstance(self.numbers, tuple)
             or not self.numbers
@@ -36,7 +36,7 @@ class Version:
             numbers = numbers[:-1]
         object.__setattr__(self, "numbers", numbers)
 
-    def __lt__(self, other):
+    def __lt__(self, other: object) -> bool:
         if not isinstance(other, Version):
             return NotImplemented
         return (self.numbers, self.suffix, self.suffix_number) < (

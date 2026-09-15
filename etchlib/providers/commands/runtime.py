@@ -5,11 +5,13 @@ import shutil
 import stat
 import subprocess
 from pathlib import Path
+from typing import Any, Mapping
 
 from etchlib.facts.platform import PlatformProbe
+from etchlib.providers.contracts import Context
 
 
-def environment(options, context):
+def environment(options: Mapping[str, Any], context: Context) -> dict[str, str]:
     env = dict(os.environ)
     env.update(options.get("env", {}))
     env.update(
@@ -23,14 +25,14 @@ def environment(options, context):
     return env
 
 
-def checked(options, context):
+def checked(options: Mapping[str, Any], context: Context) -> bool:
     check = options.get("check")
     if check is None:
         return False
     name, value = next(iter(check.items()))
     if name == "command":
         env = environment(options, context)
-        path = os.pathsep.join(
+        search_path = os.pathsep.join(
             str(context.module_root / p) if not os.path.isabs(p) else p
             for p in os.get_exec_path(env)
         )
@@ -39,7 +41,7 @@ def checked(options, context):
             if "/" in value and not os.path.isabs(value)
             else value
         )
-        return shutil.which(command, path=path) is not None
+        return shutil.which(command, path=search_path) is not None
     path = Path(value).expanduser()
     if not path.is_absolute():
         path = context.module_root / path
@@ -52,7 +54,7 @@ def checked(options, context):
     )
 
 
-def preflight(options, context):
+def preflight(options: Mapping[str, Any], context: Context) -> None:
     if options["provider"] == "script":
         path = Path(options["argv"][0])
         path.resolve().relative_to(context.module_root.resolve())
@@ -62,7 +64,7 @@ def preflight(options, context):
             )
 
 
-def run(options, context):
+def run(options: Mapping[str, Any], context: Context) -> None:
     argv = list(options["argv"])
     if options.get("sudo", False):
         if not context.elevation_allowed:

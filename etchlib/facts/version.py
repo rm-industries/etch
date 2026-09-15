@@ -6,7 +6,9 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
+from typing import Any
 
+from etchlib.providers.contracts import Context
 from etchlib.providers.observations import FactResult, FactState
 from etchlib.versions.parser import extract_version
 
@@ -16,7 +18,7 @@ OUTPUT_LIMIT = 65536
 class VersionProbe:
     name = "version"
 
-    def validate(self, config, context):
+    def validate(self, config: Any, context: Context) -> None:
         if not isinstance(config, dict) or set(config) - {"command", "timeout"}:
             raise ValueError("version expects command and optional timeout")
         argv = config.get("command")
@@ -37,7 +39,7 @@ class VersionProbe:
                 "version timeout must be a positive finite number of seconds"
             )
 
-    def gather(self, config, context):
+    def gather(self, config: Any, context: Context) -> FactResult:
         argv = list(config["command"])
         try:
             executable = argv[0]

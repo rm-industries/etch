@@ -3,6 +3,9 @@
 from dataclasses import dataclass
 from typing import Tuple
 
+from etchlib.config import Module
+
+from .evaluator import Evaluator
 from .results import ConditionError, Outcome, Result
 from .schema import validate
 
@@ -13,7 +16,7 @@ class Selection:
     actions: Tuple[Result, ...]
 
 
-def select_module(module, evaluator) -> Selection:
+def select_module(module: Module, evaluator: Evaluator) -> Selection:
     if (
         evaluator.context.module_name != module.name
         or evaluator.context.module_root != module.root

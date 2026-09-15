@@ -2,8 +2,10 @@
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from etchlib.config import Module, compose_defaults, destination
+from etchlib.providers.contracts import Context
 from etchlib.providers.observations import Inspection, InspectionState
 from etchlib.providers.plans import ApplyResult, ClaimKind, PathClaim, Plan, PlanStatus
 
@@ -19,17 +21,21 @@ class Link:
     relink: bool
 
 
-def entries(config, context):
+def entries(config: Any, context: Context) -> tuple[Link, ...]:
     if not isinstance(config, dict) or not config:
         raise ValueError("link expects a nonempty destination-to-source dictionary")
     module = Module(context.module_name, context.module_root, {})
     result = []
     for target, value in config.items():
-        options = {"path": value} if isinstance(value, str) else value
-        if not isinstance(options, dict) or set(options) - {"path", "create", "relink"}:
+        raw_options = {"path": value} if isinstance(value, str) else value
+        if not isinstance(raw_options, dict) or set(raw_options) - {
+            "path",
+            "create",
+            "relink",
+        }:
             raise ValueError("link entries accept path, create and relink")
         options = compose_defaults(
-            "link", context.defaults.get("link", {}), options, ("create", "relink")
+            "link", context.defaults.get("link", {}), raw_options, ("create", "relink")
         )
         for key in ("create", "relink"):
             if type(options.get(key, False)) is not bool:
@@ -59,7 +65,7 @@ def entries(config, context):
     return tuple(result)
 
 
-def needed(link):
+def needed(link: Link) -> bool:
     if not link.source.exists():
         raise ValueError("link source does not exist: {}".format(link.source))
     if link.destination == link.source or link.destination in link.source.parents:
@@ -88,17 +94,17 @@ def needed(link):
 class LinkProvider:
     name = "link"
 
-    def validate(self, config, context):
+    def validate(self, config: Any, context: Context) -> None:
         entries(config, context)
 
-    def inspect(self, config, context):
+    def inspect(self, config: Any, context: Context) -> Inspection:
         links = entries(config, context)
         changes = [needed(link) for link in links]
         return Inspection(
             InspectionState.CHANGE if any(changes) else InspectionState.SATISFIED, links
         )
 
-    def plan(self, config, observation, context):
+    def plan(self, config: Any, observation: Inspection, context: Context) -> Plan:
         claims = []
         for link in observation.data:
             claims.append(PathClaim(link.destination))
@@ -115,7 +121,7 @@ class LinkProvider:
             claims=tuple(claims),
         )
 
-    def apply(self, plan, context):
+    def apply(self, plan: Plan, context: Context) -> ApplyResult:
         for link in plan.payload:
             if (
                 destination(str(link.destination), context.repo_root)

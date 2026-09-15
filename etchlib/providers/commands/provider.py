@@ -1,5 +1,8 @@
 """Provider lifecycle for sequential imperative command entries."""
 
+from typing import Any
+
+from etchlib.providers.contracts import Context
 from etchlib.providers.observations import Inspection, InspectionState
 from etchlib.providers.plans import ApplyResult, Plan, PlanStatus
 
@@ -8,15 +11,15 @@ from .schema import normalize
 
 
 class CommandProvider:
-    def __init__(self, name):
+    def __init__(self, name: str) -> None:
         if name not in ("shell", "script"):
             raise ValueError("unsupported command provider")
         self.name = name
 
-    def validate(self, config, context):
+    def validate(self, config: Any, context: Context) -> None:
         normalize(self.name, config, context)
 
-    def inspect(self, config, context):
+    def inspect(self, config: Any, context: Context) -> Inspection:
         entries = normalize(self.name, config, context)
         ready = []
         for options in entries:
@@ -28,7 +31,7 @@ class CommandProvider:
             tuple(ready),
         )
 
-    def plan(self, config, observation, context):
+    def plan(self, config: Any, observation: Inspection, context: Context) -> Plan:
         entries = observation.data
         elevated = any(item.get("sudo", False) for item in entries)
         interactive = any(item.get("stdin", False) for item in entries)
@@ -46,7 +49,7 @@ class CommandProvider:
             opaque=bool(entries),
         )
 
-    def apply(self, plan, context):
+    def apply(self, plan: Plan, context: Context) -> ApplyResult:
         for item in plan.payload:
             if not checked(item, context):
                 preflight(item, context)

@@ -17,7 +17,7 @@ class Inspection:
     data: Any = None
     reason: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not isinstance(self.state, InspectionState):
             raise ValueError("inspection state must be an InspectionState")
 
@@ -34,7 +34,7 @@ class FactRef:
     module: Optional[str]
     name: str
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.module is not None and (
             not isinstance(self.module, str) or not self.module.strip()
         ):
@@ -49,7 +49,7 @@ class FactResult:
     value: Any = None
     reason: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not isinstance(self.state, FactState):
             raise ValueError("fact state must be a FactState")
         if self.state in (FactState.UNAVAILABLE, FactState.ERROR):

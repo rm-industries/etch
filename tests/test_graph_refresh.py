@@ -3,6 +3,7 @@ import unittest
 from etchlib.conditions.evaluator import Evaluator
 from etchlib.conditions.module import Selection
 from etchlib.conditions.results import Outcome, Result
+from etchlib.config import Repository
 from etchlib.graph.builder import build_graph
 from etchlib.graph.model import FactLink, GraphError, NodeId
 from etchlib.providers.observations import FactRef, FactResult, FactState
@@ -12,7 +13,9 @@ from tests.graph_fixtures import inputs, module
 
 
 class RefreshTests(ConditionFixture, unittest.TestCase):
-    def graph_data(self):
+    def graph_data(
+        self,
+    ) -> tuple[FactRef, Repository, dict[str, Selection], dict[NodeId, Plan]]:
         ref = FactRef("demo", "version")
         repository, selections, plans = inputs(
             module(
@@ -28,7 +31,7 @@ class RefreshTests(ConditionFixture, unittest.TestCase):
         plans.pop(NodeId("demo", "action", 1))
         return ref, repository, selections, plans
 
-    def test_establish_refresh_condition_chain(self):
+    def test_establish_refresh_condition_chain(self) -> None:
         ref, repository, selections, plans = self.graph_data()
         self.fact("version", FactResult(FactState.UNAVAILABLE, reason="tool missing"))
         graph = build_graph(repository, selections, plans)
@@ -41,7 +44,7 @@ class RefreshTests(ConditionFixture, unittest.TestCase):
             Outcome.DEFERRED,
         )
 
-    def test_skipped_or_deferred_producer_cannot_supply_evidence(self):
+    def test_skipped_or_deferred_producer_cannot_supply_evidence(self) -> None:
         ref, repository, selections, plans = self.graph_data()
         producer, consumer = NodeId("demo", "action", 0), NodeId("demo", "action", 1)
         plans[producer] = Plan(PlanStatus.SKIP, "already installed")
@@ -57,7 +60,7 @@ class RefreshTests(ConditionFixture, unittest.TestCase):
             build_graph(repository, selections, plans).earlier_refresh(consumer), {}
         )
 
-    def test_unordered_producer_needs_explicit_fact_link(self):
+    def test_unordered_producer_needs_explicit_fact_link(self) -> None:
         ref = FactRef("consumer", "version")
         repository, selections, plans = inputs(
             module("consumer", facts={"version": {"version": {}}}), module("installer")
@@ -76,7 +79,7 @@ class RefreshTests(ConditionFixture, unittest.TestCase):
         )
         self.assertEqual(graph.earlier_refresh(consumer), {ref: str(producer)})
 
-    def test_fact_link_cycle_is_rejected(self):
+    def test_fact_link_cycle_is_rejected(self) -> None:
         ref, repository, selections, plans = self.graph_data()
         first, second = NodeId("demo", "action", 0), NodeId("demo", "action", 1)
         plans[first] = Plan(PlanStatus.CHANGE, "consume", facts=(ref,))
@@ -84,11 +87,11 @@ class RefreshTests(ConditionFixture, unittest.TestCase):
         with self.assertRaisesRegex(GraphError, "dependency cycle"):
             build_graph(repository, selections, plans, [FactLink(second, first, ref)])
 
-    def test_unknown_refresh_is_invalid(self):
+    def test_unknown_refresh_is_invalid(self) -> None:
         with self.assertRaisesRegex(GraphError, "undeclared fact"):
             build_graph(*inputs(module("demo", [{"test": {}, "refresh": ["unknown"]}])))
 
-    def test_module_gate_can_wait_on_external_producer(self):
+    def test_module_gate_can_wait_on_external_producer(self) -> None:
         ref = FactRef("consumer", "version")
         repository, selections, plans = inputs(
             module("consumer", facts={"version": {"version": {}}}), module("installer")
@@ -104,7 +107,7 @@ class RefreshTests(ConditionFixture, unittest.TestCase):
         )
         self.assertEqual(graph.earlier_refresh(gate), {ref: str(producer)})
 
-    def test_producer_blocked_by_deferred_dependency_is_not_eligible(self):
+    def test_producer_blocked_by_deferred_dependency_is_not_eligible(self) -> None:
         ref = FactRef("consumer", "version")
         repository, selections, plans = inputs(
             module("consumer", facts={"version": {"version": {}}}),
@@ -125,7 +128,7 @@ class RefreshTests(ConditionFixture, unittest.TestCase):
         )
         self.assertEqual(graph.earlier_refresh(consumer), {})
 
-    def test_fact_link_requires_declared_producer_and_consumer(self):
+    def test_fact_link_requires_declared_producer_and_consumer(self) -> None:
         ref, repository, selections, plans = self.graph_data()
         producer, consumer = NodeId("demo", "action", 0), NodeId("demo", "action", 1)
         with self.assertRaisesRegex(GraphError, "does not consume"):

@@ -1,13 +1,15 @@
 """Normalize command options without executing them."""
 
 import math
+from typing import Any
 
 from etchlib.config import Module, compose_defaults
+from etchlib.providers.contracts import Context
 
 COMMON = ("description", "quiet", "stdin", "sudo", "env", "check", "timeout")
 
 
-def normalize(name, config, context):
+def normalize(name: str, config: Any, context: Context) -> tuple[dict[str, Any], ...]:
     values = config if name == "shell" and isinstance(config, list) else [config]
     if not values:
         raise ValueError("shell requires at least one command")
@@ -58,6 +60,7 @@ def normalize(name, config, context):
                 or "\x00" in query
             ):
                 raise ValueError("unsupported check predicate")
+        argv: tuple[str, ...]
         if name == "shell":
             command = options.get("command")
             if isinstance(command, str):
@@ -76,7 +79,7 @@ def normalize(name, config, context):
     return tuple(result)
 
 
-def _argv(value, allow_empty):
+def _argv(value: Any, allow_empty: bool) -> tuple[str, ...]:
     if (
         not isinstance(value, list)
         or (not value and not allow_empty)
