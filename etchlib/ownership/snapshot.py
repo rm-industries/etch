@@ -3,26 +3,38 @@
 from copy import deepcopy
 from dataclasses import dataclass
 from types import MappingProxyType
+from typing import Iterable, Mapping, Optional
 
+from etchlib.conditions.module import Selection
 from etchlib.conditions.results import Outcome
+from etchlib.config import Repository
 from etchlib.graph.builder import build_graph
-from etchlib.graph.model import NodeId
+from etchlib.graph.dag import ActionGraph
+from etchlib.graph.model import FactLink, NodeId
 from etchlib.providers.contracts import Context
 from etchlib.providers.lifecycle import plan_action
+from etchlib.providers.observations import FactRef, FactResult
+from etchlib.providers.plans import Plan
+from etchlib.providers.registry import Registry
 
-from .claims import OwnershipError, validate_claims
+from .claims import OwnedClaim, OwnershipError, validate_claims
 
 
 @dataclass(frozen=True)
 class Snapshot:
-    graph: object
-    plans: object
-    claims: tuple
+    graph: ActionGraph
+    plans: Mapping[NodeId, Plan]
+    claims: tuple[OwnedClaim, ...]
 
 
 def validate_snapshot(
-    repository, selections, registry, facts=None, fact_links=(), elevated_actions=()
-):
+    repository: Repository,
+    selections: Mapping[str, Selection],
+    registry: Registry,
+    facts: Optional[Mapping[FactRef, FactResult]] = None,
+    fact_links: Iterable[FactLink] = (),
+    elevated_actions: Iterable[NodeId] = (),
+) -> Snapshot:
     """Fresh provider validation/inspection/planning, graph and ownership checks.
 
     Call again after facts change and conditions are reevaluated. No previous plan

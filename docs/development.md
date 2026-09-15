@@ -14,9 +14,9 @@ python3 -m venv .venv
 python -m pip install -r requirements-dev.txt
 ```
 
-The pinned Ruff and pytest versions support Python 3.9 through 3.14. pytest stays
-on the 8.4 series to retain Python 3.9 support. The requirements file also pins
-pytest's dependencies, using markers for interpreter-specific packages. When
+The pinned Ruff, pytest and mypy versions run on Python 3.9 through 3.14. pytest stays
+on the 8.4 series and mypy on 1.18.2 to retain Python 3.9 support. The requirements
+file also pins their dependencies, using markers for interpreter-specific packages. When
 updating pins, verify installation and tests on the oldest supported interpreter
 as well as the newest. No Git hooks are installed.
 
@@ -34,6 +34,7 @@ Check without modifying files and run all tests:
 ```sh
 ruff format --check .
 ruff check .
+mypy etchlib tests etch
 pytest
 ```
 
@@ -42,6 +43,32 @@ extensionless `etch` launcher, `etchlib`, and tests. Its initial rules cover imp
 ordering, syntax and name errors, common style errors, and Bugbear correctness
 checks. Add exceptions only for concrete cases at the smallest practical scope.
 pytest collects the existing unittest suite, including bootstrap integration tests.
+
+## Static typing
+
+mypy runs in strict mode with `python_version = "3.9"`, regardless of the interpreter
+running the tool. Both `mypy` (using the configured file list) and
+`mypy etchlib tests etch` check the entire library, tests, and extensionless launcher.
+The separate typecheck CI job uses the explicit command on Python 3.14; tests on
+actual supported interpreters independently verify runtime compatibility.
+
+All functions require complete signatures. Strict mode also rejects untyped calls,
+bare generics, implicit optional arguments and unchecked `Any` returns, and reports
+unused ignores and redundant casts. No modules or tests are excluded. Runtime
+annotations use the standard library; `typing_extensions` is a development-only
+dependency of mypy and must not be imported by Etch.
+
+Configuration values, provider-owned observation/plan payloads and dynamically
+loaded plugin instances deliberately retain `Any`: their shapes belong to provider
+validation, not a closed core schema. The lifecycle wrapper validates plugin
+results at runtime. Keep that flexibility at those boundaries and use concrete
+types for core records, contexts, facts, graphs and return values.
+
+Negative tests intentionally violate record types, frozen fields or plugin
+protocols. Each necessary ignore names its error code and explains the tested
+violation on that line; normal assertions narrow optional results explicitly.
+The refresh-evidence cast records the graph builder's invariant that a refresh
+node carries a fact reference. Do not add broad ignores to silence real mistakes.
 
 ## Runtime isolation
 
@@ -57,6 +84,6 @@ Bootstrap tests construct fresh vendored and recursive-submodule consumers and
 run Etch with site packages disabled. Git is needed to construct the submodule
 test fixture, but is absent from its runtime PATH.
 
-CI currently runs pytest, the isolated unittest suite and source smoke checks on Python
-3.9 and 3.14 on Linux and macOS. Independent format/lint/typecheck/test gates and
-the full minor-version matrix are tracked in #48; mypy setup is tracked in #46.
+CI runs pytest, the isolated unittest suite and source smoke checks on Python
+3.9 and 3.14 on Linux and macOS, plus a separate strict typecheck job. Additional
+formatting/linting gates and the full minor-version test matrix are tracked in #48.

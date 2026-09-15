@@ -5,30 +5,33 @@ import tempfile
 import unittest
 from dataclasses import replace
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 from etchlib.core import core_registry
 from etchlib.providers.contracts import Context
 from etchlib.providers.errors import ProviderError
 from etchlib.providers.lifecycle import plan_action
-from etchlib.providers.plans import PlanStatus
+from etchlib.providers.plans import ApplyResult, Plan, PlanStatus
 
 
 class CommandTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve()
         self.context = Context(self.root, self.root, "example", {})
         self.registry = core_registry()
 
-    def plan(self, config, name="shell"):
+    def plan(self, config: Any, name: str = "shell") -> Plan:
         return plan_action(self.registry.action(name), config, self.context)
 
-    def apply(self, plan, name="shell"):
-        return self.registry.action(name).provider.apply(plan, self.context)
+    def apply(self, plan: Plan, name: str = "shell") -> ApplyResult:
+        result = self.registry.action(name).provider.apply(plan, self.context)
+        assert isinstance(result, ApplyResult)
+        return result
 
-    def test_plan_is_honest_and_does_not_run(self):
+    def test_plan_is_honest_and_does_not_run(self) -> None:
         config = {"command": "touch marker", "description": "Create marker"}
         plan = self.plan(config)
         self.assertEqual(plan.status, PlanStatus.RUN)
@@ -37,7 +40,7 @@ class CommandTests(unittest.TestCase):
         self.assertTrue(self.apply(plan).changed)
         self.assertTrue((self.root / "marker").exists())
 
-    def test_argv_is_not_shell_evaluated(self):
+    def test_argv_is_not_shell_evaluated(self) -> None:
         command = [
             sys.executable,
             "-S",
@@ -48,7 +51,7 @@ class CommandTests(unittest.TestCase):
         self.apply(self.plan({"command": command}))
         self.assertFalse((self.root / "marker").exists())
 
-    def test_environment_metadata_overrides_and_cwd(self):
+    def test_environment_metadata_overrides_and_cwd(self) -> None:
         code = "import json,os; open('result.json','w').write(json.dumps(dict(os.environ,cwd=os.getcwd())))"
         with patch.dict(os.environ, {"INHERITED": "yes"}):
             self.apply(
@@ -66,14 +69,14 @@ class CommandTests(unittest.TestCase):
         self.assertEqual(result["ETCH_MODULE"], "example")
         self.assertTrue(result["ETCH_OS"])
 
-    def test_check_skips_and_second_run_is_noop(self):
+    def test_check_skips_and_second_run_is_noop(self) -> None:
         config = {"command": "touch marker", "check": {"file_exists": "marker"}}
         plan = self.plan(config)
         self.assertTrue(self.apply(plan).changed)
         self.assertFalse(self.apply(plan).changed)
         self.assertEqual(self.plan(config).status, PlanStatus.SKIP)
 
-    def test_failure_stops_later_commands(self):
+    def test_failure_stops_later_commands(self) -> None:
         plan = self.plan(
             [
                 {"command": [sys.executable, "-c", "raise SystemExit(7)"]},
@@ -84,7 +87,7 @@ class CommandTests(unittest.TestCase):
             self.apply(plan)
         self.assertFalse((self.root / "should-not-run").exists())
 
-    def test_timeout(self):
+    def test_timeout(self) -> None:
         plan = self.plan(
             {
                 "command": [sys.executable, "-c", "import time; time.sleep(5)"],
@@ -94,7 +97,7 @@ class CommandTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "timed out"):
             self.apply(plan)
 
-    def test_script_owned_executable_and_arguments(self):
+    def test_script_owned_executable_and_arguments(self) -> None:
         script = self.root / "setup.sh"
         script.write_text('#!/bin/sh\nprintf "%s" "$1" > result\n')
         script.chmod(0o755)
@@ -104,7 +107,7 @@ class CommandTests(unittest.TestCase):
         self.apply(plan, "script")
         self.assertEqual((self.root / "result").read_text(), "argument with spaces")
 
-    def test_script_validation_and_escape(self):
+    def test_script_validation_and_escape(self) -> None:
         (self.root / "not-executable").write_text("echo hello")
         for config in [
             {"path": "missing"},
@@ -114,7 +117,7 @@ class CommandTests(unittest.TestCase):
             with self.assertRaises(ProviderError):
                 self.plan(config, "script")
 
-    def test_invalid_options(self):
+    def test_invalid_options(self) -> None:
         for config in [
             {"command": []},
             {"command": ""},
@@ -126,7 +129,7 @@ class CommandTests(unittest.TestCase):
             with self.subTest(config=config), self.assertRaises(ProviderError):
                 self.plan(config)
 
-    def test_privilege_and_interactive_metadata(self):
+    def test_privilege_and_interactive_metadata(self) -> None:
         plan = self.plan({"command": ["true"], "sudo": True, "stdin": True})
         self.assertTrue(plan.elevated)
         self.assertEqual(plan.resources, ("sudo-interactive", "stdin-interactive"))
@@ -138,7 +141,7 @@ class CommandTests(unittest.TestCase):
             self.apply(plan)
             self.assertEqual(run.call_args.args[0], ["sudo", "-E", "--", "true"])
 
-    def test_default_execution_is_unprivileged_noninteractive(self):
+    def test_default_execution_is_unprivileged_noninteractive(self) -> None:
         plan = self.plan({"command": ["true"], "quiet": True})
         self.assertFalse(plan.elevated)
         with patch("etchlib.providers.commands.runtime.subprocess.run") as run:
@@ -148,7 +151,7 @@ class CommandTests(unittest.TestCase):
             self.assertIsNotNone(run.call_args.kwargs["stdin"])
             self.assertIsNotNone(run.call_args.kwargs["stdout"])
 
-    def test_command_check_respects_environment_path(self):
+    def test_command_check_respects_environment_path(self) -> None:
         (self.root / "python-local").symlink_to(sys.executable)
         plan = self.plan(
             {

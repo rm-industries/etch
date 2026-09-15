@@ -1,5 +1,7 @@
 """Source fixtures exercise actual imports rather than mocking the loader."""
 
+from pathlib import Path
+
 ENTRY = """
 from .implementation import ExampleFact
 PLUGIN = {"name": "example", "version": "1.2.3", "api": 1}
@@ -20,7 +22,7 @@ class ExampleFact:
 """
 
 
-def write_plugin(root, entry=ENTRY):
+def write_plugin(root: Path, entry: str = ENTRY) -> Path:
     root.mkdir(parents=True)
     (root / "etch_plugin.py").write_text(entry)
     (root / "implementation.py").write_text(IMPLEMENTATION)

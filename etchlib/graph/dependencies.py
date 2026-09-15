@@ -1,11 +1,23 @@
 """Resolve hard module dependencies and warning-only missing soft targets."""
 
-from etchlib.conditions.results import Outcome
+from typing import Iterable, Mapping
 
+from etchlib.conditions.module import Selection
+from etchlib.conditions.results import Outcome
+from etchlib.config import Module
+
+from .dag import ActionGraph
 from .model import GraphError, NodeId
 
 
-def connect_dependencies(graph, modules, selections, source, requires, after):
+def connect_dependencies(
+    graph: ActionGraph,
+    modules: Mapping[str, Module],
+    selections: Mapping[str, Selection],
+    source: NodeId,
+    requires: Iterable[str],
+    after: Iterable[str],
+) -> None:
     for hard, targets in ((True, requires), (False, after)):
         for target in dict.fromkeys(targets):
             available = (

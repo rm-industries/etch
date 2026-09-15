@@ -5,9 +5,10 @@ import json
 import os
 import tempfile
 from pathlib import Path
+from typing import Optional
 
 
-def identity(path):
+def identity(path: Path) -> Optional[dict[str, object]]:
     info = path.lstat()
     if not path.is_symlink():
         return None
@@ -20,7 +21,7 @@ def identity(path):
     }
 
 
-def receipt_path(repo, path, create=False):
+def receipt_path(repo: Path, path: Path, create: bool = False) -> Path:
     directory = repo / ".etch" / "links"
     for component in (repo / ".etch", directory):
         if component.is_symlink():
@@ -33,7 +34,7 @@ def receipt_path(repo, path, create=False):
     return directory / name
 
 
-def record(repo, path, module):
+def record(repo: Path, path: Path, module: str) -> None:
     proof = identity(path)
     if proof is None:
         raise ValueError("cannot record ownership of a non-link")
@@ -52,7 +53,7 @@ def record(repo, path, module):
             temporary.unlink(missing_ok=True)
 
 
-def owned(repo, path):
+def owned(repo: Path, path: Path) -> bool:
     """Absent, stale or unreadable receipts provide no permission to remove."""
     try:
         target = receipt_path(repo, path)

@@ -9,3 +9,9 @@ select = ["E4", "E7", "E9", "F", "I", "B"]
 minversion = "8.4"
 testpaths = ["tests"]
 addopts = "--strict-config --strict-markers"
+
+[tool.mypy]
+python_version = "3.9"
+files = ["etchlib", "tests", "etch"]
+strict = true
+check_untyped_defs = true

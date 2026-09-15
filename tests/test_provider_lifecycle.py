@@ -11,13 +11,13 @@ from tests.provider_fixtures import MemoryAction, MemoryFact
 
 
 class LifecycleTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.context = Context(
             Path("/consumer"), Path("/consumer/modules/example"), "example", {}
         )
         self.registry = Registry()
 
-    def test_core_and_external_actions_share_contract(self):
+    def test_core_and_external_actions_share_contract(self) -> None:
         for origin in [
             Origin("Etch core", "0.1.0", True),
             Origin("etch-example", "1.2.0"),
@@ -46,7 +46,7 @@ class LifecycleTests(unittest.TestCase):
                     PlanStatus.SKIP,
                 )
 
-    def test_validation_failure_prevents_inspection(self):
+    def test_validation_failure_prevents_inspection(self) -> None:
         action = MemoryAction()
         self.registry.register(Origin("example", "1"), [action])
         with self.assertRaisesRegex(
@@ -55,7 +55,7 @@ class LifecycleTests(unittest.TestCase):
             plan_action(self.registry.action("memory"), {}, self.context)
         self.assertEqual(action.calls, ["validate"])
 
-    def test_invalid_result_types(self):
+    def test_invalid_result_types(self) -> None:
         for method, value in [("validate", False), ("inspect", {}), ("plan", {})]:
             action = MemoryAction()
             setattr(action, method, lambda *args, value=value: value)
@@ -68,7 +68,7 @@ class LifecycleTests(unittest.TestCase):
                 plan_action(registry.action("memory"), {"value": 1}, self.context)
             self.assertIsNone(action.value)
 
-    def test_fact_contract_and_wrong_kind(self):
+    def test_fact_contract_and_wrong_kind(self) -> None:
         self.registry.register(Origin("example", "1"), facts=[MemoryFact()])
         entry = self.registry.fact("memory_value")
         self.assertEqual(

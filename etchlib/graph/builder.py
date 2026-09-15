@@ -1,15 +1,25 @@
 """Build one graph snapshot from selected modules and normalized provider plans."""
 
+from typing import Iterable, Mapping, Optional
+
+from etchlib.conditions.module import Selection
 from etchlib.conditions.results import Outcome
+from etchlib.config import Repository
 from etchlib.facts.core import BUILTINS
 from etchlib.providers.observations import FactRef
+from etchlib.providers.plans import Plan
 
 from .dag import ActionGraph
 from .dependencies import connect_dependencies
-from .model import GraphError, Node, NodeId
+from .model import FactLink, GraphError, Node, NodeId
 
 
-def build_graph(repository, selections, plans=None, fact_links=()):
+def build_graph(
+    repository: Repository,
+    selections: Mapping[str, Selection],
+    plans: Optional[Mapping[NodeId, Plan]] = None,
+    fact_links: Iterable[FactLink] = (),
+) -> ActionGraph:
     plans = dict(plans or {})
     modules = {module.name: module for module in repository.modules}
     if set(modules) != set(selections):
@@ -120,9 +130,9 @@ def build_graph(repository, selections, plans=None, fact_links=()):
             raise GraphError(
                 "{} does not consume {!r}".format(link.consumer, link.fact)
             )
-        refresh = NodeId(
+        producer_refresh = NodeId(
             link.producer.module, "refresh", link.producer.index, link.fact
         )
-        graph.connect(refresh, link.consumer)
+        graph.connect(producer_refresh, link.consumer)
     graph.order()  # Validate every snapshot before exposing it to an executor.
     return graph

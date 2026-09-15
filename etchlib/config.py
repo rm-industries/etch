@@ -149,7 +149,7 @@ class Module:
     root: Path
     config: Dict[str, Any]
 
-    def asset(self, value: str) -> Path:
+    def asset(self, value: object) -> Path:
         """Resolve owned assets independently of the invoking process directory."""
         if (
             not isinstance(value, str)

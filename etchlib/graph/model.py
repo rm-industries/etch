@@ -19,7 +19,7 @@ class NodeId:
     index: int = -1
     fact: Optional[FactRef] = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         label = "{}:{}".format(self.module, self.kind)
         if self.index >= 0:
             label += "[{}]".format(self.index)

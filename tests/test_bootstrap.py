@@ -7,6 +7,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Optional
 
 from tests.plugin_fixtures import write_plugin
 
@@ -14,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class BootstrapTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory(prefix="etch bootstrap ")
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
@@ -28,7 +29,7 @@ class BootstrapTests(unittest.TestCase):
         self.env.pop("PYTHONPATH", None)
         self.env.pop("PYTHONHOME", None)
 
-    def vendor(self, destination=None):
+    def vendor(self, destination: Optional[Path] = None) -> Path:
         destination = destination or self.consumer / "vendor" / "etch"
         destination.mkdir(parents=True)
         shutil.copy2(ROOT / "etch", destination / "etch")
@@ -39,7 +40,9 @@ class BootstrapTests(unittest.TestCase):
         )
         return destination
 
-    def run_install(self, *args, consumer=None):
+    def run_install(
+        self, *args: str, consumer: Optional[Path] = None
+    ) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
             [str((consumer or self.consumer) / "install"), *args],
             cwd=self.root,
@@ -48,25 +51,25 @@ class BootstrapTests(unittest.TestCase):
             capture_output=True,
         )
 
-    def test_vendored_source_with_python_only_path(self):
+    def test_vendored_source_with_python_only_path(self) -> None:
         self.vendor()
         result = self.run_install("doctor", "--profile", "developer")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn(str(self.consumer.resolve()), result.stdout)
         self.assertIn("  git", result.stdout)
 
-    def test_missing_python(self):
+    def test_missing_python(self) -> None:
         self.python.unlink()
         result = self.run_install("--version")
         self.assertEqual(result.returncode, 1)
         self.assertIn("requires Python 3.9 or newer", result.stderr)
 
-    def test_missing_vendor(self):
+    def test_missing_vendor(self) -> None:
         result = self.run_install("--version")
         self.assertEqual(result.returncode, 1)
         self.assertIn("source is missing from vendor/etch", result.stderr)
 
-    def test_arguments_and_exit_status_are_preserved(self):
+    def test_arguments_and_exit_status_are_preserved(self) -> None:
         self.vendor()
         result = self.run_install("doctor", "missing module")
         self.assertEqual(result.returncode, 1)
@@ -74,7 +77,7 @@ class BootstrapTests(unittest.TestCase):
         result = self.run_install("--unknown-option")
         self.assertEqual(result.returncode, 2)
 
-    def test_startup_does_not_connect_to_network(self):
+    def test_startup_does_not_connect_to_network(self) -> None:
         vendor = self.vendor()
         # An audit hook fails the process if any startup path attempts socket I/O.
         probe = """import runpy, sys
@@ -101,8 +104,9 @@ runpy.run_path(entry, run_name='__main__')
         shutil.which("git"),
         "Git is needed to construct the submodule distribution fixture",
     )
-    def test_recursive_clone_with_pinned_submodule(self):
+    def test_recursive_clone_with_pinned_submodule(self) -> None:
         git = shutil.which("git")
+        assert git is not None  # The skipUnless guard requires Git for this fixture.
         env = dict(
             os.environ,
             GIT_CONFIG_GLOBAL=os.devnull,
@@ -113,7 +117,7 @@ runpy.run_path(entry, run_name='__main__')
             GIT_COMMITTER_EMAIL="test@example.invalid",
         )
 
-        def run_git(cwd, *args):
+        def run_git(cwd: Path, *args: str) -> str:
             return subprocess.run(
                 [git, "-c", "protocol.file.allow=always", *args],
                 cwd=cwd,

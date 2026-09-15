@@ -2,6 +2,7 @@
 
 import operator
 import re
+from typing import Union
 
 from .parser import Version, parse_version
 
@@ -15,7 +16,7 @@ OPERATORS = {
 }
 
 
-def matches(version, constraint: str) -> bool:
+def matches(version: Union[str, Version], constraint: str) -> bool:
     value = version if isinstance(version, Version) else parse_version(version)
     if not isinstance(constraint, str) or not constraint.strip():
         raise ValueError("constraint must be a nonempty string")

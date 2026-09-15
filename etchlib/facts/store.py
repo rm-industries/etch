@@ -3,7 +3,7 @@
 from copy import deepcopy
 from dataclasses import dataclass, replace
 from types import MappingProxyType
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from etchlib.providers.contracts import Context
 from etchlib.providers.errors import ProviderError
@@ -20,7 +20,7 @@ class Declaration:
 
 
 class FactStore:
-    def __init__(self, registry: Registry):
+    def __init__(self, registry: Registry) -> None:
         self.registry = registry
         self._declarations: Dict[FactRef, Declaration] = {}
         self._cache: Dict[FactRef, FactResult] = {}
@@ -33,19 +33,19 @@ class FactStore:
         entry = self.registry.fact(provider)
         self._declarations[ref] = Declaration(entry, deepcopy(config), context)
 
-    def references(self):
+    def references(self) -> tuple[FactRef, ...]:
         return tuple(self._declarations)
 
-    def _require(self, ref):
+    def _require(self, ref: FactRef) -> None:
         if ref not in self._declarations:
             raise ProviderError("undeclared fact {!r}".format(ref))
 
-    def peek(self, ref):
+    def peek(self, ref: FactRef) -> Optional[FactResult]:
         """Return a detached observation or None without triggering a probe."""
         self._require(ref)
         return deepcopy(self._cache.get(ref))
 
-    def get(self, ref):
+    def get(self, ref: FactRef) -> FactResult:
         self._require(ref)
         cached = self._cache.get(ref)
         if cached is None or cached.state is FactState.STALE:
@@ -66,7 +66,7 @@ class FactStore:
             self._cache[ref] = deepcopy(result)
         return deepcopy(self._cache[ref])
 
-    def invalidate(self, ref):
+    def invalidate(self, ref: FactRef) -> None:
         """Mark only a previously observed fact stale; never gather immediately."""
         self._require(ref)
         cached = self._cache.get(ref)

@@ -13,7 +13,7 @@ class Origin:
     version: str
     core: bool = False
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if any(
             not isinstance(v, str) or not v.strip() for v in (self.name, self.version)
         ):
@@ -31,7 +31,7 @@ class Registration:
 
 
 class Registry:
-    def __init__(self):
+    def __init__(self) -> None:
         self._entries: Dict[str, Registration] = {}
 
     def register(

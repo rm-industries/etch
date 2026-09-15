@@ -1,6 +1,9 @@
 """Small stateful providers for contract tests, not shipped integrations."""
 
+from typing import Any
+
 from etchlib.config import compose_defaults
+from etchlib.providers.contracts import Context
 from etchlib.providers.observations import (
     FactRef,
     FactResult,
@@ -14,16 +17,16 @@ from etchlib.providers.plans import ApplyResult, PathClaim, Plan, PlanStatus
 class MemoryAction:
     name = "memory"
 
-    def __init__(self):
-        self.value = None
-        self.calls = []
+    def __init__(self) -> None:
+        self.value: Any = None
+        self.calls: list[str] = []
 
-    def validate(self, config, context):
+    def validate(self, config: Any, context: Context) -> None:
         self.calls.append("validate")
         if not isinstance(config, dict) or "value" not in config:
             raise ValueError("value is required")
 
-    def inspect(self, config, context):
+    def inspect(self, config: Any, context: Context) -> Inspection:
         self.calls.append("inspect")
         state = (
             InspectionState.SATISFIED
@@ -32,7 +35,7 @@ class MemoryAction:
         )
         return Inspection(state, self.value)
 
-    def plan(self, config, observation, context):
+    def plan(self, config: Any, observation: Inspection, context: Context) -> Plan:
         self.calls.append("plan")
         options = compose_defaults(self.name, {"quiet": True}, config, ("quiet",))
         status = (
@@ -53,7 +56,7 @@ class MemoryAction:
             resources=("application:memory",),
         )
 
-    def apply(self, plan, context):
+    def apply(self, plan: Plan, context: Context) -> ApplyResult:
         self.calls.append("apply")
         changed = self.value != plan.payload
         self.value = plan.payload
@@ -63,9 +66,9 @@ class MemoryAction:
 class MemoryFact:
     name = "memory_value"
 
-    def validate(self, config, context):
+    def validate(self, config: Any, context: Context) -> None:
         if not isinstance(config, dict):
             raise ValueError("expected dictionary")
 
-    def gather(self, config, context):
+    def gather(self, config: Any, context: Context) -> FactResult:
         return FactResult(FactState.VALUE, config.get("value"))

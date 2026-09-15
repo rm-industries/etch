@@ -24,7 +24,7 @@ class PathClaim:
     path: Path
     kind: ClaimKind = ClaimKind.EXCLUSIVE
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not isinstance(self.path, Path) or not self.path.is_absolute():
             raise ValueError("path claims require an absolute Path")
         if not isinstance(self.kind, ClaimKind):
@@ -46,7 +46,7 @@ class Plan:
     network: bool = False
     opaque: bool = False
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not isinstance(self.status, PlanStatus):
             raise ValueError("plan status must be a PlanStatus")
         if not isinstance(self.description, str) or not self.description.strip():
@@ -78,7 +78,7 @@ class ApplyResult:
     changed: bool
     description: str
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if type(self.changed) is not bool or not isinstance(self.description, str):
             raise ValueError(
                 "apply result requires a boolean changed flag and string description"

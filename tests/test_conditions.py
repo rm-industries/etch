@@ -8,7 +8,7 @@ from tests.condition_fixtures import ConditionFixture
 
 
 class ConditionTests(ConditionFixture, unittest.TestCase):
-    def test_platform_and_list_alternatives(self):
+    def test_platform_and_list_alternatives(self) -> None:
         with (
             patch("etchlib.facts.platform.platform.system", return_value="Linux"),
             patch("etchlib.facts.platform.platform.machine", return_value="x86_64"),
@@ -23,7 +23,7 @@ class ConditionTests(ConditionFixture, unittest.TestCase):
                 Outcome.FALSE,
             )
 
-    def test_command_presence_and_absence(self):
+    def test_command_presence_and_absence(self) -> None:
         with patch(
             "etchlib.facts.probes.shutil.which",
             side_effect=lambda name: "/bin/tool" if name == "tool" else None,
@@ -36,7 +36,7 @@ class ConditionTests(ConditionFixture, unittest.TestCase):
                 self.evaluator.evaluate({"command": "missing"}).outcome, Outcome.FALSE
             )
 
-    def test_env_presence_empty_and_equality(self):
+    def test_env_presence_empty_and_equality(self) -> None:
         with patch.dict(os.environ, {"EMPTY": "", "CI": "yes"}, clear=True):
             for condition, expected in [
                 ({"env": "EMPTY"}, True),
@@ -49,7 +49,7 @@ class ConditionTests(ConditionFixture, unittest.TestCase):
                     Outcome.TRUE if expected else Outcome.FALSE,
                 )
 
-    def test_boolean_fact_and_type_sensitive_equality(self):
+    def test_boolean_fact_and_type_sensitive_equality(self) -> None:
         self.fact("flag", FactResult(FactState.VALUE, True))
         self.assertEqual(
             self.evaluator.evaluate({"fact": {"name": "flag"}}).outcome, Outcome.TRUE
@@ -59,7 +59,7 @@ class ConditionTests(ConditionFixture, unittest.TestCase):
             Outcome.FALSE,
         )
 
-    def test_version_branches_are_mutually_exclusive(self):
+    def test_version_branches_are_mutually_exclusive(self) -> None:
         self.fact("version", FactResult(FactState.VALUE, "3.5a"))
         self.assertEqual(
             self.evaluator.evaluate(
@@ -74,14 +74,14 @@ class ConditionTests(ConditionFixture, unittest.TestCase):
             Outcome.TRUE,
         )
 
-    def test_negation(self):
+    def test_negation(self) -> None:
         self.fact("flag", FactResult(FactState.VALUE, False))
         self.assertEqual(
             self.evaluator.evaluate({"not": {"fact": {"name": "flag"}}}).outcome,
             Outcome.TRUE,
         )
 
-    def test_invalid_syntax_even_in_short_circuited_branch(self):
+    def test_invalid_syntax_even_in_short_circuited_branch(self) -> None:
         for condition in [
             {},
             {"typo": "linux"},
@@ -95,18 +95,18 @@ class ConditionTests(ConditionFixture, unittest.TestCase):
                 self.evaluator.evaluate(condition)
         self.assertEqual(self.observations.calls, [])
 
-    def test_failed_probe_and_wrong_value_types_are_errors(self):
+    def test_failed_probe_and_wrong_value_types_are_errors(self) -> None:
         self.fact("failed", FactResult(FactState.ERROR, reason="probe exited 7"))
         self.fact("text", FactResult(FactState.VALUE, "hello"))
         for name in ("failed", "text"):
             with self.assertRaises(ConditionError):
                 self.evaluator.evaluate({"fact": {"name": name}})
 
-    def test_unknown_fact_is_diagnostic(self):
+    def test_unknown_fact_is_diagnostic(self) -> None:
         with self.assertRaisesRegex(ConditionError, "undeclared fact"):
             self.evaluator.evaluate({"fact": {"name": "unknown"}})
 
-    def test_results_require_explicit_outcome(self):
+    def test_results_require_explicit_outcome(self) -> None:
         with patch.dict(os.environ, {"CI": "yes"}):
             with self.assertRaises(TypeError):
                 bool(self.evaluator.evaluate({"env": "CI"}))

@@ -17,18 +17,18 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class ConfigTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.repo = Path(self.temp.name)
         shutil.copytree(ROOT / "examples/minimal", self.repo, dirs_exist_ok=True)
 
-    def write(self, relative, text):
+    def write(self, relative: str, text: str) -> Path:
         path = self.repo / relative
         path.write_text(text, encoding="utf-8")
         return path
 
-    def test_duplicate_keys_rejected_at_every_depth(self):
+    def test_duplicate_keys_rejected_at_every_depth(self) -> None:
         for text in [
             "{'schema_version': 1, 'schema_version': 1}",
             "{'schema_version': 1, 'actions': [{'link': {'x': 'a', 'x': 'b'}}]}",
@@ -39,7 +39,7 @@ class ConfigTests(unittest.TestCase):
             ):
                 read_config(self.write("bad.conf", text))
 
-    def test_unsupported_literals_and_nested_key_types(self):
+    def test_unsupported_literals_and_nested_key_types(self) -> None:
         for literal in ["(1, 2)", "{1, 2}", "b'abc'", "1j", "...", "{1: 'bad'}"]:
             with self.subTest(literal=literal), self.assertRaises(ConfigError):
                 read_config(
@@ -48,14 +48,14 @@ class ConfigTests(unittest.TestCase):
                     )
                 )
 
-    def test_comments_trailing_commas_and_data_values(self):
+    def test_comments_trailing_commas_and_data_values(self) -> None:
         path = self.write(
             "valid.conf",
             "{ # comment\n 'schema_version': 1, 'x': [True, None, 2, 1.5, 'text'], }",
         )
         self.assertEqual(read_config(path)["x"], [True, None, 2, 1.5, "text"])
 
-    def test_unknown_fields_are_not_silently_ignored(self):
+    def test_unknown_fields_are_not_silently_ignored(self) -> None:
         cases = [
             ("defaults.conf", "{'schema_version': 1, 'defauts': {}}"),
             (
@@ -78,7 +78,7 @@ class ConfigTests(unittest.TestCase):
                 load_repository(self.repo, "developer")
             path.write_text(original)
 
-    def test_action_envelopes(self):
+    def test_action_envelopes(self) -> None:
         for action in [
             {},
             {"": {}},
@@ -95,7 +95,7 @@ class ConfigTests(unittest.TestCase):
             ):
                 load_repository(self.repo)
 
-    def test_external_provider_payload_preserved(self):
+    def test_external_provider_payload_preserved(self) -> None:
         action = {
             "custom": {"items": ["one"]},
             "when": {"os": "linux"},
@@ -110,7 +110,7 @@ class ConfigTests(unittest.TestCase):
         self.write("modules/git/module.conf", repr(config))
         self.assertEqual(load_repository(self.repo).modules[0].config, config)
 
-    def test_fact_envelopes(self):
+    def test_fact_envelopes(self) -> None:
         for fact in [[], {}, {"command": "git", "env": "HOME"}]:
             self.write(
                 "modules/git/module.conf",
@@ -121,7 +121,7 @@ class ConfigTests(unittest.TestCase):
             with self.subTest(fact=fact), self.assertRaisesRegex(ConfigError, "fact"):
                 load_repository(self.repo)
 
-    def test_profile_order_and_duplicate_selection(self):
+    def test_profile_order_and_duplicate_selection(self) -> None:
         other = self.repo / "modules/zsh"
         other.mkdir()
         (other / "module.conf").write_text("{'schema_version': 1, 'name': 'zsh'}")
@@ -140,7 +140,7 @@ class ConfigTests(unittest.TestCase):
         with self.assertRaisesRegex(ConfigError, "duplicate"):
             load_repository(self.repo, "developer")
 
-    def test_plugin_declarations_are_data_only(self):
+    def test_plugin_declarations_are_data_only(self) -> None:
         self.write(
             "defaults.conf",
             "{'schema_version': 1, 'plugins': ['vendor/not-installed']}",
@@ -153,7 +153,7 @@ class ConfigTests(unittest.TestCase):
             with self.subTest(plugins=plugins), self.assertRaises(ConfigError):
                 load_repository(self.repo)
 
-    def test_provider_opt_in_defaults_and_atomic_replacement(self):
+    def test_provider_opt_in_defaults_and_atomic_replacement(self) -> None:
         defaults = {"items": ["a"], "env": {"OLD": "value"}, "quiet": True}
         options = {"items": ["b"], "env": {"NEW": "value"}, "command": "echo"}
         result = compose_defaults(
@@ -166,7 +166,7 @@ class ConfigTests(unittest.TestCase):
         with self.assertRaisesRegex(ConfigError, "unsupported default options"):
             compose_defaults("script", {"command": "untrusted default"}, {}, ("quiet",))
 
-    def test_destination_uses_repo_and_preserves_final_symlink(self):
+    def test_destination_uses_repo_and_preserves_final_symlink(self) -> None:
         target = self.repo / "target"
         target.write_text("preserve")
         link = self.repo / "link"
@@ -181,7 +181,7 @@ class ConfigTests(unittest.TestCase):
                 self.repo.resolve() / ".gitconfig",
             )
 
-    def test_nul_paths_are_config_errors(self):
+    def test_nul_paths_are_config_errors(self) -> None:
         with self.assertRaises(ConfigError):
             destination("bad\x00path", self.repo)
         with self.assertRaises(ConfigError):

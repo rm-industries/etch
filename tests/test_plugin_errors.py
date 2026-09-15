@@ -15,12 +15,12 @@ from tests.provider_fixtures import MemoryFact
 
 
 class PluginErrorTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
 
-    def test_bad_metadata_and_incompatible_api(self):
+    def test_bad_metadata_and_incompatible_api(self) -> None:
         for index, entry in enumerate(
             [
                 ENTRY.replace('"api": 1', '"api": 2'),
@@ -35,7 +35,7 @@ class PluginErrorTests(unittest.TestCase):
             with self.subTest(index=index), self.assertRaises(PluginError):
                 load_plugins(self.root, [location], Registry())
 
-    def test_factory_not_called_for_incompatible_api(self):
+    def test_factory_not_called_for_incompatible_api(self) -> None:
         marker = self.root / "factory-called"
         entry = ENTRY.replace('"api": 1', '"api": 99').replace(
             "return []", "open({!r}, 'w').close(); return []".format(str(marker))
@@ -45,7 +45,7 @@ class PluginErrorTests(unittest.TestCase):
             load_plugins(self.root, ["bad"], Registry())
         self.assertFalse(marker.exists())
 
-    def test_factory_and_import_failures_are_contextual(self):
+    def test_factory_and_import_failures_are_contextual(self) -> None:
         entries = [
             "raise RuntimeError('import failed')",
             "raise SystemExit(2)",
@@ -62,13 +62,13 @@ class PluginErrorTests(unittest.TestCase):
             ):
                 load_plugins(self.root, [location], Registry())
 
-    def test_missing_and_duplicate_paths(self):
+    def test_missing_and_duplicate_paths(self) -> None:
         write_plugin(self.root / "plugin")
         for paths in [["missing"], ["plugin", "./plugin"], ["\x00"], [""], "plugin"]:
             with self.subTest(paths=paths), self.assertRaises(PluginError):
                 load_plugins(self.root, paths, Registry())
 
-    def test_duplicate_names_and_providers_leave_core_unchanged(self):
+    def test_duplicate_names_and_providers_leave_core_unchanged(self) -> None:
         write_plugin(self.root / "one")
         write_plugin(self.root / "two")
         core = Registry()
@@ -86,7 +86,7 @@ class PluginErrorTests(unittest.TestCase):
             load_plugins(self.root, ["one", "two"], core)
         self.assertEqual(len(core.entries()), 1)
 
-    def test_core_provider_shadowing(self):
+    def test_core_provider_shadowing(self) -> None:
         write_plugin(self.root / "plugin")
         core_fact = MemoryFact()
         core_fact.name = "example_fact"
@@ -96,7 +96,7 @@ class PluginErrorTests(unittest.TestCase):
             load_plugins(self.root, ["plugin"], core)
         self.assertIs(core.fact("example_fact").provider, core_fact)
 
-    def test_doctor_reports_plugin_failure_without_traceback(self):
+    def test_doctor_reports_plugin_failure_without_traceback(self) -> None:
         example = Path(__file__).resolve().parents[1] / "examples/minimal"
         shutil.copytree(example, self.root, dirs_exist_ok=True)
         (self.root / "defaults.conf").write_text(

@@ -1,5 +1,6 @@
 import unittest
 from pathlib import Path
+from typing import Any
 
 from etchlib.facts.core import core_registry
 from etchlib.facts.store import FactStore
@@ -12,14 +13,14 @@ from etchlib.providers.registry import Origin
 class CountingFact:
     name = "counting"
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.calls = 0
         self.fail = False
 
-    def validate(self, config, context):
+    def validate(self, config: Any, context: Context) -> None:
         pass
 
-    def gather(self, config, context):
+    def gather(self, config: Any, context: Context) -> FactResult:
         self.calls += 1
         if self.fail:
             raise RuntimeError("probe broke")
@@ -27,7 +28,7 @@ class CountingFact:
 
 
 class FactStoreTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.registry = core_registry()
         self.provider = CountingFact()
         self.registry.register(Origin("example", "1"), facts=[self.provider])
@@ -36,7 +37,7 @@ class FactStoreTests(unittest.TestCase):
         self.ref = FactRef("one", "version")
         self.store.declare(self.ref, "counting", "config", self.context)
 
-    def test_cache_is_lazy_and_detached(self):
+    def test_cache_is_lazy_and_detached(self) -> None:
         self.assertIsNone(self.store.peek(self.ref))
         self.assertEqual(self.provider.calls, 0)
         result = self.store.get(self.ref)
@@ -44,7 +45,7 @@ class FactStoreTests(unittest.TestCase):
         self.assertEqual(self.store.get(self.ref).value, ["one", "config"])
         self.assertEqual(self.provider.calls, 1)
 
-    def test_scopes_never_share_cached_values(self):
+    def test_scopes_never_share_cached_values(self) -> None:
         second = FactRef("two", "version")
         context = Context(Path("/repo"), Path("/repo/modules/two"), "two", {})
         self.store.declare(second, "counting", "other", context)
@@ -52,18 +53,21 @@ class FactStoreTests(unittest.TestCase):
         self.assertEqual(self.store.get(second).value, ["two", "other"])
         self.assertEqual(self.provider.calls, 2)
 
-    def test_invalidation_is_selective_and_lazy(self):
+    def test_invalidation_is_selective_and_lazy(self) -> None:
         self.store.get(self.ref)
         self.store.invalidate(self.ref)
-        self.assertEqual(self.store.peek(self.ref).state, FactState.STALE)
+        cached = self.store.peek(self.ref)
+        assert cached is not None
+        self.assertEqual(cached.state, FactState.STALE)
         self.assertEqual(self.provider.calls, 1)
         self.assertEqual(self.store.get(self.ref).state, FactState.VALUE)
         self.assertEqual(self.provider.calls, 2)
 
-    def test_probe_failure_is_cached_error_with_context(self):
+    def test_probe_failure_is_cached_error_with_context(self) -> None:
         self.provider.fail = True
         result = self.store.get(self.ref)
         self.assertEqual(result.state, FactState.ERROR)
+        assert result.reason is not None
         self.assertIn("counting", result.reason)
         self.assertIn("probe broke", result.reason)
         self.store.get(self.ref)
@@ -72,7 +76,7 @@ class FactStoreTests(unittest.TestCase):
         self.store.invalidate(self.ref)
         self.assertEqual(self.store.get(self.ref).state, FactState.VALUE)
 
-    def test_unavailable_unused_fact_never_probes(self):
+    def test_unavailable_unused_fact_never_probes(self) -> None:
         ref = FactRef("one", "missing")
         self.store.declare(
             ref, "command", "etch-command-that-does-not-exist-1234", self.context
@@ -80,7 +84,7 @@ class FactStoreTests(unittest.TestCase):
         self.assertIsNone(self.store.peek(ref))
         self.assertEqual(self.store.get(ref).state, FactState.UNAVAILABLE)
 
-    def test_declaration_failures(self):
+    def test_declaration_failures(self) -> None:
         with self.assertRaisesRegex(ProviderError, "duplicate"):
             self.store.declare(self.ref, "counting", {}, self.context)
         with self.assertRaisesRegex(ProviderError, "missing fact provider"):
@@ -90,5 +94,5 @@ class FactStoreTests(unittest.TestCase):
         with self.assertRaisesRegex(ProviderError, "undeclared"):
             self.store.invalidate(FactRef("other", "unknown"))
 
-    def test_global_scope_cannot_collide_with_module_names(self):
+    def test_global_scope_cannot_collide_with_module_names(self) -> None:
         self.assertNotEqual(FactRef(None, "os"), FactRef("builtin", "os"))

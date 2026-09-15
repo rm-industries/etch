@@ -1,9 +1,10 @@
 """Filesystem state inspection shared by core providers."""
 
 import stat
+from pathlib import Path
 
 
-def kind(path):
+def kind(path: Path) -> str:
     try:
         mode = path.lstat().st_mode
     except FileNotFoundError:
@@ -13,7 +14,7 @@ def kind(path):
     return "directory" if stat.S_ISDIR(mode) else "file"
 
 
-def check_parent(path, create):
+def check_parent(path: Path, create: bool) -> None:
     parent = path.parent
     while kind(parent) == "missing":
         if not create:
@@ -25,7 +26,7 @@ def check_parent(path, create):
         raise ValueError("parent is not a directory: {}".format(parent))
 
 
-def directory_needed(path):
+def directory_needed(path: Path) -> bool:
     state = kind(path)
     if state == "directory" or (state == "link" and path.is_dir()):
         return False

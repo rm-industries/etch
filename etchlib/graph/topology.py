@@ -1,11 +1,16 @@
 """Stable topological order and cycle paths for a graph snapshot."""
 
 import heapq
+from typing import Mapping
 
-from .model import GraphError
+from .model import GraphError, Node, NodeId
 
 
-def ordered(nodes, parents, children):
+def ordered(
+    nodes: Mapping[NodeId, Node],
+    parents: Mapping[NodeId, Mapping[NodeId, None]],
+    children: Mapping[NodeId, Mapping[NodeId, None]],
+) -> tuple[NodeId, ...]:
     rank = {key: i for i, key in enumerate(nodes)}
     remaining = {key: len(parents[key]) for key in nodes}
     ready = [(rank[key], key) for key in nodes if remaining[key] == 0]
@@ -24,7 +29,10 @@ def ordered(nodes, parents, children):
     return tuple(result)
 
 
-def cycle_path(nodes, children):
+def cycle_path(
+    nodes: Mapping[NodeId, Node],
+    children: Mapping[NodeId, Mapping[NodeId, None]],
+) -> list[NodeId]:
     """Iterative DFS also handles consumer repositories with long action chains."""
     finished = set()
     for start in nodes:
