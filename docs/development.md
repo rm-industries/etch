@@ -4,6 +4,12 @@ Etch runs directly from source with Python 3.9 or newer and the standard library
 Development packages are never required to run Etch. Do not add third-party
 imports to the runtime or install Etch as a package to run these checks.
 
+| Use | Requirements |
+| --- | --- |
+| Run Etch | Python 3.9+ and its standard library; no pip installation or virtual environment |
+| Develop Etch | Python, pip, Ruff, pytest and mypy; Git for the complete bootstrap test suite |
+| Local hooks | Optional personal convenience; pre-commit is not installed or required |
+
 ## Setup
 
 From the repository root, create an optional isolated development environment:
@@ -13,6 +19,12 @@ python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install -r requirements-dev.txt
 ```
+
+Use Python 3.14 for development to match CI's quality jobs; Python 3.9–3.14 is
+supported by the pinned tools. The commands above use whichever interpreter
+`python3` names. Use `python3.14` in the first command if you need to select it
+explicitly. Run all commands in this guide from the repository root. Use
+`deactivate` when you want to leave the development environment.
 
 The pinned Ruff, pytest and mypy versions run on Python 3.9 through 3.14. pytest stays
 on the 8.4 series and mypy on 1.18.2 to retain Python 3.9 support. The requirements
@@ -116,6 +128,17 @@ the Python 3.9 grammar check and actual Python 3.9 test runs alongside these pro
 Every push and pull request runs independent `format`, `lint`, `typecheck` and `test`
 jobs. The first three run on Linux with Python 3.14 and use the same non-mutating
 commands shown above. Ruff and mypy still target Python 3.9.
+
+| Job | Exact CI check |
+| --- | --- |
+| `format` | `ruff format --check .` |
+| `lint` | `ruff check .` |
+| `typecheck` | `python -m mypy etchlib tests etch` |
+| `test` | `python -m pytest` |
+
+The module forms above use the active environment's interpreter and are equivalent
+to the `mypy` and `pytest` commands in the local workflow. Every test job also runs
+all three dependency-free commands in [Runtime isolation](#runtime-isolation).
 
 The test matrix runs Python 3.9, 3.10, 3.11, 3.12, 3.13 and 3.14 on both Linux and
 macOS. Every combination runs pytest, the isolated unittest suite and direct-source
