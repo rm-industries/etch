@@ -10,6 +10,10 @@ imports to the runtime or install Etch as a package to run these checks.
 | Develop Etch | Python, pip, Ruff, pytest and mypy; Git for the complete bootstrap test suite |
 | Local hooks | Optional personal convenience; pre-commit is not installed or required |
 
+Installer integration tests bind a temporary HTTPS server to loopback. They use
+checked-in test-only certificates and never contact or execute public installers.
+An environment that blocks local socket binding must allow it to run the full suite.
+
 ## Setup
 
 From the repository root, create an optional isolated development environment:

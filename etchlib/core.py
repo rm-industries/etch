@@ -6,6 +6,7 @@ from etchlib.providers.commands.provider import CommandProvider
 from etchlib.providers.filesystem.clean import CleanProvider
 from etchlib.providers.filesystem.create import CreateProvider
 from etchlib.providers.filesystem.link import LinkProvider
+from etchlib.providers.installer.provider import InstallerProvider
 from etchlib.providers.registry import Origin, Registry
 
 
@@ -19,6 +20,7 @@ def core_registry() -> Registry:
             CleanProvider(),
             CommandProvider("shell"),
             CommandProvider("script"),
+            InstallerProvider(),
         ],
     )
     return registry
