@@ -16,7 +16,9 @@ python -m pip install -r requirements-dev.txt
 
 The pinned Ruff, pytest and mypy versions run on Python 3.9 through 3.14. pytest stays
 on the 8.4 series and mypy on 1.18.2 to retain Python 3.9 support. The requirements
-file also pins their dependencies, using markers for interpreter-specific packages. When
+file uses shared pins in `requirements/constraints.txt`, including dependencies and
+markers for interpreter-specific packages. CI uses those same constraints to install
+only Ruff, mypy or pytest and its dependencies in the corresponding job. When
 updating pins, verify installation and tests on the oldest supported interpreter
 as well as the newest. No Git hooks are installed.
 
@@ -109,6 +111,18 @@ dynamic imports. Importing every module catches import-time API incompatibilitie
 the runtime suite on each interpreter exercises APIs used inside functions. Keep
 the Python 3.9 grammar check and actual Python 3.9 test runs alongside these probes.
 
-CI runs pytest, the isolated unittest suite and source smoke checks on Python
-3.9 and 3.14 on Linux and macOS, plus a separate strict typecheck job. Additional
-formatting/linting gates and the full minor-version test matrix are tracked in #48.
+## CI quality gates
+
+Every push and pull request runs independent `format`, `lint`, `typecheck` and `test`
+jobs. The first three run on Linux with Python 3.14 and use the same non-mutating
+commands shown above. Ruff and mypy still target Python 3.9.
+
+The test matrix runs Python 3.9, 3.10, 3.11, 3.12, 3.13 and 3.14 on both Linux and
+macOS. Every combination runs pytest, the isolated unittest suite and direct-source
+version/doctor checks, including the vendored/submodule bootstrap proof. Each test
+job installs only pytest and its dependencies. A failing combination does not
+cancel the others, so all compatibility failures remain visible.
+
+CI does not apply formatting or lint fixes. A failing quality job must be corrected
+locally and checked again before merging. Keep the supported-version list and
+workflow matrix in sync when adding support for a new stable Python minor.

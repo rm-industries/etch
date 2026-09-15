@@ -1,15 +1,5 @@
 # Development only. Etch itself requires no installed packages.
-ruff==0.13.2
-pytest==8.4.2
-mypy==1.18.2
-mypy_extensions==1.1.0
-pathspec==0.12.1
-# Pin shared tool dependencies, including interpreter-specific pytest packages.
-exceptiongroup==1.3.0; python_version < "3.11"
-iniconfig==2.1.0
-packaging==25.0
-pluggy==1.6.0
-Pygments==2.19.2
-tomli==2.2.1; python_version < "3.11"
-typing_extensions==4.15.0
-colorama==0.4.6; sys_platform == "win32"
+-c requirements/constraints.txt
+ruff
+pytest
+mypy
