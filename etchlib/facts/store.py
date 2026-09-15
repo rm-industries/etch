@@ -1,4 +1,5 @@
 """Lazy, scoped fact storage. Observation never implies action execution."""
+
 from copy import deepcopy
 from dataclasses import dataclass, replace
 from types import MappingProxyType
@@ -24,7 +25,9 @@ class FactStore:
         self._declarations: Dict[FactRef, Declaration] = {}
         self._cache: Dict[FactRef, FactResult] = {}
 
-    def declare(self, ref: FactRef, provider: str, config: Any, context: Context) -> None:
+    def declare(
+        self, ref: FactRef, provider: str, config: Any, context: Context
+    ) -> None:
         if ref in self._declarations:
             raise ProviderError("duplicate fact declaration {!r}".format(ref))
         entry = self.registry.fact(provider)
@@ -50,9 +53,14 @@ class FactStore:
             observations = MappingProxyType(deepcopy(self._cache))
             context = replace(declaration.context, facts=observations)
             try:
-                result = gather_fact(declaration.provider, deepcopy(declaration.config), context)
+                result = gather_fact(
+                    declaration.provider, deepcopy(declaration.config), context
+                )
                 if result.state is FactState.STALE:
-                    result = FactResult(FactState.ERROR, reason="provider returned STALE instead of a fresh observation")
+                    result = FactResult(
+                        FactState.ERROR,
+                        reason="provider returned STALE instead of a fresh observation",
+                    )
             except ProviderError as exc:
                 result = FactResult(FactState.ERROR, reason=str(exc))
             self._cache[ref] = deepcopy(result)
@@ -63,4 +71,6 @@ class FactStore:
         self._require(ref)
         cached = self._cache.get(ref)
         if cached is not None:
-            self._cache[ref] = FactResult(FactState.STALE, cached.value, "explicitly invalidated")
+            self._cache[ref] = FactResult(
+                FactState.STALE, cached.value, "explicitly invalidated"
+            )

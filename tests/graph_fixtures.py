@@ -8,13 +8,27 @@ from etchlib.providers.plans import Plan, PlanStatus
 
 
 def module(name, actions=None, **options):
-    return Module(name, Path("/repo/modules") / name,
-                  dict({"actions": actions if actions is not None else [{"test": {}}]}, **options))
+    return Module(
+        name,
+        Path("/repo/modules") / name,
+        dict(
+            {"actions": actions if actions is not None else [{"test": {}}]}, **options
+        ),
+    )
 
 
 def inputs(*modules):
     repository = Repository(Path("/repo"), modules, {})
-    selections = {m.name: Selection(Result(Outcome.TRUE), tuple(Result(Outcome.TRUE) for _ in m.config["actions"])) for m in modules}
-    plans = {NodeId(m.name, "action", i): Plan(PlanStatus.CHANGE, "test")
-             for m in modules for i, _ in enumerate(m.config["actions"])}
+    selections = {
+        m.name: Selection(
+            Result(Outcome.TRUE),
+            tuple(Result(Outcome.TRUE) for _ in m.config["actions"]),
+        )
+        for m in modules
+    }
+    plans = {
+        NodeId(m.name, "action", i): Plan(PlanStatus.CHANGE, "test")
+        for m in modules
+        for i, _ in enumerate(m.config["actions"])
+    }
     return repository, selections, plans

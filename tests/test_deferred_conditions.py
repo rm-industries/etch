@@ -12,7 +12,9 @@ from tests.condition_fixtures import ConditionFixture
 class DeferredTests(ConditionFixture, unittest.TestCase):
     def setUp(self):
         super().setUp()
-        self.ref = self.fact("version", FactResult(FactState.UNAVAILABLE, reason="tool missing"))
+        self.ref = self.fact(
+            "version", FactResult(FactState.UNAVAILABLE, reason="tool missing")
+        )
         self.condition = {"fact": {"name": "version", "matches": ">=2.1"}}
 
     def test_required_unavailable_without_producer_is_error(self):
@@ -32,7 +34,9 @@ class DeferredTests(ConditionFixture, unittest.TestCase):
 
     def test_negation_preserves_deferral(self):
         evaluator = Evaluator(self.store, self.context, {self.ref: "installer"})
-        self.assertEqual(evaluator.evaluate({"not": self.condition}).outcome, Outcome.DEFERRED)
+        self.assertEqual(
+            evaluator.evaluate({"not": self.condition}).outcome, Outcome.DEFERRED
+        )
 
     def test_stale_with_pending_producer_does_not_probe_early(self):
         self.store.get(self.ref)
@@ -44,12 +48,22 @@ class DeferredTests(ConditionFixture, unittest.TestCase):
     def test_false_and_true_or_discard_irrelevant_unresolved_facts(self):
         self.fact("flag", FactResult(FactState.VALUE, True))
         with patch("etchlib.facts.platform.platform.system", return_value="Linux"):
-            self.assertEqual(self.evaluator.evaluate(dict(self.condition, os="macos")).outcome, Outcome.FALSE)
+            self.assertEqual(
+                self.evaluator.evaluate(dict(self.condition, os="macos")).outcome,
+                Outcome.FALSE,
+            )
         alternatives = {"fact": [self.condition["fact"], {"name": "flag"}]}
         self.assertEqual(self.evaluator.evaluate(alternatives).outcome, Outcome.TRUE)
 
     def test_inactive_module_skips_action_observations(self):
-        module = Module("demo", self.context.module_root, {"when": {"os": "macos"}, "actions": [{"when": self.condition, "link": {}}]})
+        module = Module(
+            "demo",
+            self.context.module_root,
+            {
+                "when": {"os": "macos"},
+                "actions": [{"when": self.condition, "link": {}}],
+            },
+        )
         with patch("etchlib.facts.platform.platform.system", return_value="Linux"):
             selection = select_module(module, self.evaluator)
         self.assertEqual(selection.module.outcome, Outcome.FALSE)
@@ -57,17 +71,33 @@ class DeferredTests(ConditionFixture, unittest.TestCase):
         self.assertEqual(self.observations.calls, [])
 
     def test_deferred_module_keeps_all_actions_deferred(self):
-        module = Module("demo", self.context.module_root, {"when": self.condition, "actions": [{"link": {}}]})
-        selection = select_module(module, Evaluator(self.store, self.context, {self.ref: "installer"}))
+        module = Module(
+            "demo",
+            self.context.module_root,
+            {"when": self.condition, "actions": [{"link": {}}]},
+        )
+        selection = select_module(
+            module, Evaluator(self.store, self.context, {self.ref: "installer"})
+        )
         self.assertEqual(selection.module.outcome, Outcome.DEFERRED)
         self.assertEqual(selection.actions[0].outcome, Outcome.DEFERRED)
 
     def test_action_selection_preserves_order(self):
         self.fact("flag", FactResult(FactState.VALUE, False))
-        module = Module("demo", self.context.module_root, {"actions": [
-            {"link": {}}, {"when": {"fact": {"name": "flag"}}, "link": {}}]})
+        module = Module(
+            "demo",
+            self.context.module_root,
+            {
+                "actions": [
+                    {"link": {}},
+                    {"when": {"fact": {"name": "flag"}}, "link": {}},
+                ]
+            },
+        )
         selection = select_module(module, self.evaluator)
-        self.assertEqual(tuple(r.outcome for r in selection.actions), (Outcome.TRUE, Outcome.FALSE))
+        self.assertEqual(
+            tuple(r.outcome for r in selection.actions), (Outcome.TRUE, Outcome.FALSE)
+        )
 
     def test_wrong_module_context_is_rejected(self):
         module = Module("other", self.context.module_root, {"actions": []})

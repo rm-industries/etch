@@ -1,14 +1,15 @@
 """Source fixtures exercise actual imports rather than mocking the loader."""
-ENTRY = '''
+
+ENTRY = """
 from .implementation import ExampleFact
 PLUGIN = {"name": "example", "version": "1.2.3", "api": 1}
 def actions():
     return []
 def facts():
     return [ExampleFact()]
-'''
+"""
 
-IMPLEMENTATION = '''
+IMPLEMENTATION = """
 from etchlib.providers.observations import FactResult, FactState
 class ExampleFact:
     name = "example_fact"
@@ -16,7 +17,7 @@ class ExampleFact:
         pass
     def gather(self, config, context):
         return FactResult(FactState.VALUE, "from plugin")
-'''
+"""
 
 
 def write_plugin(root, entry=ENTRY):

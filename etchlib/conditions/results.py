@@ -1,4 +1,5 @@
 """Public outcomes and diagnostics for condition consumers."""
+
 from dataclasses import dataclass
 from enum import Enum
 from typing import Tuple

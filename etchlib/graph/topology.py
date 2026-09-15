@@ -1,4 +1,5 @@
 """Stable topological order and cycle paths for a graph snapshot."""
+
 import heapq
 
 from .model import GraphError
@@ -39,7 +40,7 @@ def cycle_path(nodes, children):
                 active.pop(completed)
                 stack.pop()
             elif child in active:
-                return path[active[child]:] + [child]
+                return path[active[child] :] + [child]
             elif child not in finished:
                 active[child] = len(path)
                 path.append(child)

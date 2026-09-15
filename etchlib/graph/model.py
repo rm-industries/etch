@@ -1,4 +1,5 @@
 """Graph identities and execution-node metadata."""
+
 from dataclasses import dataclass
 from typing import Optional
 

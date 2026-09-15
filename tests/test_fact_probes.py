@@ -1,7 +1,7 @@
 import os
-from pathlib import Path
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from etchlib.facts.core import core_registry
@@ -42,9 +42,13 @@ class ProbeTests(unittest.TestCase):
         (self.root / "file").write_text("hello")
         (self.root / "directory").mkdir()
         (self.root / "broken").symlink_to(self.root / "missing")
-        for name, config, value in [("file_exists", "file", True), ("directory_exists", "file", False),
-                                    ("directory_exists", "directory", True), ("path_exists", "missing", False),
-                                    ("path_exists", "broken", False)]:
+        for name, config, value in [
+            ("file_exists", "file", True),
+            ("directory_exists", "file", False),
+            ("directory_exists", "directory", True),
+            ("path_exists", "missing", False),
+            ("path_exists", "broken", False),
+        ]:
             with self.subTest(name=name, config=config):
                 result = self.gather(name, config)
                 self.assertEqual(result.state, FactState.VALUE)
@@ -57,15 +61,21 @@ class ProbeTests(unittest.TestCase):
         self.assertIn("denied", result.reason)
 
     def test_platform_normalization(self):
-        with patch("etchlib.facts.platform.platform.system", return_value="Darwin"), \
-             patch("etchlib.facts.platform.platform.machine", return_value="arm64"):
+        with (
+            patch("etchlib.facts.platform.platform.system", return_value="Darwin"),
+            patch("etchlib.facts.platform.platform.machine", return_value="arm64"),
+        ):
             self.assertEqual(self.gather("os", {}).value, "macos")
             self.assertEqual(self.gather("arch", {}).value, "aarch64")
             self.assertEqual(self.gather("distro", {}).state, FactState.UNAVAILABLE)
 
     def test_linux_distribution_without_command_execution(self):
-        with patch("etchlib.facts.platform.platform.system", return_value="Linux"), \
-             patch.object(Path, "read_text", return_value='NAME="Example Linux"\nID="ubuntu"\n'):
+        with (
+            patch("etchlib.facts.platform.platform.system", return_value="Linux"),
+            patch.object(
+                Path, "read_text", return_value='NAME="Example Linux"\nID="ubuntu"\n'
+            ),
+        ):
             self.assertEqual(self.gather("distro", {}).value, "ubuntu")
 
     def test_distribution_missing_malformed_and_unreadable(self):

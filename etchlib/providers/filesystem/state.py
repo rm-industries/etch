@@ -1,4 +1,5 @@
 """Filesystem state inspection shared by core providers."""
+
 import stat
 
 
@@ -16,7 +17,9 @@ def check_parent(path, create):
     parent = path.parent
     while kind(parent) == "missing":
         if not create:
-            raise ValueError("missing parent directory: {} (enable create)".format(parent))
+            raise ValueError(
+                "missing parent directory: {} (enable create)".format(parent)
+            )
         parent = parent.parent
     if not parent.is_dir():
         raise ValueError("parent is not a directory: {}".format(parent))

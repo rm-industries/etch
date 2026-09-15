@@ -1,4 +1,5 @@
 """Normalized plans; interpretation and scheduling belong to the engine."""
+
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -50,11 +51,21 @@ class Plan:
             raise ValueError("plan status must be a PlanStatus")
         if not isinstance(self.description, str) or not self.description.strip():
             raise ValueError("plan requires a description")
-        for field, item_type in (("requires", str), ("after", str), ("facts", FactRef),
-                                 ("claims", PathClaim), ("refresh", FactRef), ("resources", str)):
+        for field, item_type in (
+            ("requires", str),
+            ("after", str),
+            ("facts", FactRef),
+            ("claims", PathClaim),
+            ("refresh", FactRef),
+            ("resources", str),
+        ):
             values = getattr(self, field)
-            if not isinstance(values, tuple) or any(not isinstance(v, item_type) for v in values):
-                raise ValueError("{} must be a tuple of {}".format(field, item_type.__name__))
+            if not isinstance(values, tuple) or any(
+                not isinstance(v, item_type) for v in values
+            ):
+                raise ValueError(
+                    "{} must be a tuple of {}".format(field, item_type.__name__)
+                )
             if item_type is str and any(not v.strip() for v in values):
                 raise ValueError("{} cannot contain empty names".format(field))
         for field in ("elevated", "network", "opaque"):
@@ -69,4 +80,6 @@ class ApplyResult:
 
     def __post_init__(self):
         if type(self.changed) is not bool or not isinstance(self.description, str):
-            raise ValueError("apply result requires a boolean changed flag and string description")
+            raise ValueError(
+                "apply result requires a boolean changed flag and string description"
+            )

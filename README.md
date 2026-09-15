@@ -80,6 +80,9 @@ module-owned scripts, checks, environment metadata and explicit privilege reques
 
 ## Source plugins
 
+For contributor setup and local quality checks, see
+[development tooling](docs/development.md).
+
 Declare plugin roots in `defaults.conf` using `"plugins": ["vendor/etch-example"]`.
 Each root contains `etch_plugin.py`, a `PLUGIN` dictionary with `name`, `version`,
 and integer `api: 1`, plus `actions()` and `facts()` factories (return an empty list
