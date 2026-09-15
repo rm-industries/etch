@@ -14,15 +14,31 @@ class GraphTests(unittest.TestCase):
         data = inputs(module("zsh", [{"test": {}}, {"test": {}}]), module("git"))
         graph = build_graph(*data)
         actions = [key for key in graph.order() if key.kind == "action"]
-        self.assertEqual(actions, [NodeId("zsh", "action", 0), NodeId("zsh", "action", 1), NodeId("git", "action", 0)])
+        self.assertEqual(
+            actions,
+            [
+                NodeId("zsh", "action", 0),
+                NodeId("zsh", "action", 1),
+                NodeId("git", "action", 0),
+            ],
+        )
 
     def test_hard_dependency_overrides_profile_order(self):
-        graph = build_graph(*inputs(module("consumer", requires=["base"]), module("base")))
-        self.assertLess(graph.order().index(NodeId("base", "finish")), graph.order().index(NodeId("consumer", "start")))
+        graph = build_graph(
+            *inputs(module("consumer", requires=["base"]), module("base"))
+        )
+        self.assertLess(
+            graph.order().index(NodeId("base", "finish")),
+            graph.order().index(NodeId("consumer", "start")),
+        )
 
     def test_empty_dependency_module_has_completion_barrier(self):
-        graph = build_graph(*inputs(module("consumer", requires=["base"]), module("base", [])))
-        self.assertIn(NodeId("base", "finish"), graph.ancestors(NodeId("consumer", "action", 0)))
+        graph = build_graph(
+            *inputs(module("consumer", requires=["base"]), module("base", []))
+        )
+        self.assertIn(
+            NodeId("base", "finish"), graph.ancestors(NodeId("consumer", "action", 0))
+        )
 
     def test_missing_requires_fails_missing_after_warns(self):
         with self.assertRaisesRegex(GraphError, "requires target 'missing'"):
@@ -32,34 +48,56 @@ class GraphTests(unittest.TestCase):
         self.assertIn("after target 'missing'", graph.warnings[0])
 
     def test_inactive_dependency_is_not_satisfied(self):
-        repository, selections, plans = inputs(module("consumer", requires=["base"]), module("base"))
+        repository, selections, plans = inputs(
+            module("consumer", requires=["base"]), module("base")
+        )
         selections["base"] = Selection(Result(Outcome.FALSE), (Result(Outcome.FALSE),))
         del plans[NodeId("base", "action", 0)]
         with self.assertRaisesRegex(GraphError, "inactive"):
             build_graph(repository, selections, plans)
 
     def test_conditioned_edges_only_activate_with_action(self):
-        repository, selections, plans = inputs(module("consumer", [{"test": {}, "requires": ["missing"]}]))
-        selections["consumer"] = Selection(Result(Outcome.TRUE), (Result(Outcome.FALSE),))
+        repository, selections, plans = inputs(
+            module("consumer", [{"test": {}, "requires": ["missing"]}])
+        )
+        selections["consumer"] = Selection(
+            Result(Outcome.TRUE), (Result(Outcome.FALSE),)
+        )
         self.assertEqual(len(build_graph(repository, selections).order()), 2)
-        selections["consumer"] = Selection(Result(Outcome.TRUE), (Result(Outcome.DEFERRED),))
-        self.assertIn(NodeId("consumer", "action", 0), build_graph(repository, selections).order())
-        selections["consumer"] = Selection(Result(Outcome.TRUE), (Result(Outcome.TRUE),))
+        selections["consumer"] = Selection(
+            Result(Outcome.TRUE), (Result(Outcome.DEFERRED),)
+        )
+        self.assertIn(
+            NodeId("consumer", "action", 0), build_graph(repository, selections).order()
+        )
+        selections["consumer"] = Selection(
+            Result(Outcome.TRUE), (Result(Outcome.TRUE),)
+        )
         with self.assertRaises(GraphError):
             build_graph(repository, selections, plans)
 
     def test_provider_dependencies_and_resources_are_retained(self):
         repository, selections, plans = inputs(module("consumer"), module("base"))
         key = NodeId("consumer", "action", 0)
-        plans[key] = Plan(PlanStatus.CHANGE, "install", requires=("base",), resources=("network",))
+        plans[key] = Plan(
+            PlanStatus.CHANGE, "install", requires=("base",), resources=("network",)
+        )
         graph = build_graph(repository, selections, plans)
         self.assertIn(NodeId("base", "finish"), graph.ancestors(key))
         self.assertEqual(graph.node(key).plan.resources, ("network",))
 
     def test_cycles_report_nodes_for_hard_and_soft_edges(self):
         for field in ("requires", "after"):
-            with self.subTest(field=field), self.assertRaisesRegex(GraphError, "dependency cycle:.*one.*two"):
-                build_graph(*inputs(module("one", **{field: ["two"]}), module("two", requires=["one"])))
+            with (
+                self.subTest(field=field),
+                self.assertRaisesRegex(GraphError, "dependency cycle:.*one.*two"),
+            ):
+                build_graph(
+                    *inputs(
+                        module("one", **{field: ["two"]}),
+                        module("two", requires=["one"]),
+                    )
+                )
 
     def test_self_dependency_is_a_cycle(self):
         with self.assertRaisesRegex(GraphError, "dependency cycle"):

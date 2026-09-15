@@ -1,7 +1,8 @@
 """Stable machine properties, without external commands or third-party parsers."""
-from pathlib import Path
+
 import platform
 import shlex
+from pathlib import Path
 
 from etchlib.providers.observations import FactResult, FactState
 
@@ -42,7 +43,12 @@ class PlatformProbe:
             else:
                 value = distro_id() if system == "linux" else None
             if not value:
-                return FactResult(FactState.UNAVAILABLE, reason="{} is not available on this machine".format(self.name))
+                return FactResult(
+                    FactState.UNAVAILABLE,
+                    reason="{} is not available on this machine".format(self.name),
+                )
             return FactResult(FactState.VALUE, value)
         except (OSError, UnicodeError, ValueError) as exc:
-            return FactResult(FactState.ERROR, reason="{} probe failed: {}".format(self.name, exc))
+            return FactResult(
+                FactState.ERROR, reason="{} probe failed: {}".format(self.name, exc)
+            )

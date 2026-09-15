@@ -15,7 +15,9 @@ class RegistryTests(unittest.TestCase):
         action, fact = MemoryAction(), MemoryFact()
         self.registry.register(self.core, [action])
         self.registry.register(self.plugin, facts=[fact])
-        self.assertEqual([r.name for r in self.registry.entries()], ["memory", "memory_value"])
+        self.assertEqual(
+            [r.name for r in self.registry.entries()], ["memory", "memory_value"]
+        )
         self.assertIs(self.registry.action("memory").provider, action)
         self.assertEqual(self.registry.fact("memory_value").origin, self.plugin)
 

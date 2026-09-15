@@ -1,6 +1,8 @@
 """Dependency storage and validated evidence for condition reevaluation."""
+
 from etchlib.conditions.results import Outcome
 from etchlib.providers.plans import PlanStatus
+
 from .model import GraphError, NodeId
 from .topology import ordered
 
@@ -53,9 +55,16 @@ class ActionGraph:
                 continue
             producer = NodeId(key.module, "action", key.index)
             node = self.node(producer)
-            if node.outcome is not Outcome.TRUE or node.plan is None or node.plan.status is PlanStatus.SKIP:
+            if (
+                node.outcome is not Outcome.TRUE
+                or node.plan is None
+                or node.plan.status is PlanStatus.SKIP
+            ):
                 continue
-            if any(self.node(parent).outcome is not Outcome.TRUE for parent in self.ancestors(key)):
+            if any(
+                self.node(parent).outcome is not Outcome.TRUE
+                for parent in self.ancestors(key)
+            ):
                 continue
             evidence[key.fact] = str(producer)
         return evidence

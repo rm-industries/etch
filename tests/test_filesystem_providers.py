@@ -1,7 +1,7 @@
-from pathlib import Path
 import shutil
 import tempfile
 import unittest
+from pathlib import Path
 
 from etchlib.core import core_registry
 from etchlib.providers.contracts import Context
@@ -59,7 +59,9 @@ class FilesystemTests(unittest.TestCase):
         target = self.root / "nested/config"
         with self.assertRaisesRegex(ProviderError, "enable create"):
             self.plan("link", {str(target): "files/config"})
-        plan = self.plan("link", {str(target): {"path": "files/config", "create": True}})
+        plan = self.plan(
+            "link", {str(target): {"path": "files/config", "create": True}}
+        )
         self.assertFalse(target.parent.exists())
         self.assertTrue(self.apply("link", plan).changed)
 
@@ -69,7 +71,9 @@ class FilesystemTests(unittest.TestCase):
             target.symlink_to(source)
             with self.assertRaisesRegex(ProviderError, "enable relink"):
                 self.plan("link", {str(target): "files/config"})
-            plan = self.plan("link", {str(target): {"path": "files/config", "relink": True}})
+            plan = self.plan(
+                "link", {str(target): {"path": "files/config", "relink": True}}
+            )
             self.assertTrue(self.apply("link", plan).changed)
             self.assertEqual(target.read_text(), "hello")
             target.unlink()
@@ -91,7 +95,9 @@ class FilesystemTests(unittest.TestCase):
 
     def test_apply_preflights_all_destinations_before_mutating(self):
         first, second = self.root / "one", self.root / "two"
-        plan = self.plan("link", {str(first): "files/config", str(second): "files/config"})
+        plan = self.plan(
+            "link", {str(first): "files/config", str(second): "files/config"}
+        )
         second.write_text("appeared since planning")
         with self.assertRaises(ValueError):
             self.apply("link", plan)
@@ -99,15 +105,25 @@ class FilesystemTests(unittest.TestCase):
         self.assertEqual(second.read_text(), "appeared since planning")
 
     def test_defaults_can_be_overridden_per_link(self):
-        self.context = Context(self.root, self.module, "demo", {}, {"link": {"create": True}})
-        self.assertEqual(self.plan("link", {"nested/config": "files/config"}).status, PlanStatus.CHANGE)
+        self.context = Context(
+            self.root, self.module, "demo", {}, {"link": {"create": True}}
+        )
+        self.assertEqual(
+            self.plan("link", {"nested/config": "files/config"}).status,
+            PlanStatus.CHANGE,
+        )
         with self.assertRaises(ProviderError):
-            self.plan("link", {"nested/config": {"path": "files/config", "create": False}})
+            self.plan(
+                "link", {"nested/config": {"path": "files/config", "create": False}}
+            )
 
     def test_invalid_options_missing_sources_and_escapes(self):
-        for config in [{"out": {"path": "files/config", "create": "yes"}},
-                       {"out": {"path": "files/config", "force": True}},
-                       {"out": "files/missing"}, {"out": "../outside"}]:
+        for config in [
+            {"out": {"path": "files/config", "create": "yes"}},
+            {"out": {"path": "files/config", "force": True}},
+            {"out": "files/missing"},
+            {"out": "../outside"},
+        ]:
             with self.subTest(config=config), self.assertRaises(ProviderError):
                 self.plan("link", config)
 

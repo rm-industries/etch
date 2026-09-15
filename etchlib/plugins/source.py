@@ -1,7 +1,8 @@
 """Load an explicitly selected entrypoint with isolated relative imports."""
+
 import importlib.util
-from pathlib import Path
 import sys
+from pathlib import Path
 from types import ModuleType
 from uuid import uuid4
 
@@ -21,7 +22,9 @@ def load_source(root: Path) -> ModuleType:
         raise PluginError("{}: missing plugin entrypoint etch_plugin.py".format(root))
     # Every load gets a private package namespace, including its relative imports.
     name = "_etch_plugin_" + uuid4().hex
-    spec = importlib.util.spec_from_file_location(name, entry, submodule_search_locations=[str(root)])
+    spec = importlib.util.spec_from_file_location(
+        name, entry, submodule_search_locations=[str(root)]
+    )
     if spec is None or spec.loader is None:
         raise PluginError("{}: cannot create plugin module".format(entry))
     module = importlib.util.module_from_spec(spec)

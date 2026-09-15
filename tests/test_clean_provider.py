@@ -1,13 +1,13 @@
-from pathlib import Path
 import tempfile
 import unittest
+from pathlib import Path
 
-from etchlib.core import core_registry
-from etchlib.config import Module, Repository
 from etchlib.conditions.module import Selection
 from etchlib.conditions.results import Outcome, Result
-from etchlib.ownership.snapshot import validate_snapshot
+from etchlib.config import Module, Repository
+from etchlib.core import core_registry
 from etchlib.ownership.claims import OwnershipError
+from etchlib.ownership.snapshot import validate_snapshot
 from etchlib.providers.contracts import Context
 from etchlib.providers.errors import ProviderError
 from etchlib.providers.filesystem.receipts import owned, receipt_path
@@ -127,7 +127,9 @@ class CleanTests(unittest.TestCase):
 
     def test_retirement_must_stay_inside_selected_directory(self):
         with self.assertRaises(ProviderError):
-            self.clean({"paths": [str(self.targets)], "obsolete": [str(self.root / "outside")]})
+            self.clean(
+                {"paths": [str(self.targets)], "obsolete": [str(self.root / "outside")]}
+            )
 
     def test_no_receipt_directory_writes_during_planning(self):
         self.plan("link", {str(self.targets / "config"): "config"})
@@ -136,11 +138,17 @@ class CleanTests(unittest.TestCase):
 
     def test_retired_link_conflicts_with_active_link_owner(self):
         path = self.managed()
-        actions = [{"link": {str(path): "config"}},
-                   {"clean": {"paths": [str(self.targets)], "obsolete": [str(path)]}}]
+        actions = [
+            {"link": {str(path): "config"}},
+            {"clean": {"paths": [str(self.targets)], "obsolete": [str(path)]}},
+        ]
         module = Module("demo", self.module, {"actions": actions})
         repo = Repository(self.root, (module,), {})
-        selections = {"demo": Selection(Result(Outcome.TRUE), (Result(Outcome.TRUE), Result(Outcome.TRUE)))}
+        selections = {
+            "demo": Selection(
+                Result(Outcome.TRUE), (Result(Outcome.TRUE), Result(Outcome.TRUE))
+            )
+        }
         with self.assertRaises(OwnershipError):
             validate_snapshot(repo, selections, self.registry)
         self.assertTrue(path.is_symlink())

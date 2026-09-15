@@ -1,8 +1,9 @@
 """Compare path claims without changing the filesystem."""
-from dataclasses import dataclass
+
 import os
-from pathlib import Path
 import stat
+from dataclasses import dataclass
+from pathlib import Path
 
 from etchlib.providers.plans import ClaimKind
 
@@ -34,20 +35,30 @@ def normalize(owner, claim):
                     raise
                 parent = parent.parent
         if not stat.S_ISDIR(mode):
-            raise OwnershipError("{}: parent is not a directory: {}".format(owner, parent))
+            raise OwnershipError(
+                "{}: parent is not a directory: {}".format(owner, parent)
+            )
         if claim.kind is ClaimKind.SHARED_DIRECTORY:
             try:
                 mode = resolved.stat().st_mode
-            except FileNotFoundError:
+            except FileNotFoundError as exc:
                 if resolved.is_symlink():
-                    raise OwnershipError("{}: broken directory symlink: {}".format(owner, resolved))
+                    raise OwnershipError(
+                        "{}: broken directory symlink: {}".format(owner, resolved)
+                    ) from exc
                 mode = stat.S_IFDIR
             if not stat.S_ISDIR(mode):
-                raise OwnershipError("{}: shared directory is not a directory: {}".format(owner, resolved))
+                raise OwnershipError(
+                    "{}: shared directory is not a directory: {}".format(
+                        owner, resolved
+                    )
+                )
             resolved = resolved.resolve()
         return OwnedClaim(owner, claim, tuple(dict.fromkeys((lexical, resolved))))
     except (OSError, RuntimeError, ValueError) as exc:
-        raise OwnershipError("{}: invalid claim {}: {}".format(owner, claim.path, exc)) from exc
+        raise OwnershipError(
+            "{}: invalid claim {}: {}".format(owner, claim.path, exc)
+        ) from exc
 
 
 def validate_claims(plans):
@@ -61,11 +72,22 @@ def validate_claims(plans):
                     continue
                 for left in previous.paths:
                     for right in current.paths:
-                        conflict = (left == right and (previous.claim.kind is ClaimKind.EXCLUSIVE or claim.kind is ClaimKind.EXCLUSIVE))
-                        conflict |= left in right.parents and previous.claim.kind is ClaimKind.EXCLUSIVE
-                        conflict |= right in left.parents and claim.kind is ClaimKind.EXCLUSIVE
+                        conflict = left == right and (
+                            previous.claim.kind is ClaimKind.EXCLUSIVE
+                            or claim.kind is ClaimKind.EXCLUSIVE
+                        )
+                        conflict |= (
+                            left in right.parents
+                            and previous.claim.kind is ClaimKind.EXCLUSIVE
+                        )
+                        conflict |= (
+                            right in left.parents and claim.kind is ClaimKind.EXCLUSIVE
+                        )
                         if conflict:
-                            raise OwnershipError("destination conflict: {} ({}) and {} ({})".format(
-                                previous.owner, left, owner, right))
+                            raise OwnershipError(
+                                "destination conflict: {} ({}) and {} ({})".format(
+                                    previous.owner, left, owner, right
+                                )
+                            )
             claims.append(current)
     return tuple(claims)

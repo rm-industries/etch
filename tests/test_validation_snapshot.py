@@ -1,6 +1,6 @@
-from pathlib import Path
 import tempfile
 import unittest
+from pathlib import Path
 
 from etchlib.conditions.module import Selection
 from etchlib.conditions.results import Outcome, Result
@@ -30,8 +30,12 @@ class ClaimProvider:
         return Inspection(InspectionState.CHANGE)
 
     def plan(self, config, observation, context):
-        return Plan(PlanStatus.CHANGE, "test claim", claims=(PathClaim(Path(config["path"])),),
-                    elevated=config.get("elevated", False))
+        return Plan(
+            PlanStatus.CHANGE,
+            "test claim",
+            claims=(PathClaim(Path(config["path"])),),
+            elevated=config.get("elevated", False),
+        )
 
     def apply(self, plan, context):
         self.applied = True
@@ -50,7 +54,9 @@ class SnapshotTests(unittest.TestCase):
     def snapshot(self, actions, outcomes):
         module = Module("demo", self.root, {"actions": actions})
         repository = Repository(self.root, (module,), {})
-        selections = {"demo": Selection(Result(Outcome.TRUE), tuple(Result(o) for o in outcomes))}
+        selections = {
+            "demo": Selection(Result(Outcome.TRUE), tuple(Result(o) for o in outcomes))
+        }
         return repository, selections
 
     def test_refresh_activation_rechecks_claims_and_never_applies(self):
@@ -58,7 +64,9 @@ class SnapshotTests(unittest.TestCase):
         repo, selections = self.snapshot(actions, [Outcome.TRUE, Outcome.DEFERRED])
         validate_snapshot(repo, selections, self.registry)
         self.assertEqual(self.provider.validations, 1)
-        selections["demo"] = Selection(Result(Outcome.TRUE), (Result(Outcome.TRUE), Result(Outcome.TRUE)))
+        selections["demo"] = Selection(
+            Result(Outcome.TRUE), (Result(Outcome.TRUE), Result(Outcome.TRUE))
+        )
         with self.assertRaises(OwnershipError):
             validate_snapshot(repo, selections, self.registry)
         self.assertEqual(self.provider.validations, 3)
@@ -75,13 +83,18 @@ class SnapshotTests(unittest.TestCase):
         for action in [{"missing": {}}, {"claim": {}}]:
             repo, selections = self.snapshot([action], [Outcome.DEFERRED])
             validate_snapshot(repo, selections, self.registry)
-            selections["demo"] = Selection(Result(Outcome.TRUE), (Result(Outcome.TRUE),))
+            selections["demo"] = Selection(
+                Result(Outcome.TRUE), (Result(Outcome.TRUE),)
+            )
             with self.assertRaises(ProviderError):
                 validate_snapshot(repo, selections, self.registry)
         self.assertFalse(self.provider.applied)
 
     def test_newly_active_dependency_is_revalidated(self):
-        repo, selections = self.snapshot([{"claim": {"path": str(self.root / "file")}, "requires": ["missing"]}], [Outcome.DEFERRED])
+        repo, selections = self.snapshot(
+            [{"claim": {"path": str(self.root / "file")}, "requires": ["missing"]}],
+            [Outcome.DEFERRED],
+        )
         validate_snapshot(repo, selections, self.registry)
         selections["demo"] = Selection(Result(Outcome.TRUE), (Result(Outcome.TRUE),))
         with self.assertRaises(GraphError):
@@ -89,9 +102,17 @@ class SnapshotTests(unittest.TestCase):
         self.assertFalse(self.provider.applied)
 
     def test_privilege_requires_specific_action_authorization(self):
-        repo, selections = self.snapshot([{"claim": {"path": str(self.root / "file"), "elevated": True}}], [Outcome.TRUE])
+        repo, selections = self.snapshot(
+            [{"claim": {"path": str(self.root / "file"), "elevated": True}}],
+            [Outcome.TRUE],
+        )
         with self.assertRaisesRegex(OwnershipError, "not been authorized"):
             validate_snapshot(repo, selections, self.registry)
-        result = validate_snapshot(repo, selections, self.registry, elevated_actions=[NodeId("demo", "action", 0)])
+        result = validate_snapshot(
+            repo,
+            selections,
+            self.registry,
+            elevated_actions=[NodeId("demo", "action", 0)],
+        )
         self.assertEqual(len(result.plans), 1)
         self.assertFalse(self.provider.applied)

@@ -1,11 +1,18 @@
 """Conjoined version comparisons, with no wildcard or dependency solver syntax."""
+
 import operator
 import re
 
 from .parser import Version, parse_version
 
-OPERATORS = {"==": operator.eq, "!=": operator.ne, "<": operator.lt,
-             "<=": operator.le, ">": operator.gt, ">=": operator.ge}
+OPERATORS = {
+    "==": operator.eq,
+    "!=": operator.ne,
+    "<": operator.lt,
+    "<=": operator.le,
+    ">": operator.gt,
+    ">=": operator.ge,
+}
 
 
 def matches(version, constraint: str) -> bool:

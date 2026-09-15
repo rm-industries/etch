@@ -1,6 +1,8 @@
 """Translate repository fact declarations into scoped storage."""
+
 from etchlib.providers.contracts import Context
 from etchlib.providers.observations import FactRef
+
 from .core import BUILTINS
 from .store import FactStore
 

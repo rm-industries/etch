@@ -1,6 +1,6 @@
+import unittest
 from dataclasses import FrozenInstanceError
 from pathlib import Path
-import unittest
 
 from etchlib.providers.observations import FactRef, FactResult, FactState, Inspection
 from etchlib.providers.plans import PathClaim, Plan, PlanStatus
@@ -8,9 +8,13 @@ from etchlib.providers.plans import PathClaim, Plan, PlanStatus
 
 class RecordTests(unittest.TestCase):
     def test_plan_requires_typed_metadata(self):
-        for options in [{"resources": ["network"]}, {"refresh": ("version",)},
-                        {"elevated": "yes"}, {"claims": ("/tmp/config",)},
-                        {"requires": ("",)}]:
+        for options in [
+            {"resources": ["network"]},
+            {"refresh": ("version",)},
+            {"elevated": "yes"},
+            {"claims": ("/tmp/config",)},
+            {"requires": ("",)},
+        ]:
             with self.subTest(options=options), self.assertRaises(ValueError):
                 Plan(PlanStatus.RUN, "Run something", **options)
         with self.assertRaises(ValueError):

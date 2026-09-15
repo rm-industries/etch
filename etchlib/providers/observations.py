@@ -1,4 +1,5 @@
 """Observation records shared by action and fact providers."""
+
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Optional
@@ -34,7 +35,9 @@ class FactRef:
     name: str
 
     def __post_init__(self):
-        if self.module is not None and (not isinstance(self.module, str) or not self.module.strip()):
+        if self.module is not None and (
+            not isinstance(self.module, str) or not self.module.strip()
+        ):
             raise ValueError("fact reference requires a module")
         if not isinstance(self.name, str) or not self.name.strip():
             raise ValueError("fact reference requires a local name")

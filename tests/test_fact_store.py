@@ -1,5 +1,5 @@
-from pathlib import Path
 import unittest
+from pathlib import Path
 
 from etchlib.facts.core import core_registry
 from etchlib.facts.store import FactStore
@@ -74,7 +74,9 @@ class FactStoreTests(unittest.TestCase):
 
     def test_unavailable_unused_fact_never_probes(self):
         ref = FactRef("one", "missing")
-        self.store.declare(ref, "command", "etch-command-that-does-not-exist-1234", self.context)
+        self.store.declare(
+            ref, "command", "etch-command-that-does-not-exist-1234", self.context
+        )
         self.assertIsNone(self.store.peek(ref))
         self.assertEqual(self.store.get(ref).state, FactState.UNAVAILABLE)
 
@@ -82,7 +84,9 @@ class FactStoreTests(unittest.TestCase):
         with self.assertRaisesRegex(ProviderError, "duplicate"):
             self.store.declare(self.ref, "counting", {}, self.context)
         with self.assertRaisesRegex(ProviderError, "missing fact provider"):
-            self.store.declare(FactRef("one", "other"), "shell", "echo hello", self.context)
+            self.store.declare(
+                FactRef("one", "other"), "shell", "echo hello", self.context
+            )
         with self.assertRaisesRegex(ProviderError, "undeclared"):
             self.store.invalidate(FactRef("other", "unknown"))
 

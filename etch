@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Run directly from a checkout; keep the version guard parseable on older Python."""
+
 import sys
 
 if sys.version_info < (3, 9):

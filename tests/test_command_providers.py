@@ -1,10 +1,10 @@
-from dataclasses import replace
 import json
 import os
-from pathlib import Path
 import sys
 import tempfile
 import unittest
+from dataclasses import replace
+from pathlib import Path
 from unittest.mock import patch
 
 from etchlib.core import core_registry
@@ -38,15 +38,27 @@ class CommandTests(unittest.TestCase):
         self.assertTrue((self.root / "marker").exists())
 
     def test_argv_is_not_shell_evaluated(self):
-        command = [sys.executable, "-S", "-c", "import sys; assert sys.argv[1] == '$(touch marker)'", "$(touch marker)"]
+        command = [
+            sys.executable,
+            "-S",
+            "-c",
+            "import sys; assert sys.argv[1] == '$(touch marker)'",
+            "$(touch marker)",
+        ]
         self.apply(self.plan({"command": command}))
         self.assertFalse((self.root / "marker").exists())
 
     def test_environment_metadata_overrides_and_cwd(self):
         code = "import json,os; open('result.json','w').write(json.dumps(dict(os.environ,cwd=os.getcwd())))"
         with patch.dict(os.environ, {"INHERITED": "yes"}):
-            self.apply(self.plan({"command": [sys.executable, "-S", "-c", code],
-                                  "env": {"CUSTOM": "value", "ETCH_MODULE": "cannot override"}}))
+            self.apply(
+                self.plan(
+                    {
+                        "command": [sys.executable, "-S", "-c", code],
+                        "env": {"CUSTOM": "value", "ETCH_MODULE": "cannot override"},
+                    }
+                )
+            )
         result = json.loads((self.root / "result.json").read_text())
         self.assertEqual(result["cwd"], str(self.root))
         self.assertEqual(result["CUSTOM"], "value")
@@ -62,14 +74,23 @@ class CommandTests(unittest.TestCase):
         self.assertEqual(self.plan(config).status, PlanStatus.SKIP)
 
     def test_failure_stops_later_commands(self):
-        plan = self.plan([{"command": [sys.executable, "-c", "raise SystemExit(7)"]},
-                          {"command": "touch should-not-run"}])
+        plan = self.plan(
+            [
+                {"command": [sys.executable, "-c", "raise SystemExit(7)"]},
+                {"command": "touch should-not-run"},
+            ]
+        )
         with self.assertRaisesRegex(ValueError, "status 7"):
             self.apply(plan)
         self.assertFalse((self.root / "should-not-run").exists())
 
     def test_timeout(self):
-        plan = self.plan({"command": [sys.executable, "-c", "import time; time.sleep(5)"], "timeout": 0.05})
+        plan = self.plan(
+            {
+                "command": [sys.executable, "-c", "import time; time.sleep(5)"],
+                "timeout": 0.05,
+            }
+        )
         with self.assertRaisesRegex(ValueError, "timed out"):
             self.apply(plan)
 
@@ -77,20 +98,31 @@ class CommandTests(unittest.TestCase):
         script = self.root / "setup.sh"
         script.write_text('#!/bin/sh\nprintf "%s" "$1" > result\n')
         script.chmod(0o755)
-        plan = self.plan({"path": "setup.sh", "args": ["argument with spaces"]}, "script")
+        plan = self.plan(
+            {"path": "setup.sh", "args": ["argument with spaces"]}, "script"
+        )
         self.apply(plan, "script")
         self.assertEqual((self.root / "result").read_text(), "argument with spaces")
 
     def test_script_validation_and_escape(self):
         (self.root / "not-executable").write_text("echo hello")
-        for config in [{"path": "missing"}, {"path": "not-executable"}, {"path": "../outside"}]:
+        for config in [
+            {"path": "missing"},
+            {"path": "not-executable"},
+            {"path": "../outside"},
+        ]:
             with self.assertRaises(ProviderError):
                 self.plan(config, "script")
 
     def test_invalid_options(self):
-        for config in [{"command": []}, {"command": ""}, {"command": "true", "sudo": "yes"},
-                       {"command": "true", "check": {"shell": "true"}}, {"command": "true", "timeout": 0},
-                       {"command": "true", "env": {"BAD=NAME": "value"}}]:
+        for config in [
+            {"command": []},
+            {"command": ""},
+            {"command": "true", "sudo": "yes"},
+            {"command": "true", "check": {"shell": "true"}},
+            {"command": "true", "timeout": 0},
+            {"command": "true", "env": {"BAD=NAME": "value"}},
+        ]:
             with self.subTest(config=config), self.assertRaises(ProviderError):
                 self.plan(config)
 
@@ -118,5 +150,11 @@ class CommandTests(unittest.TestCase):
 
     def test_command_check_respects_environment_path(self):
         (self.root / "python-local").symlink_to(sys.executable)
-        plan = self.plan({"command": "exit 99", "env": {"PATH": "."}, "check": {"command": "python-local"}})
+        plan = self.plan(
+            {
+                "command": "exit 99",
+                "env": {"PATH": "."},
+                "check": {"command": "python-local"},
+            }
+        )
         self.assertEqual(plan.status, PlanStatus.SKIP)

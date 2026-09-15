@@ -1,4 +1,5 @@
 """Read configuration as data, without importing or executing consumer code."""
+
 import ast
 from copy import deepcopy
 from dataclasses import dataclass
@@ -23,7 +24,9 @@ def data_shape(value: Any, path: Path, field: str = "configuration") -> None:
         for index, child in enumerate(value):
             data_shape(child, path, "{}[{}]".format(field, index))
     elif value is not None and type(value) not in (str, bool, int, float):
-        raise ConfigError("{}: {} contains unsupported {}".format(path, field, type(value).__name__))
+        raise ConfigError(
+            "{}: {} contains unsupported {}".format(path, field, type(value).__name__)
+        )
 
 
 def fields(value: Dict[str, Any], allowed: Tuple[str, ...], path: Path) -> None:
@@ -34,23 +37,33 @@ def fields(value: Dict[str, Any], allowed: Tuple[str, ...], path: Path) -> None:
 
 def condition(value: Any, path: Path, field: str) -> None:
     if not isinstance(value, dict) or not value:
-        raise ConfigError("{}: {} must be a nonempty condition dictionary".format(path, field))
+        raise ConfigError(
+            "{}: {} must be a nonempty condition dictionary".format(path, field)
+        )
 
 
-def compose_defaults(provider: str, defaults: Dict[str, Any], options: Dict[str, Any],
-                     allowed: Tuple[str, ...]) -> Dict[str, Any]:
+def compose_defaults(
+    provider: str,
+    defaults: Dict[str, Any],
+    options: Dict[str, Any],
+    allowed: Tuple[str, ...],
+) -> Dict[str, Any]:
     """Provider opt-in composition: replace whole option values, never deep merge.
 
     Providers supply their allowed default keys and separately validate the result.
     Providers with non-dictionary payloads normalize options before using this helper.
     """
     if not isinstance(defaults, dict) or not isinstance(options, dict):
-        raise ConfigError("{}: defaults and options must be dictionaries".format(provider))
+        raise ConfigError(
+            "{}: defaults and options must be dictionaries".format(provider)
+        )
     data_shape(defaults, Path(provider), "defaults")
     data_shape(options, Path(provider), "options")
     unknown = sorted(set(defaults) - set(allowed))
     if unknown:
-        raise ConfigError("{}: unsupported default options: {}".format(provider, ", ".join(unknown)))
+        raise ConfigError(
+            "{}: unsupported default options: {}".format(provider, ", ".join(unknown))
+        )
     return deepcopy(dict(defaults, **options))
 
 
@@ -73,19 +86,38 @@ def destination(value: str, repo_root: Path) -> Path:
 
 def read_config(path: Path) -> Dict[str, Any]:
     try:
-        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path), mode="eval")
+        tree = ast.parse(
+            path.read_text(encoding="utf-8"), filename=str(path), mode="eval"
+        )
         for node in ast.walk(tree):
             if isinstance(node, ast.Dict):
                 seen = set()
                 for key in node.keys:
-                    if not isinstance(key, ast.Constant) or not isinstance(key.value, str):
-                        raise ConfigError("{}: line {}: dictionary keys must be strings".format(path, node.lineno))
+                    if not isinstance(key, ast.Constant) or not isinstance(
+                        key.value, str
+                    ):
+                        raise ConfigError(
+                            "{}: line {}: dictionary keys must be strings".format(
+                                path, node.lineno
+                            )
+                        )
                     if key.value in seen:
-                        raise ConfigError("{}: line {}: duplicate key {!r}".format(path, key.lineno, key.value))
+                        raise ConfigError(
+                            "{}: line {}: duplicate key {!r}".format(
+                                path, key.lineno, key.value
+                            )
+                        )
                     seen.add(key.value)
         value = ast.literal_eval(tree)
         data_shape(value, path)
-    except (OSError, UnicodeError, SyntaxError, ValueError, TypeError, RecursionError) as exc:
+    except (
+        OSError,
+        UnicodeError,
+        SyntaxError,
+        ValueError,
+        TypeError,
+        RecursionError,
+    ) as exc:
         raise ConfigError("{}: {}".format(path, exc)) from exc
     if not isinstance(value, dict) or any(not isinstance(k, str) for k in value):
         raise ConfigError("{}: expected a dictionary with string keys".format(path))
@@ -97,8 +129,13 @@ def read_config(path: Path) -> Dict[str, Any]:
 
 def names(value: Any, path: Path, field: str) -> List[str]:
     if not isinstance(value, list) or any(
-        not isinstance(name, str) or not name.strip() or "\x00" in name or name in (".", "..")
-        or "/" in name or "\\" in name for name in value
+        not isinstance(name, str)
+        or not name.strip()
+        or "\x00" in name
+        or name in (".", "..")
+        or "/" in name
+        or "\\" in name
+        for name in value
     ):
         raise ConfigError("{}: {} must be a list of simple names".format(path, field))
     if len(set(value)) != len(value):
@@ -114,13 +151,22 @@ class Module:
 
     def asset(self, value: str) -> Path:
         """Resolve owned assets independently of the invoking process directory."""
-        if not isinstance(value, str) or not value or "\x00" in value or Path(value).is_absolute():
-            raise ConfigError("{}: assets must be nonempty module-relative paths".format(self.name))
+        if (
+            not isinstance(value, str)
+            or not value
+            or "\x00" in value
+            or Path(value).is_absolute()
+        ):
+            raise ConfigError(
+                "{}: assets must be nonempty module-relative paths".format(self.name)
+            )
         try:
             candidate = (self.root / value).resolve()
             candidate.relative_to(self.root.resolve())
         except (ValueError, OSError, RuntimeError) as exc:
-            raise ConfigError("{}: asset escapes module root: {}".format(self.name, value)) from exc
+            raise ConfigError(
+                "{}: asset escapes module root: {}".format(self.name, value)
+            ) from exc
         return candidate
 
 
@@ -131,19 +177,28 @@ class Repository:
     defaults: Dict[str, Any]
 
 
-def load_repository(root: Path, profile: Optional[str] = None,
-                    selected: Optional[List[str]] = None) -> Repository:
+def load_repository(
+    root: Path, profile: Optional[str] = None, selected: Optional[List[str]] = None
+) -> Repository:
     root = root.resolve()
     if not root.is_dir():
         raise ConfigError("{}: repository directory does not exist".format(root))
     if profile is not None and selected:
         raise ConfigError("choose either --profile or module names")
     defaults_path = root / "defaults.conf"
-    defaults = read_config(defaults_path) if defaults_path.exists() else {"schema_version": SCHEMA_VERSION}
+    defaults = (
+        read_config(defaults_path)
+        if defaults_path.exists()
+        else {"schema_version": SCHEMA_VERSION}
+    )
     fields(defaults, ("schema_version", "defaults", "plugins"), defaults_path)
     plugins = defaults.get("plugins", [])
-    if not isinstance(plugins, list) or any(not isinstance(p, str) or not p.strip() or "\x00" in p for p in plugins):
-        raise ConfigError("{}: plugins must be a list of nonempty paths".format(defaults_path))
+    if not isinstance(plugins, list) or any(
+        not isinstance(p, str) or not p.strip() or "\x00" in p for p in plugins
+    ):
+        raise ConfigError(
+            "{}: plugins must be a list of nonempty paths".format(defaults_path)
+        )
     if len(set(plugins)) != len(plugins):
         raise ConfigError("{}: duplicate plugin paths".format(defaults_path))
     default_options = defaults.get("defaults", {})
@@ -151,13 +206,21 @@ def load_repository(root: Path, profile: Optional[str] = None,
         not isinstance(key, str) or not isinstance(value, dict)
         for key, value in default_options.items()
     ):
-        raise ConfigError("{}: defaults must map provider names to option dictionaries".format(defaults_path))
+        raise ConfigError(
+            "{}: defaults must map provider names to option dictionaries".format(
+                defaults_path
+            )
+        )
     names(list(default_options), defaults_path, "default provider names")
     paths = sorted((root / "modules").glob("*/module.conf"))
     available = {}
     for path in paths:
         config = read_config(path)
-        fields(config, ("schema_version", "name", "actions", "facts", "requires", "after", "when"), path)
+        fields(
+            config,
+            ("schema_version", "name", "actions", "facts", "requires", "after", "when"),
+            path,
+        )
         name = config.get("name")
         names([name], path, "name")
         if name in available:
@@ -165,16 +228,24 @@ def load_repository(root: Path, profile: Optional[str] = None,
         if name != path.parent.name:
             raise ConfigError("{}: name must match module directory".format(path))
         actions = config.get("actions", [])
-        if not isinstance(actions, list) or any(not isinstance(action, dict) for action in actions):
+        if not isinstance(actions, list) or any(
+            not isinstance(action, dict) for action in actions
+        ):
             raise ConfigError("{}: actions must be a list of dictionaries".format(path))
         for index, action in enumerate(actions):
             metadata = ("when", "requires", "after", "refresh")
             providers = set(action) - set(metadata)
             if len(providers) != 1:
-                raise ConfigError("{}: actions[{}] must declare exactly one provider".format(path, index))
+                raise ConfigError(
+                    "{}: actions[{}] must declare exactly one provider".format(
+                        path, index
+                    )
+                )
             names(list(providers), path, "actions[{}] provider".format(index))
             for field in ("requires", "after", "refresh"):
-                names(action.get(field, []), path, "actions[{}].{}".format(index, field))
+                names(
+                    action.get(field, []), path, "actions[{}].{}".format(index, field)
+                )
             if "when" in action:
                 condition(action["when"], path, "actions[{}].when".format(index))
         if "when" in config:
@@ -186,7 +257,9 @@ def load_repository(root: Path, profile: Optional[str] = None,
         for fact, declaration in config.get("facts", {}).items():
             names([fact], path, "fact name")
             if not isinstance(declaration, dict) or len(declaration) != 1:
-                raise ConfigError("{}: fact {!r} must declare exactly one provider".format(path, fact))
+                raise ConfigError(
+                    "{}: fact {!r} must declare exactly one provider".format(path, fact)
+                )
             names(list(declaration), path, "fact {!r} provider".format(fact))
         available[name] = Module(name, path.parent, config)
     if profile is not None:
@@ -205,5 +278,7 @@ def load_repository(root: Path, profile: Optional[str] = None,
     if missing:
         raise ConfigError("{}: missing modules: {}".format(root, ", ".join(missing)))
     if not chosen:
-        raise ConfigError("{}: no modules selected or discovered under modules/".format(root))
+        raise ConfigError(
+            "{}: no modules selected or discovered under modules/".format(root)
+        )
     return Repository(root, tuple(available[name] for name in chosen), defaults)
