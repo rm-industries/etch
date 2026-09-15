@@ -7,11 +7,10 @@ the configuration that makes a machine yours.
 
 ## Development status
 
-Etch is being built. This foundation provides a checkout-local CLI and structural
-configuration checks with explicit plugin loading and a scoped fact API. It does
-**not** apply changes yet. Provider payload validation, fact CLI diagnostics,
-dependency planning and execution are upcoming work in the
-[roadmap](https://github.com/rm-industries/etch/issues/2).
+Etch is being built. The checkout-local CLI supports structural diagnostics and
+non-mutating, provider-aware plans, including conditions, facts, dependency order
+and destination ownership checks. The CLI does **not** apply changes yet; staged
+execution is next in the [roadmap](https://github.com/rm-industries/etch/issues/2).
 
 To work on Etch, start with the [contributor guide](CONTRIBUTING.md).
 
@@ -22,6 +21,7 @@ Python 3.9 or newer is the only runtime dependency. No installation is necessary
 ```sh
 ./etch --version
 ./etch doctor --repo examples/minimal --profile developer
+./etch plan --repo examples/minimal --profile developer --verbose
 python3 -S -m unittest discover -v
 ```
 
@@ -29,6 +29,10 @@ python3 -S -m unittest discover -v
 `--repo` when invoking Etch from somewhere else. Select a profile or supply module
 names; with neither, it checks all discovered modules in lexical order. The
 command explicitly reports which checks are not implemented yet.
+
+Use [`plan`](docs/planning.md) for provider validation and inspection. It reports
+known changes, skips and deferred conditions without applying actions or downloading
+installers. Requested version facts may run inspection commands.
 
 Configuration uses Python literal dictionaries with `schema_version: 1`, read
 through `ast.literal_eval()`. Configuration is data; plugins and scripts are code.

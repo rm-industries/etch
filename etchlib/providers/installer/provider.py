@@ -35,6 +35,7 @@ class InstallerProvider:
         description = (
             "Check satisfied; skip " if skip else "Download and execute "
         ) + installer.url
+        description += " [interpreter: {}]".format(installer.shell)
         if options.get("description"):
             description = options["description"] + ": " + description
         if not installer.verify:

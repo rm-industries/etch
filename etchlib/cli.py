@@ -6,10 +6,12 @@ from pathlib import Path
 from typing import List, Optional
 
 from etchlib import __version__
-from etchlib.config import ConfigError, load_repository
+from etchlib.config import load_repository
 from etchlib.core import core_registry
+from etchlib.planning.build import plan_repository
+from etchlib.planning.render import render_plan
 from etchlib.plugins.loader import load_plugins
-from etchlib.plugins.metadata import PluginError
+from etchlib.providers.errors import ProviderError
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -21,16 +23,23 @@ def main(argv: Optional[List[str]] = None) -> int:
     doctor = commands.add_parser(
         "doctor", help="check repository configuration structure"
     )
-    doctor.add_argument(
-        "modules", nargs="*", help="module names (default: all discovered modules)"
+    plan = commands.add_parser(
+        "plan", help="inspect and explain changes without applying them"
     )
-    doctor.add_argument("--profile", help="select an ordered profile")
-    doctor.add_argument(
-        "--repo",
-        type=Path,
-        default=Path.cwd(),
-        help="consumer repository root (default: current directory)",
+    plan.add_argument(
+        "--verbose", "-v", action="store_true", help="show provider origins"
     )
+    for command in (doctor, plan):
+        command.add_argument(
+            "modules", nargs="*", help="module names (default: all discovered modules)"
+        )
+        command.add_argument("--profile", help="select an ordered profile")
+        command.add_argument(
+            "--repo",
+            type=Path,
+            default=Path.cwd(),
+            help="consumer repository root (default: current directory)",
+        )
     args = parser.parse_args(argv)
     if args.command is None:
         parser.print_help()
@@ -40,7 +49,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         loaded = load_plugins(
             repository.root, repository.defaults.get("plugins", []), core_registry()
         )
-    except (ConfigError, PluginError) as exc:
+        if args.command == "plan":
+            report = plan_repository(repository, loaded.registry)
+            print(render_plan(repository, report, loaded.plugins, args.verbose))
+            return 0
+    except (ValueError, ProviderError, OSError) as exc:
         print("Etch: {}".format(exc), file=sys.stderr)
         return 1
     print("Configuration structure OK: {}".format(repository.root))
