@@ -13,6 +13,8 @@ configuration checks with explicit plugin loading and a scoped fact API. It does
 dependency planning and execution are upcoming work in the
 [roadmap](https://github.com/rm-industries/etch/issues/2).
 
+To work on Etch, start with the [contributor guide](CONTRIBUTING.md).
+
 ## Run from source
 
 Python 3.9 or newer is the only runtime dependency. No installation is necessary.
@@ -79,9 +81,6 @@ Core [shell and script providers](docs/commands.md) support imperative commands,
 module-owned scripts, checks, environment metadata and explicit privilege requests.
 
 ## Source plugins
-
-For contributor setup and local quality checks, see
-[development tooling](docs/development.md).
 
 Declare plugin roots in `defaults.conf` using `"plugins": ["vendor/etch-example"]`.
 Each root contains `etch_plugin.py`, a `PLUGIN` dictionary with `name`, `version`,
