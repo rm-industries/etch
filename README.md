@@ -75,6 +75,8 @@ Core [create and link providers](docs/filesystem.md) implement idempotent filesy
 changes through the provider API; CLI application is still upcoming.
 The [clean provider](docs/clean.md) uses local link receipts to remove proven broken
 or explicitly retired links while preserving unowned content.
+Core [shell and script providers](docs/commands.md) support imperative commands,
+module-owned scripts, checks, environment metadata and explicit privilege requests.
 
 ## Source plugins
 

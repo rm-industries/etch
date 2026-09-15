@@ -14,6 +14,7 @@ class Context:
     module_name: str
     facts: Mapping[FactRef, FactResult]
     defaults: Mapping[str, Any] = field(default_factory=dict)
+    elevation_allowed: bool = False
 
 
 class ActionProvider(Protocol):
