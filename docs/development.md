@@ -80,9 +80,34 @@ python3 -S etch --version
 python3 -S etch doctor --repo examples/minimal --profile developer
 ```
 
-Bootstrap tests construct fresh vendored and recursive-submodule consumers and
-run Etch with site packages disabled. Git is needed to construct the submodule
-test fixture, but is absent from its runtime PATH.
+Bootstrap tests construct fresh vendored and recursive-submodule consumers. Their
+Python-only runtime PATH points to the base interpreter, even when pytest itself
+runs in a development virtual environment. The consumer launcher executes Etch
+directly with site packages disabled; no package installation is involved. Git is
+needed to construct the submodule fixture, but is absent from its runtime PATH.
+
+Both layouts also run a standalone probe with `-I -S`. It checks that no virtual
+environment or site module is active, verifies the loaded Etch source location,
+imports every core module, and plans/applies an idempotent directory creation.
+The probe inspects import declarations throughout core and the launcher, including
+dormant branches, and accepts only vendored Etch or modules from that interpreter's
+standard library. Site-package origins are rejected even if a package is importable.
+Negative tests prove detection of available and missing third-party imports, missing
+standard-library imports, and isolation from an inherited Python search path.
+Explicit external plugins remain outside the core import policy and are exercised
+through the recursive-clone consumer's normal `doctor` invocation.
+
+Run this coverage directly with either test runner:
+
+```sh
+pytest tests/test_bootstrap.py tests/test_runtime_imports.py
+python3 -S -m unittest tests.test_bootstrap tests.test_runtime_imports -v
+```
+
+This is a compatibility check, not a security sandbox or exhaustive analysis of
+dynamic imports. Importing every module catches import-time API incompatibilities;
+the runtime suite on each interpreter exercises APIs used inside functions. Keep
+the Python 3.9 grammar check and actual Python 3.9 test runs alongside these probes.
 
 CI runs pytest, the isolated unittest suite and source smoke checks on Python
 3.9 and 3.14 on Linux and macOS, plus a separate strict typecheck job. Additional
