@@ -61,12 +61,12 @@ provides the diagnostic identifier; all graph edges remain intact.
 
 ## Integration boundary
 
-The planner will coordinate initial condition results, provider plans, explicit fact
-links and graph rebuilding. This API does not discover links, gather facts, execute
+The planner coordinates initial condition results, provider plans and graph
+rebuilding. Explicit fact links remain available through the graph API. This API does not discover links, gather facts, execute
 actions, mark actions successful, validate ownership or schedule resource locks.
-After a producer finishes, the executor must invalidate the relevant fact, reevaluate
-conditions and revalidate newly active dependencies and ownership before applying
-configuration. Graph evidence describes potential eligible predecessors, not a
+The [staged executor](applying.md) invalidates declared facts after successful
+producer execution, reevaluates conditions and revalidates pending dependencies
+and ownership before applying configuration. Graph evidence describes potential eligible predecessors, not a
 guarantee that an external installer will succeed.
 
 Source is separated into node records, graph storage/evidence, dependency resolution,

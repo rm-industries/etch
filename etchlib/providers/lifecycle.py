@@ -5,7 +5,7 @@ from typing import Any
 from .contracts import Context
 from .errors import ProviderError
 from .observations import FactResult, Inspection
-from .plans import Plan
+from .plans import ApplyResult, Plan
 from .registry import Registration
 
 
@@ -57,3 +57,17 @@ def gather_fact(entry: Registration, config: Any, context: Context) -> FactResul
             "provider {!r}: gather must return FactResult".format(entry.name)
         )
     return fact
+
+
+def apply_action(entry: Registration, plan: Plan, context: Context) -> ApplyResult:
+    """Normalize failures/results at the mutation boundary."""
+    if entry.kind != "action":
+        raise ProviderError("apply requires an action provider")
+    if plan.elevated and not context.elevation_allowed:
+        raise ProviderError("privilege escalation has not been authorized")
+    result = _call(entry, "apply", plan, context)
+    if not isinstance(result, ApplyResult):
+        raise ProviderError(
+            "provider {!r}: apply must return ApplyResult".format(entry.name)
+        )
+    return result

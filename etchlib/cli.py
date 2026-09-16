@@ -8,6 +8,8 @@ from typing import List, Optional
 from etchlib import __version__
 from etchlib.config import load_repository
 from etchlib.core import core_registry
+from etchlib.execution.render import render_apply
+from etchlib.execution.runner import apply_repository
 from etchlib.planning.build import plan_repository
 from etchlib.planning.render import render_plan
 from etchlib.plugins.loader import load_plugins
@@ -29,7 +31,13 @@ def main(argv: Optional[List[str]] = None) -> int:
     plan.add_argument(
         "--verbose", "-v", action="store_true", help="show provider origins"
     )
-    for command in (doctor, plan):
+    apply = commands.add_parser("apply", help="apply a validated staged action graph")
+    apply.add_argument(
+        "--allow-sudo",
+        action="store_true",
+        help="authorize declared elevation requests",
+    )
+    for command in (doctor, plan, apply):
         command.add_argument(
             "modules", nargs="*", help="module names (default: all discovered modules)"
         )
@@ -49,6 +57,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         loaded = load_plugins(
             repository.root, repository.defaults.get("plugins", []), core_registry()
         )
+        if args.command == "apply":
+            applied = apply_repository(
+                repository, loaded.registry, allow_sudo=args.allow_sudo
+            )
+            print(render_apply(applied))
+            return 0 if applied.succeeded else 1
         if args.command == "plan":
             report = plan_repository(repository, loaded.registry)
             print(render_plan(repository, report, loaded.plugins, args.verbose))

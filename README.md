@@ -9,8 +9,9 @@ the configuration that makes a machine yours.
 
 Etch is being built. The checkout-local CLI supports structural diagnostics and
 non-mutating, provider-aware plans, including conditions, facts, dependency order
-and destination ownership checks. The CLI does **not** apply changes yet; staged
-execution is next in the [roadmap](https://github.com/rm-industries/etch/issues/2).
+and destination ownership checks. Staged `apply` runs validated actions sequentially,
+refreshes declared facts, and revalidates newly active work. Parallel scheduling is
+next in the [roadmap](https://github.com/rm-industries/etch/issues/2).
 
 To work on Etch, start with the [contributor guide](CONTRIBUTING.md).
 
@@ -33,6 +34,8 @@ command explicitly reports which checks are not implemented yet.
 Use [`plan`](docs/planning.md) for provider validation and inspection. It reports
 known changes, skips and deferred conditions without applying actions or downloading
 installers. Requested version facts may run inspection commands.
+Use [`apply`](docs/applying.md) with the same module/profile selection when ready
+to make changes. It stops on the first failure and reports remaining work as blocked.
 
 Configuration uses Python literal dictionaries with `schema_version: 1`, read
 through `ast.literal_eval()`. Configuration is data; plugins and scripts are code.
@@ -78,7 +81,7 @@ validated predecessor evidence for deferred facts while retaining stable orderin
 The [ownership validator](docs/ownership.md) checks active destination claims and
 rebuilds provider/graph validation when conditions activate new work.
 Core [create and link providers](docs/filesystem.md) implement idempotent filesystem
-changes through the provider API; CLI application is still upcoming.
+changes through the provider API and staged CLI application.
 The [clean provider](docs/clean.md) uses local link receipts to remove proven broken
 or explicitly retired links while preserving unowned content.
 Core [shell and script providers](docs/commands.md) support imperative commands,
