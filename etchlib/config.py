@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from etchlib import SCHEMA_VERSION
+from etchlib.scheduling.resources import options as execution_options
 
 
 class ConfigError(ValueError):
@@ -191,7 +192,13 @@ def load_repository(
         if defaults_path.exists()
         else {"schema_version": SCHEMA_VERSION}
     )
-    fields(defaults, ("schema_version", "defaults", "plugins"), defaults_path)
+    fields(
+        defaults, ("schema_version", "defaults", "plugins", "execution"), defaults_path
+    )
+    try:
+        execution_options(defaults.get("execution", {}))
+    except ValueError as exc:
+        raise ConfigError("{}: {}".format(defaults_path, exc)) from exc
     plugins = defaults.get("plugins", [])
     if not isinstance(plugins, list) or any(
         not isinstance(p, str) or not p.strip() or "\x00" in p for p in plugins

@@ -1,8 +1,9 @@
 """Inspect active actions, then prove every deferred gate against the graph."""
 
 from copy import deepcopy
+from dataclasses import replace
 from types import MappingProxyType
-from typing import Collection, Optional
+from typing import Collection, Optional, cast
 
 from etchlib.conditions.evaluator import Evaluator
 from etchlib.conditions.module import Selection
@@ -21,6 +22,7 @@ from etchlib.providers.registry import Registry
 
 from .conditions import gate, prove
 from .context import provider_context
+from .facts import Observations
 from .model import Report as Report
 
 
@@ -31,9 +33,11 @@ def plan_repository(
     store: Optional[FactStore] = None,
     previous: Optional[Report] = None,
     completed: Collection[NodeId] = (),
+    frozen: Collection[NodeId] = (),
 ) -> Report:
-    if completed and previous is None:
+    if (completed or frozen) and previous is None:
         raise ValueError("completed actions require their previous snapshot")
+    retained = set(completed) | set(frozen)
     store = store if store is not None else repository_facts(repository, registry)
     selections, plans, inspections, providers = {}, {}, {}, {}
     for module in repository.modules:
@@ -46,17 +50,18 @@ def plan_repository(
         module_gate = (
             previous.selections[module.name].module
             if previous is not None
-            and any(key.module == module.name for key in completed)
+            and any(key.module == module.name for key in retained)
             else gate(module.config, evaluator)
         )
         results = []
         for index, action in enumerate(actions):
             key = NodeId(module.name, "action", index)
-            if key in completed and previous is not None:
+            if key in retained and previous is not None:
                 results.append(previous.selections[module.name].actions[index])
-                inspections[key] = previous.inspections[key]
-                plans[key] = previous.plans[key]
-                providers[key] = previous.providers[key]
+                if key in previous.plans:
+                    inspections[key] = previous.inspections[key]
+                    plans[key] = previous.plans[key]
+                    providers[key] = previous.providers[key]
                 continue
             result = (
                 gate(action, evaluator)
@@ -69,7 +74,23 @@ def plan_repository(
             key = NodeId(module.name, "action", index)
             name = next(iter(set(action) - {"when", "requires", "after", "refresh"}))
             entry = registry.action(name)
+            observations = cast(Observations, context.facts)
+            observations.requested.clear()
             observation, plan = inspect_action(entry, deepcopy(action[name]), context)
+            plan = replace(
+                plan,
+                facts=tuple(
+                    dict.fromkeys(
+                        plan.facts
+                        + tuple(
+                            sorted(
+                                observations.requested,
+                                key=lambda ref: (ref.module or "", ref.name),
+                            )
+                        )
+                    )
+                ),
+            )
             for ref in plan.facts:
                 fact = store.get(ref)
                 if fact.state is FactState.ERROR:
@@ -78,9 +99,17 @@ def plan_repository(
         selections[module.name] = Selection(module_gate, tuple(results))
     graph = build_graph(repository, selections, plans)
     for name, selection in selections.items():
-        module_gate = prove(selection.module, NodeId(name, "start"), graph, completed)
+        module_gate = (
+            selection.module
+            if any(key.module == name for key in frozen)
+            else prove(selection.module, NodeId(name, "start"), graph, completed)
+        )
         proven = tuple(
-            prove(result, NodeId(name, "action", index), graph, completed)
+            (
+                result
+                if NodeId(name, "action", index) in frozen
+                else prove(result, NodeId(name, "action", index), graph, completed)
+            )
             if module_gate.outcome is Outcome.TRUE
             else module_gate
             for index, result in enumerate(selection.actions)

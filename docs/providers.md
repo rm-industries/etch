@@ -80,3 +80,15 @@ These are test fixtures, not shipped core providers. Explicit plugin loading and
 API compatibility checks are implemented; see [plugin loading](plugins.md).
 Concrete providers, repository-wide preflight, scheduling and complete doctor
 diagnostics remain in their own roadmap issues.
+
+## Concurrent application
+
+The optional [resource scheduler](scheduling.md) can call a registered provider
+instance from multiple worker threads. Inspection remains on the coordinator but
+can overlap unrelated application. Providers must use call-local state and avoid
+mutating shared process state. Declare shared resources in `Plan.resources` and
+consumed facts in `Plan.facts`; declared context facts read during inspection are
+also tracked as inputs. Worker contexts contain detached observations gathered
+before dispatch. Request needed facts during inspection or through plan metadata;
+do not expect lazy gathering from a worker. Default serial execution remains
+available for providers that have not been made safe for concurrency.

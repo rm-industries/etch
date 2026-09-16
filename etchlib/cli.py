@@ -33,6 +33,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     apply = commands.add_parser("apply", help="apply a validated staged action graph")
     apply.add_argument(
+        "--jobs", "-j", type=int, help="maximum concurrent actions (1–64)"
+    )
+    apply.add_argument(
         "--allow-sudo",
         action="store_true",
         help="authorize declared elevation requests",
@@ -59,7 +62,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         )
         if args.command == "apply":
             applied = apply_repository(
-                repository, loaded.registry, allow_sudo=args.allow_sudo
+                repository, loaded.registry, allow_sudo=args.allow_sudo, jobs=args.jobs
             )
             print(render_apply(applied))
             return 0 if applied.succeeded else 1

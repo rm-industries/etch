@@ -8,6 +8,7 @@ from etchlib.config import Repository
 from etchlib.graph.model import NodeId
 from etchlib.plugins.metadata import Metadata
 from etchlib.providers.observations import FactState
+from etchlib.scheduling.resources import options, requirements
 
 from .build import Report
 
@@ -18,11 +19,17 @@ def render_plan(
     plugins: Iterable[Metadata] = (),
     verbose: bool = False,
 ) -> str:
+    settings = options(repository.defaults.get("execution", {}))
     lines = [
         "Plan: {}".format(repository.root),
+        "Execution: {} jobs; undeclared resource capacities default to one".format(
+            settings.jobs
+        ),
         "Inspection only: no actions applied, installers downloaded or executed.",
         "Fact inspection may run bounded version probes; plugins are trusted Python code.",
     ]
+    for name, capacity in settings.capacities.items():
+        lines.append("Resource {}: capacity {}".format(name, capacity))
     for plugin in plugins:
         lines.append(
             "Plugin {} {}: API {} compatible".format(
@@ -89,8 +96,9 @@ def render_plan(
                 "required (not authorized by planning)" if plan.elevated else "no",
             )
         )
-        if plan.resources:
-            lines.append("    resources: " + ", ".join(plan.resources))
+        resources = requirements(plan)
+        if resources:
+            lines.append("    resources: " + ", ".join(sorted(resources)))
         if verbose:
             entry = report.providers[key]
             origin = entry.origin

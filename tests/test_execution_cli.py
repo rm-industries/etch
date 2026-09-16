@@ -37,6 +37,8 @@ class ApplyCliTests(PlanningFixture):
                 "-S",
                 str(Path(__file__).resolve().parents[1] / "etch"),
                 "apply",
+                "--jobs",
+                "2",
                 "--repo",
                 str(self.root),
                 "--profile",
