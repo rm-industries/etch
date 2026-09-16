@@ -9,9 +9,9 @@ the configuration that makes a machine yours.
 
 Etch is being built. The checkout-local CLI supports structural diagnostics and
 non-mutating, provider-aware plans, including conditions, facts, dependency order
-and destination ownership checks. Staged `apply` runs validated actions sequentially,
-refreshes declared facts, and revalidates newly active work. Parallel scheduling is
-next in the [roadmap](https://github.com/rm-industries/etch/issues/2).
+and destination ownership checks. Staged `apply` refreshes declared facts and
+revalidates newly active work. Use `--jobs` for [resource-aware concurrency](docs/scheduling.md).
+Further integrations are tracked in the [roadmap](https://github.com/rm-industries/etch/issues/2).
 
 To work on Etch, start with the [contributor guide](CONTRIBUTING.md).
 

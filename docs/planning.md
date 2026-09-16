@@ -16,7 +16,8 @@ The output includes:
 - Selected modules, false-condition skips and deferred actions.
 - A stable dependency order, current provider observations and proposed
   `CHANGE`, `RUN` or `SKIP` outcomes.
-- Refresh points, resource constraints, elevation requests, and known network
+- Configured job limits and resource capacities, refresh points, resource constraints,
+  elevation requests, and known network
   and executable behavior. Opaque actions may do more than Etch can predict.
 - Active destination ownership, with conflicts reported as errors.
 - Requested fact values and unavailable observations. Unused declarations remain

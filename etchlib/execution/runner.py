@@ -14,14 +14,24 @@ from etchlib.providers.lifecycle import apply_action
 from etchlib.providers.observations import FactRef
 from etchlib.providers.plans import PlanStatus
 from etchlib.providers.registry import Registry
+from etchlib.scheduling.resources import options
 
 from .results import ActionResult, ExecutionReport, Status
 from .validation import validate_progress, validate_refresh
 
 
 def apply_repository(
-    repository: Repository, registry: Registry, *, allow_sudo: bool = False
+    repository: Repository,
+    registry: Registry,
+    *,
+    allow_sudo: bool = False,
+    jobs: Optional[int] = None,
 ) -> ExecutionReport:
+    settings = options(repository.defaults.get("execution", {}), jobs)
+    if settings.jobs > 1:
+        from etchlib.scheduling.engine import Scheduler
+
+        return Scheduler(repository, registry, settings, allow_sudo).run()
     store = repository_facts(repository, registry)
     modules = {module.name: module for module in repository.modules}
     results: dict[NodeId, ActionResult] = {}

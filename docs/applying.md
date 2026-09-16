@@ -10,10 +10,12 @@ Select either a profile or module names. With neither, all discovered modules ar
 selected. Dependencies do not implicitly select additional modules. `apply` builds
 its own fresh plan; an earlier `plan` invocation does not authorize stale work.
 
-The executor is sequential. It follows the validated dependency graph and uses
-selection/declaration order to break ties. Generic parallel resource scheduling is
-separate work. A serial run does not contend with itself for declared resources;
-it does not lock against other Etch processes or external package managers.
+The executor defaults to one job. Set `--jobs N` or configure `execution.jobs` to
+run independent ready actions concurrently. It follows the validated dependency
+graph and uses selection/declaration order to break ties. See
+[resource scheduling](scheduling.md) for capacities, observation coordination and
+provider concurrency requirements. Locks apply within this invocation, not across
+Etch processes or external package managers.
 
 ## Establish, refresh, resolve, validate, configure
 
@@ -75,8 +77,10 @@ Every selected action receives one terminal status:
 - `FAILED`: application failed or returned an invalid result.
 - `BLOCKED`: it was not run because the invocation stopped after a failure.
 
-The first validation or application failure stops the entire run, including
-independent pending work. Dependents never run after a failed prerequisite. Results
+The first observed validation or application failure stops new dispatch, including
+independent pending work. Already running actions are allowed to finish and their
+results are collected; they are not safely cancelable. Dependents never run after
+a failed prerequisite. Results
 preserve completed changes and identify blocked actions. A validation failure
 between actions is reported at run level; no provider is falsely marked as having
 run. There is no automatic retry or rollback. A provider can partially mutate the
@@ -84,7 +88,7 @@ system before failing, so inspect the diagnostic before trying again.
 
 The CLI returns zero only for a fully successful run, including legitimate skips.
 Configuration, validation, application and interrupted-run failures return nonzero.
-The Python API `apply_repository(repository, registry, allow_sudo=False)` returns
+The Python API `apply_repository(repository, registry, allow_sudo=False, jobs=None)` returns
 an `ExecutionReport` with ordered action results, observed fact states, warnings
 and an optional error. Repository/fact registration errors can raise before a run
 starts. Rendering is separate from execution.

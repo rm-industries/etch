@@ -8,6 +8,7 @@ from etchlib.graph.model import GraphError, NodeId
 from etchlib.planning.model import Report
 from etchlib.providers.errors import ProviderError
 from etchlib.providers.observations import FactRef
+from etchlib.scheduling.resources import requirements
 
 
 def validate_refresh(repository: Repository, store: FactStore) -> None:
@@ -41,6 +42,7 @@ def validate_progress(
             )
         preceding.add(key)
     for key, plan in report.plans.items():
+        requirements(plan)
         if key not in completed and plan.elevated and not allow_sudo:
             raise ProviderError(
                 "{}: privilege escalation requires --allow-sudo".format(key)

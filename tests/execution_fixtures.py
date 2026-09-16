@@ -62,6 +62,8 @@ class Establish:
             if "claim" in config
             else (),
             elevated=config.get("sudo", False),
+            resources=tuple(config.get("resources", [])),
+            facts=tuple(FactRef(*ref) for ref in config.get("facts", [])),
         )
 
     def apply(self, plan: Plan, context: Context) -> ApplyResult:
