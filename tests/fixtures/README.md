@@ -23,3 +23,10 @@ Python's standard-library HTTPS server and permission to bind a loopback socket.
 `vscode_cli.py` is copied into a temporary executable by the VS Code plugin tests.
 It reads/writes only the adjacent temporary `state.json` and `calls.jsonl` files.
 It never invokes VS Code, installs a real extension, or accesses the network.
+
+## Homebrew fake CLI
+
+`brew_cli.py` is copied into a temporary executable by the Homebrew bundle tests.
+It modifies only adjacent temporary inventory, logs, lock/gate files, and a fake
+installed tool. It never invokes Homebrew, installs real packages, or accesses the
+network. The gate/lock protocol checks serialization alongside independent work.

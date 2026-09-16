@@ -91,3 +91,33 @@ class SchedulerValidationTests(ExecutionFixture):
         observed = report.facts[FactRef("demo", "tool")]
         assert observed is not None
         self.assertEqual(observed.value, ["original"])
+
+    def test_false_resolution_unblocks_following_activated_action(self) -> None:
+        self.fact.values["later"] = []
+        self.module(
+            facts={name: {"state": name} for name in ("tool", "flag", "later")},
+            actions=[
+                {
+                    "establish": {
+                        "name": "install",
+                        "values": {"tool": "1", "flag": False, "later": ["yes"]},
+                    },
+                    "refresh": ["tool", "flag", "later"],
+                },
+                {
+                    "establish": {"name": "configure"},
+                    "when": {"fact": {"name": "tool", "matches": ">=1"}},
+                },
+                {
+                    "establish": {"name": "skip"},
+                    "when": {"fact": {"name": "flag", "equals": True}},
+                },
+                {
+                    "establish": {"name": "last"},
+                    "when": {"fact": {"name": "later", "equals": ["yes"]}},
+                },
+            ],
+        )
+        report = apply_repository(load_repository(self.root), self.registry, jobs=2)
+        self.assertTrue(report.succeeded, report.error)
+        self.assertEqual(self.action.applied, ["install", "configure", "last"])
