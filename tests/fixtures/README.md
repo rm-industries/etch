@@ -17,3 +17,9 @@ openssl req -x509 -newkey rsa:2048 -nodes \
 
 Update the expiry date here after regeneration. The regular tests require only
 Python's standard-library HTTPS server and permission to bind a loopback socket.
+
+## VS Code fake CLI
+
+`vscode_cli.py` is copied into a temporary executable by the VS Code plugin tests.
+It reads/writes only the adjacent temporary `state.json` and `calls.jsonl` files.
+It never invokes VS Code, installs a real extension, or accesses the network.
