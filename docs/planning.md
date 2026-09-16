@@ -63,8 +63,8 @@ its provider or claiming its destinations. The installer is not downloaded.
 This is a snapshot of current observations. Refresh entries describe future work;
 planning neither invalidates nor regathers facts after proposed changes. Deferred
 actions need new condition evaluation, provider inspection, dependency validation
-and ownership checks after the producer succeeds. Execution and staged replanning
-are separate work. The existing graph rules withhold dependencies attached to
+and ownership checks after the producer succeeds. The [staged executor](applying.md)
+performs those checks during `apply`. The existing graph rules withhold dependencies attached to
 inactive/deferred gates; declaring a dependency on an unresolved action does not
 by itself prove an earlier producer.
 

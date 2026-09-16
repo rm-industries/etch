@@ -64,7 +64,7 @@ def render_plan(
             suffix = "" if node.outcome is Outcome.TRUE else " [deferred]"
             if key.kind == "refresh":
                 producer = report.plans.get(NodeId(key.module, "action", key.index))
-                suffix += " (after a successful change; no refresh during planning)"
+                suffix += " (after successful execution; no refresh during planning)"
                 if producer is not None and producer.status.value == "skip":
                     suffix += " [producer skipped]"
             lines.append("  {}{}".format(key, suffix))
