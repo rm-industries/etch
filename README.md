@@ -89,6 +89,10 @@ module-owned scripts, checks, environment metadata and explicit privilege reques
 The [installer provider](docs/installers.md) downloads and validates upstream scripts
 before executing a temporary local copy, with per-download TLS and checksum controls.
 
+The external [VS Code reference plugin](plugins/vscode/README.md) reconciles missing
+extensions and provides command, version and extension facts. It is loaded only
+when declared in the consumer configuration.
+
 ## Source plugins
 
 Declare plugin roots in `defaults.conf` using `"plugins": ["vendor/etch-example"]`.

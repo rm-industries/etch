@@ -12,6 +12,6 @@ addopts = "--strict-config --strict-markers"
 
 [tool.mypy]
 python_version = "3.9"
-files = ["etchlib", "tests", "etch"]
+files = ["etchlib", "plugins", "tests", "etch"]
 strict = true
 check_untyped_defs = true

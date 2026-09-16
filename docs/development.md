@@ -52,13 +52,13 @@ Check without modifying files and run all tests:
 ```sh
 ruff format --check .
 ruff check .
-mypy etchlib tests etch
+mypy etchlib plugins tests etch
 pytest
 ```
 
 Configuration lives in `pyproject.toml`. Ruff targets Python 3.9 and includes the
-extensionless `etch` launcher, `etchlib`, and tests. Its initial rules cover import
-ordering, syntax and name errors, common style errors, and Bugbear correctness
+extensionless `etch` launcher, `etchlib`, reference plugins, and tests. Its initial
+rules cover import ordering, syntax and name errors, common style errors, and Bugbear correctness
 checks. Add exceptions only for concrete cases at the smallest practical scope.
 pytest collects the existing unittest suite, including bootstrap integration tests.
 
@@ -66,7 +66,8 @@ pytest collects the existing unittest suite, including bootstrap integration tes
 
 mypy runs in strict mode with `python_version = "3.9"`, regardless of the interpreter
 running the tool. Both `mypy` (using the configured file list) and
-`mypy etchlib tests etch` check the entire library, tests, and extensionless launcher.
+`mypy etchlib plugins tests etch` check the entire library, reference plugins, tests,
+and extensionless launcher.
 The separate typecheck CI job uses the explicit command on Python 3.14; tests on
 actual supported interpreters independently verify runtime compatibility.
 
@@ -137,7 +138,7 @@ commands shown above. Ruff and mypy still target Python 3.9.
 | --- | --- |
 | `format` | `ruff format --check .` |
 | `lint` | `ruff check .` |
-| `typecheck` | `python -m mypy etchlib tests etch` |
+| `typecheck` | `python -m mypy etchlib plugins tests etch` |
 | `test` | `python -m pytest` |
 
 The module forms above use the active environment's interpreter and are equivalent
