@@ -40,7 +40,11 @@ class CommandProvider:
         )
         return Plan(
             PlanStatus.RUN if entries else PlanStatus.SKIP,
-            "; ".join(item.get("description", "Run " + self.name) for item in entries)
+            "; ".join(
+                item.get("description", "Run " + self.name)
+                + " [executable: {}]".format(item["argv"][0])
+                for item in entries
+            )
             if entries
             else "Checks already satisfied",
             payload=entries,

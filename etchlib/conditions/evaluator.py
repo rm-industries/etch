@@ -60,13 +60,18 @@ class Evaluator:
                 "earlier refresh evidence must map fact references to producer identifiers"
             )
 
-    def evaluate(self, condition: Any) -> Result:
+    def evaluate(self, condition: Any, *, require_evidence: bool = True) -> Result:
+        """Evaluate a gate; provisional results need graph validation before use.
+
+        Planners may set require_evidence=False while constructing a graph. Such
+        DEFERRED results are unresolved candidates, not authorization to defer.
+        """
         validate(condition)
         try:
             pending = self._dictionary(condition)
         except ProviderError as exc:
             raise ConditionError(str(exc)) from exc
-        if pending.unresolved:
+        if pending.unresolved and require_evidence:
             raise ConditionError(
                 "Unresolved condition: " + "; ".join(pending.unresolved)
             )
@@ -160,4 +165,4 @@ class Evaluator:
         problem = "{} in module {}: {}; no earlier producer/refresh path".format(
             ref.name, ref.module, reason
         )
-        return _Pending(Result(Outcome.DEFERRED), (problem,))
+        return _Pending(Result(Outcome.DEFERRED, (ref,), (reason,)), (problem,))

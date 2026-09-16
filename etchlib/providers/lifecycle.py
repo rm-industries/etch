@@ -30,6 +30,13 @@ def _validate(entry: Registration, kind: str, config: Any, context: Context) -> 
 
 
 def plan_action(entry: Registration, config: Any, context: Context) -> Plan:
+    return inspect_action(entry, config, context)[1]
+
+
+def inspect_action(
+    entry: Registration, config: Any, context: Context
+) -> tuple[Inspection, Plan]:
+    """Return the current observation and its checked, non-applied plan."""
     _validate(entry, "action", config, context)
     observation = _call(entry, "inspect", config, context)
     if not isinstance(observation, Inspection):
@@ -39,7 +46,7 @@ def plan_action(entry: Registration, config: Any, context: Context) -> Plan:
     plan = _call(entry, "plan", config, observation, context)
     if not isinstance(plan, Plan):
         raise ProviderError("provider {!r}: plan must return Plan".format(entry.name))
-    return plan
+    return observation, plan
 
 
 def gather_fact(entry: Registration, config: Any, context: Context) -> FactResult:
