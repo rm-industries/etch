@@ -133,6 +133,12 @@ class Scheduler:
                             for key in self.report.graph.order()
                             if key.kind == "action" and key not in self.results
                         ]
+                        if pending and frozen != frozen_actions(
+                            self.repository, self.report, self.running, self.results
+                        ):
+                            # A gate resolved false and removed a predecessor.
+                            # Reinspect newly unblocked work before dispatch.
+                            continue
                         if pending:
                             raise ValueError(
                                 "Blocked work has no ready producer: "

@@ -93,6 +93,10 @@ The external [VS Code reference plugin](plugins/vscode/README.md) reconciles mis
 extensions and provides command, version and extension facts. It is loaded only
 when declared in the consumer configuration.
 
+The external [Homebrew reference plugin](plugins/homebrew/README.md) installs missing
+formulae and casks, supports explicit command/version fact refresh, and serializes
+package-manager changes through the generic resource scheduler.
+
 ## Source plugins
 
 Declare plugin roots in `defaults.conf` using `"plugins": ["vendor/etch-example"]`.
