@@ -124,14 +124,22 @@ class FoundationTests(unittest.TestCase):
         with self.assertRaises(ConfigError):
             load_repository(self.repo)
 
-    def test_doctor_honestly_reports_partial_validation(self) -> None:
+    def test_doctor_checks_current_plan(self) -> None:
+        self.write(
+            "modules/git/module.conf",
+            {
+                "schema_version": 1,
+                "name": "git",
+                "actions": [{"link": {"test-gitconfig": "files/gitconfig"}}],
+            },
+        )
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
             status = main(
                 ["doctor", "--repo", str(self.repo), "--profile", "developer"]
             )
         self.assertEqual(status, 0)
-        self.assertIn("not checked yet", out.getvalue())
+        self.assertIn("Doctor OK", out.getvalue())
 
     def test_doctor_failure(self) -> None:
         out = io.StringIO()

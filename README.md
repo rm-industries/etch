@@ -7,7 +7,7 @@ the configuration that makes a machine yours.
 
 ## Development status
 
-Etch is being built. The checkout-local CLI supports structural diagnostics and
+Etch is being built. The checkout-local CLI supports fact and repository diagnostics and
 non-mutating, provider-aware plans, including conditions, facts, dependency order
 and destination ownership checks. Staged `apply` refreshes declared facts and
 revalidates newly active work. Use `--jobs` for [resource-aware concurrency](docs/scheduling.md).
@@ -29,7 +29,7 @@ python3 -S -m unittest discover -v
 `doctor` defaults to the current directory as the consuming repository root. Use
 `--repo` when invoking Etch from somewhere else. Select a profile or supply module
 names; with neither, it checks all discovered modules in lexical order. The
-command explicitly reports which checks are not implemented yet.
+command reports current-state errors and explains inspection limits.
 
 Use [`plan`](docs/planning.md) for provider validation and inspection. It reports
 known changes, skips and deferred conditions without applying actions or downloading
@@ -140,3 +140,10 @@ See [initial architecture decisions](docs/decisions/0001-foundation.md) for the
 configuration layout, proposed provider contracts and disposition of open questions.
 The checked-in example is generic; personal environment configuration belongs in
 consumer repositories.
+
+### Diagnostics
+
+Use `./etch facts --profile developer` to inspect scoped fact values and reasons,
+or `./etch doctor --profile developer` to check provider schemas, probes, the
+current dependency graph, and destination claims. See [facts and doctor](docs/diagnostics.md)
+for selection, exit statuses, and inspection limits.

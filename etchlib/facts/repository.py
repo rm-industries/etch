@@ -2,6 +2,7 @@
 
 from etchlib.config import Repository
 from etchlib.providers.contracts import Context
+from etchlib.providers.errors import ProviderError
 from etchlib.providers.observations import FactRef
 from etchlib.providers.registry import Registry
 
@@ -18,5 +19,10 @@ def repository_facts(repository: Repository, registry: Registry) -> FactStore:
         context = Context(repository.root, module.root, module.name, {})
         for name, declaration in module.config.get("facts", {}).items():
             provider, config = next(iter(declaration.items()))
-            store.declare(FactRef(module.name, name), provider, config, context)
+            try:
+                store.declare(FactRef(module.name, name), provider, config, context)
+            except ProviderError as exc:
+                raise ProviderError(
+                    "module {!r} fact {!r}: {}".format(module.name, name, exc)
+                ) from exc
     return store

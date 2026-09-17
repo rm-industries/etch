@@ -29,6 +29,11 @@ def _validate(entry: Registration, kind: str, config: Any, context: Context) -> 
         )
 
 
+def validate_action(entry: Registration, config: Any, context: Context) -> None:
+    """Check an action schema without inspecting or applying it."""
+    _validate(entry, "action", config, context)
+
+
 def plan_action(entry: Registration, config: Any, context: Context) -> Plan:
     return inspect_action(entry, config, context)[1]
 

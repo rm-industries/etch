@@ -28,7 +28,8 @@ The output includes:
 Planning returns zero for a valid snapshot, including valid deferred work. Invalid
 configuration, provider errors, unresolved required facts, missing hard dependencies,
 cycles and ownership conflicts return one and a diagnostic on stderr. Missing soft
-`after` targets produce warnings. `doctor` retains its structural-only behavior.
+`after` targets produce warnings. [Doctor](diagnostics.md) checks this current
+snapshot alongside all selected declarations and fact probes.
 
 ## What inspection means
 
