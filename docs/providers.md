@@ -78,8 +78,8 @@ The tests run stateful core-origin and external-origin fixtures through the same
 registration, validation, inspection, planning and explicit application interfaces.
 These are test fixtures, not shipped core providers. Explicit plugin loading and
 API compatibility checks are implemented; see [plugin loading](plugins.md).
-Concrete providers, repository-wide preflight, scheduling and complete doctor
-diagnostics remain in their own roadmap issues.
+Core providers, planning, staged execution, scheduling, and [doctor diagnostics](diagnostics.md)
+now use these contracts.
 
 ## Concurrent application
 

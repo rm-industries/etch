@@ -50,4 +50,13 @@ jobs:
       - run: python -m pytest
       - run: python -S -m unittest discover -v
       - run: python -S etch --version
-      - run: python -S etch doctor --repo examples/minimal --profile developer
+      - name: Diagnose the example in an isolated home
+        run: |
+          python -S - <<'PYTHON'
+          import os, subprocess, sys, tempfile
+          with tempfile.TemporaryDirectory() as home:
+              subprocess.run(
+                  [sys.executable, "-S", "etch", "doctor", "--repo", "examples/minimal", "--profile", "developer"],
+                  env=dict(os.environ, HOME=home), check=True,
+              )
+          PYTHON

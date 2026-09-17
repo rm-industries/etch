@@ -8,12 +8,17 @@ from typing import List, Optional
 from etchlib import __version__
 from etchlib.config import load_repository
 from etchlib.core import core_registry
+from etchlib.diagnostics.doctor import diagnose
+from etchlib.diagnostics.facts import gather, render_facts
+from etchlib.diagnostics.render import render_doctor
 from etchlib.execution.render import render_apply
 from etchlib.execution.runner import apply_repository
+from etchlib.facts.repository import repository_facts
 from etchlib.planning.build import plan_repository
 from etchlib.planning.render import render_plan
 from etchlib.plugins.loader import load_plugins
 from etchlib.providers.errors import ProviderError
+from etchlib.providers.observations import FactState
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -23,7 +28,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--version", action="version", version="Etch " + __version__)
     commands = parser.add_subparsers(dest="command")
     doctor = commands.add_parser(
-        "doctor", help="check repository configuration structure"
+        "doctor", help="diagnose configuration, providers and current state"
     )
     plan = commands.add_parser(
         "plan", help="inspect and explain changes without applying them"
@@ -40,7 +45,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         action="store_true",
         help="authorize declared elevation requests",
     )
-    for command in (doctor, plan, apply):
+    facts = commands.add_parser(
+        "facts", help="gather built-in and selected module facts"
+    )
+    for command in (doctor, plan, apply, facts):
         command.add_argument(
             "modules", nargs="*", help="module names (default: all discovered modules)"
         )
@@ -60,6 +68,18 @@ def main(argv: Optional[List[str]] = None) -> int:
         loaded = load_plugins(
             repository.root, repository.defaults.get("plugins", []), core_registry()
         )
+        if args.command == "facts":
+            observations = gather(repository_facts(repository, loaded.registry))
+            print(render_facts(observations))
+            return (
+                1
+                if any(fact.state is FactState.ERROR for fact in observations.values())
+                else 0
+            )
+        if args.command == "doctor":
+            diagnosis = diagnose(repository, loaded.registry)
+            print(render_doctor(repository, loaded.registry, loaded.plugins, diagnosis))
+            return 1 if diagnosis.errors else 0
         if args.command == "apply":
             applied = apply_repository(
                 repository, loaded.registry, allow_sudo=args.allow_sudo, jobs=args.jobs
@@ -73,16 +93,4 @@ def main(argv: Optional[List[str]] = None) -> int:
     except (ValueError, ProviderError, OSError) as exc:
         print("Etch: {}".format(exc), file=sys.stderr)
         return 1
-    print("Configuration structure OK: {}".format(repository.root))
-    for module in repository.modules:
-        print("  {}".format(module.name))
-    for plugin in loaded.plugins:
-        print(
-            "Plugin {} {} (API {}): {}".format(
-                plugin.name, plugin.version, plugin.api, plugin.root
-            )
-        )
-    print(
-        "Provider schemas, dependencies, facts and destination conflicts are not checked yet."
-    )
     return 0

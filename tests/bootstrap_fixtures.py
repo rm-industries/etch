@@ -25,7 +25,11 @@ class BootstrapFixture(unittest.TestCase):
         self.python.symlink_to(
             Path(getattr(sys, "_base_executable", sys.executable)).resolve()
         )
-        self.env = dict(os.environ, PATH=str(self.bin), PYTHONNOUSERSITE="1")
+        test_home = self.root / "home"
+        test_home.mkdir()
+        self.env = dict(
+            os.environ, PATH=str(self.bin), HOME=str(test_home), PYTHONNOUSERSITE="1"
+        )
         self.env.pop("PYTHONPATH", None)
         self.env.pop("PYTHONHOME", None)
         self.env.pop("VIRTUAL_ENV", None)

@@ -76,7 +76,12 @@ def plan_repository(
             entry = registry.action(name)
             observations = cast(Observations, context.facts)
             observations.requested.clear()
-            observation, plan = inspect_action(entry, deepcopy(action[name]), context)
+            try:
+                observation, plan = inspect_action(
+                    entry, deepcopy(action[name]), context
+                )
+            except ProviderError as exc:
+                raise ProviderError("{}: {}".format(key, exc)) from exc
             plan = replace(
                 plan,
                 facts=tuple(

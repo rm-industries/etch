@@ -68,10 +68,9 @@ themselves. Review plugin source before declaring it, including when running doc
 ## Diagnostics and scope
 
 `etch doctor` loads declared plugins and reports their name, release, compatible API
-and resolved root. It still checks module structure rather than provider-specific
-payloads, facts, graph correctness or destination conflicts. Core fact providers are
-registered before plugins, as are create and link action providers. Doctor still
-does not validate every action payload; full diagnostic integration is upcoming.
+and resolved root. It validates selected action schemas and facts, then checks the
+current dependency graph and destination claims. Core providers register before
+plugins. See [diagnostics](diagnostics.md) for deferred work and inspection limits.
 
 The implementation separates metadata validation (`metadata.py`), Python imports
 (`source.py`) and loading/registration orchestration (`loader.py`). Tests include

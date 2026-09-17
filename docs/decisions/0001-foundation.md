@@ -150,9 +150,9 @@ interactive privilege scheduling. A resource name is not a destination ownership
 
 ## Current limits
 
-Runtime, structural loading and shared provider contracts are implemented. A
-complete doctor is still pending. Doctor loads explicitly declared plugin code. Defaults are
-not automatically composed by the loader; providers must opt into the composition
-helper. No shell commands, installers or filesystem changes are applied.
-Follow-on work should expand validation without misrepresenting this foundation as
-a completed plan/apply engine.
+Runtime, structural loading, shared provider contracts, planning, staged apply,
+resource scheduling, and facts/doctor diagnostics are implemented. Doctor loads
+explicitly declared trusted plugin code and inspects selected state without
+applying actions. Deferred actions require fresh validation after refresh;
+opaque command outcomes cannot be certified. Defaults are not automatically
+composed by the loader; providers opt into the composition helper.

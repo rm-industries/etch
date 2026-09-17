@@ -1,8 +1,9 @@
 # Environment facts
 
 Core fact providers and plugin facts share the same registry. Core registrations
-precede plugins, preventing shadowing. The fact system is a Python API for the
-forthcoming planner and diagnostics; doctor does not yet gather module facts.
+precede plugins, preventing shadowing. Use `etch facts` to gather selected declarations and `etch doctor` to include
+probe results in repository validation. See [diagnostics](diagnostics.md) for
+filtering, output, exit statuses, and probe behavior.
 
 ## Providers
 
