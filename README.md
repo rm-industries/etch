@@ -155,3 +155,6 @@ for automated scenarios and the outstanding real-world migration.
 Use [`etch import`](docs/importing.md) to copy a public Git module into the fixed
 `modules/<name>/` consumer layout without executing it. Imports retain resolved-commit
 provenance and refuse existing destinations.
+
+Provider authors can follow the [authoring guide](docs/provider-authoring.md) for
+shipped examples, execution metadata, plugin distribution and core promotion.

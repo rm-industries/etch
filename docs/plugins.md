@@ -76,3 +76,12 @@ The implementation separates metadata validation (`metadata.py`), Python imports
 (`source.py`) and loading/registration orchestration (`loader.py`). Tests include
 relative-import isolation, rollback of registrations, core shadowing, incompatible
 metadata, and a recursive local clone with independently pinned engine/plugin sources.
+
+## Authoring and promotion
+
+The [provider authoring guide](provider-authoring.md) connects the shipped core and
+reference-plugin implementations to lifecycle, facts, claims and scheduler
+contracts. It also documents independent version axes and explicit consumer
+migration when a provider moves into core. Promotion preserves provider names and
+configuration; an old plugin registering the same name must be removed or updated,
+not silently overridden.
