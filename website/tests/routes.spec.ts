@@ -31,10 +31,10 @@ test('renders generic article tags on listings and detail pages', async ({ page 
   await page.goto(resolvePreviewPath('/articles/'));
   await expect(
     page.locator(`a[href="${resolvePreviewPath('/articles/getting-started/')}"]`).getByLabel('Article tags'),
-  ).toContainText('Design');
+  ).toContainText('Etch');
 
   await page.goto(resolvePreviewPath('/articles/getting-started/'));
-  await expect(page.getByLabel('Article tags')).toContainText('Defaults');
+  await expect(page.getByLabel('Article tags')).toContainText('Getting started');
 });
 
 test('resolves every internal page link', async ({ page, request }) => {
