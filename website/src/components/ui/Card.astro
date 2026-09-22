@@ -8,7 +8,7 @@ interface Props {
 }
 
 const { class: className, href, size = 'md' } = Astro.props;
-const classes = ['card bg-base-200', `card-${size}`, className];
+const classes = ['card rounded-sm border-t-2 border-primary bg-base-200 shadow-none', `card-${size}`, className];
 const resolvedHref = href ? resolveSiteHref(href) : undefined;
 ---
 

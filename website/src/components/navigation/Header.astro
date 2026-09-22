@@ -4,8 +4,8 @@ import Container from '../ui/Container.astro';
 import Navbar from './Navbar.astro';
 ---
 
-<header>
-  <Container class="py-4">
+<header class="border-b border-base-300 bg-base-100/90 backdrop-blur">
+  <Container class="py-5">
     <Navbar brand={site.name} links={site.navigation} currentPath={Astro.url.pathname} />
   </Container>
 </header>
