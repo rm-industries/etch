@@ -1,0 +1,11 @@
+---
+import { site } from '../../config/site';
+import Container from '../ui/Container.astro';
+import Navbar from './Navbar.astro';
+---
+
+<header>
+  <Container class="py-4">
+    <Navbar brand={site.name} links={site.navigation} currentPath={Astro.url.pathname} />
+  </Container>
+</header>

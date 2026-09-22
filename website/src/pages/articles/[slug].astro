@@ -1,0 +1,58 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+
+import Pagination from '../../components/navigation/Pagination.astro';
+import Container from '../../components/ui/Container.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getArticleNeighbors, getArticles, type Article } from '../../lib/articles';
+
+export const getStaticPaths = (async () => {
+  const articles = await getArticles({ includeDrafts: import.meta.env.DEV });
+
+  return articles.map((article) => ({
+    params: { slug: article.id },
+    props: { article, articles },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  article: Article;
+  articles: readonly Article[];
+}
+
+const { article, articles } = Astro.props;
+const { Content } = await render(article);
+const { previous, next } = getArticleNeighbors(article.id, articles);
+const publishedAt = article.data.publishedAt.toISOString();
+const formattedDate = article.data.publishedAt.toLocaleDateString('en', {
+  dateStyle: 'long',
+  timeZone: 'UTC',
+});
+---
+
+<BaseLayout
+  title={article.data.title}
+  description={article.data.description}
+  type="article"
+  publishedTime={publishedAt}
+>
+  <Container size="md" class="space-y-10 pb-16">
+    <article class="prose mx-auto">
+      {article.data.draft && <div class="badge badge-warning">Draft preview</div>}
+      <h1>{article.data.title}</h1>
+      <p><time datetime={publishedAt}>{formattedDate}</time></p>
+      <p class="lead">{article.data.description}</p>
+      <div class="card-actions" aria-label="Article tags">
+        {article.data.tags.map((tag) => <span class="badge badge-outline">{tag}</span>)}
+      </div>
+      <Content />
+    </article>
+
+    <Pagination
+      label="Article navigation"
+      previous={previous && { href: `/articles/${previous.id}/`, label: previous.data.title }}
+      next={next && { href: `/articles/${next.id}/`, label: next.data.title }}
+    />
+  </Container>
+</BaseLayout>

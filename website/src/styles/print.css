@@ -1,0 +1,34 @@
+.print-only {
+  display: none;
+}
+
+@media print {
+  @page {
+    margin: 0.6in;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  body > header,
+  body > footer,
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  a[href]::after {
+    content: ' (' attr(href) ')';
+  }
+
+  a[href^='/']::after,
+  a[href^='#']::after {
+    content: '';
+  }
+}

@@ -1,0 +1,29 @@
+---
+import { resolveSiteHref } from '../../lib/paths';
+
+interface Props {
+  class?: string;
+  href?: string;
+  size?: 'sm' | 'md' | 'lg';
+}
+
+const { class: className, href, size = 'md' } = Astro.props;
+const classes = ['card bg-base-200', `card-${size}`, className];
+const resolvedHref = href ? resolveSiteHref(href) : undefined;
+---
+
+{
+  resolvedHref ? (
+    <a href={resolvedHref} class:list={classes}>
+      <div class="card-body">
+        <slot />
+      </div>
+    </a>
+  ) : (
+    <div class:list={classes}>
+      <div class="card-body">
+        <slot />
+      </div>
+    </div>
+  )
+}

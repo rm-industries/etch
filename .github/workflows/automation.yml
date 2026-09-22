@@ -1,0 +1,59 @@
+---
+name: Repository Automation Validation
+
+on: # yamllint disable-line rule:truthy
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/**'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/**'
+  schedule:
+    - cron: '25 5 * * 1'
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  security:
+    name: Workflow security
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Scan workflows
+        uses: zizmorcore/zizmor-action@3dc1ecc9bcb9e94e9b2c709687979e1298497054 # v0.6.2
+        with:
+          advanced-security: true
+          collect: all
+
+  syntax:
+    name: Workflow syntax
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Validate workflows
+        uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2

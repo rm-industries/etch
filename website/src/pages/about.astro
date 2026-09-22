@@ -1,0 +1,22 @@
+---
+import Container from '../components/ui/Container.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { resolveSiteHref } from '../lib/paths';
+---
+
+<BaseLayout title="About" description="Etch keeps portable environment configuration in a repository you own.">
+  <Container size="md" class="pb-16">
+    <article class="prose mx-auto">
+      <div class="badge badge-outline">About Etch</div>
+      <h1>Configuration that belongs to you.</h1>
+      <p class="lead">Etch turns your environment configuration into small modules, deliberate profiles, and changes you can inspect before applying.</p>
+      <h2>Portable by design</h2>
+      <p>The engine runs on Linux and macOS with Python 3.9 or newer and the standard library. Configuration is literal data. The engine and explicitly declared plugins can be pinned alongside your consumer repository.</p>
+      <h2>Clear boundaries</h2>
+      <p>Providers implement capabilities; plugins distribute providers. Etch can coordinate package-manager providers, but it is not a package registry, tool version manager, or remote dependency resolver. Imported modules become files you own.</p>
+      <h2>Work in progress, visible in source</h2>
+      <p>Etch is under active development. The repository documents implemented behavior, compatibility limits, and remaining work. Review opaque commands and trusted plugin code before using them.</p>
+      <p><a href={resolveSiteHref('/articles/getting-started/')}>Start with the consumer template</a> or explore the <a href="https://github.com/rm-industries/etch/tree/main/docs">source documentation</a>.</p>
+    </article>
+  </Container>
+</BaseLayout>

@@ -158,3 +158,7 @@ provenance and refuse existing destinations.
 
 Provider authors can follow the [authoring guide](docs/provider-authoring.md) for
 shipped examples, execution metadata, plugin distribution and core promotion.
+
+The [Etch website](website/README.md) is a separate Forge-generated Node project
+under `website/`, targeting `https://www.rm-industries.com/etch/`. Its dependencies
+and build are independent of the Python runtime.

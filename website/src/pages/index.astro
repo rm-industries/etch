@@ -1,0 +1,57 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Card from '../components/ui/Card.astro';
+import Container from '../components/ui/Container.astro';
+import { resolveSiteHref } from '../lib/paths';
+---
+
+<BaseLayout>
+  <Container class="space-y-16 pb-16">
+    <section class="hero rounded-box bg-base-200 py-16 text-center">
+      <div class="hero-content flex-col">
+        <div class="badge badge-outline">Etch · Declarative environment management</div>
+        <div class="max-w-3xl space-y-6">
+          <h1 class="text-5xl font-bold tracking-tight sm:text-6xl">Make your environment yours.</h1>
+          <p class="text-lg">A portable, declarative environment manager for applying, composing, and sharing the configuration that makes a machine yours.</p>
+          <div class="flex flex-wrap justify-center gap-3">
+            <a href={resolveSiteHref('/articles/getting-started/')} class="btn btn-primary">Get started</a>
+            <a href="https://github.com/rm-industries/etch" class="btn btn-ghost">View on GitHub</a>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="space-y-8" aria-labelledby="workflow-title">
+      <div class="max-w-2xl space-y-3">
+        <h2 id="workflow-title" class="text-3xl font-bold">Your configuration. A plan you can review.</h2>
+        <p>Keep modules and profiles in your own repository. Inspect what needs to change, apply it explicitly, and keep the engine pinned.</p>
+      </div>
+      <div class="grid gap-6 md:grid-cols-3">
+        <Card size="lg">
+          <div class="badge">Describe</div>
+          <h3 class="card-title">Small, portable modules</h3>
+          <p>Keep each capability with its configuration and assets. Compose the modules you need into a profile.</p>
+        </Card>
+        <Card size="lg">
+          <div class="badge">Inspect</div>
+          <h3 class="card-title">Facts before actions</h3>
+          <p>Use observed commands, versions, and platform facts to choose the right configuration. Review the plan before applying.</p>
+        </Card>
+        <Card size="lg">
+          <div class="badge">Apply</div>
+          <h3 class="card-title">Explicit changes</h3>
+          <p>Providers declare ownership, dependencies, and shared resources. Completed declarative state becomes a no-op on the next run.</p>
+        </Card>
+      </div>
+    </section>
+    <section class="card bg-base-200" aria-labelledby="start-title">
+      <div class="card-body items-start">
+        <h2 id="start-title" class="card-title text-3xl">Start with one module.</h2>
+        <p>The consumer template includes a Git module, a developer profile, and a pinned engine. After cloning with submodules, Python 3.9 or newer is the only Etch runtime dependency.</p>
+        <pre class="w-full overflow-x-auto rounded-box bg-base-300 p-4"><code>./etch plan --profile developer
+./etch apply --profile developer
+./etch doctor --profile developer</code></pre>
+        <a href="https://github.com/rm-industries/etch-template" class="btn btn-primary">Use the template</a>
+      </div>
+    </section>
+  </Container>
+</BaseLayout>

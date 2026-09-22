@@ -1,0 +1,39 @@
+---
+import { resolveSiteHref } from '../../lib/paths';
+
+interface PaginationLink {
+  href: string;
+  label: string;
+}
+
+interface Props {
+  previous?: PaginationLink;
+  next?: PaginationLink;
+  label?: string;
+}
+
+const { previous, next, label = 'Pagination' } = Astro.props;
+---
+
+<nav aria-label={label} class="join grid grid-cols-2">
+  {
+    previous ? (
+      <a href={resolveSiteHref(previous.href)} rel="prev" class="btn btn-outline join-item">
+        <span aria-hidden="true">←</span>
+        <span>{previous.label}</span>
+      </a>
+    ) : (
+      <span class="btn btn-disabled btn-outline join-item" aria-disabled="true">No previous page</span>
+    )
+  }
+  {
+    next ? (
+      <a href={resolveSiteHref(next.href)} rel="next" class="btn btn-outline join-item">
+        <span>{next.label}</span>
+        <span aria-hidden="true">→</span>
+      </a>
+    ) : (
+      <span class="btn btn-disabled btn-outline join-item" aria-disabled="true">No next page</span>
+    )
+  }
+</nav>

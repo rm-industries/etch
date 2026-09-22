@@ -1,0 +1,18 @@
+---
+import Container from '../components/ui/Container.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { resolveSiteHref } from '../lib/paths';
+---
+
+<BaseLayout title="Page not found" description="The requested page could not be found." canonicalPath="/404/">
+  <Container size="sm" class="pb-16">
+    <section class="hero rounded-box bg-base-200 py-16 text-center">
+      <div class="hero-content flex-col">
+        <div class="badge badge-outline">404</div>
+        <h1 class="text-4xl font-bold">That page is not here.</h1>
+        <p>The address may have changed, or the page may no longer exist.</p>
+        <a href={resolveSiteHref('/')} class="btn btn-primary">Return home</a>
+      </div>
+    </section>
+  </Container>
+</BaseLayout>
