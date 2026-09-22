@@ -156,3 +156,9 @@ explicitly declared trusted plugin code and inspects selected state without
 applying actions. Deferred actions require fresh validation after refresh;
 opaque command outcomes cannot be certified. Defaults are not automatically
 composed by the loader; providers opt into the composition helper.
+
+## Module sharing
+
+[Decision 0002](0002-module-import.md) specifies the proposed source/ref/path syntax,
+copy boundaries and provenance for module imports. It does not change the current
+loader or introduce an import command; implementation is tracked in #25.

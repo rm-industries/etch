@@ -151,3 +151,7 @@ for selection, exit statuses, and inspection limits.
 The [generic developer profile](examples/developer/) demonstrates all eight target
 modules in an isolated consumer. See its [verification evidence](docs/developer-profile.md)
 for automated scenarios and the outstanding real-world migration.
+
+The proposed [module import contract](docs/decisions/0002-module-import.md) defines
+copy-only sharing. The `import` command is not implemented yet; implementation is
+tracked in #25.
