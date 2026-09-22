@@ -159,6 +159,5 @@ composed by the loader; providers opt into the composition helper.
 
 ## Module sharing
 
-[Decision 0002](0002-module-import.md) specifies the proposed source/ref/path syntax,
-copy boundaries and provenance for module imports. It does not change the current
-loader or introduce an import command; implementation is tracked in #25.
+[Decision 0002](0002-module-import.md) specifies source/ref/path syntax, copy boundaries and provenance for module
+imports, implemented in #25. The existing consumer module layout is unchanged.

@@ -14,6 +14,7 @@ from etchlib.diagnostics.render import render_doctor
 from etchlib.execution.render import render_apply
 from etchlib.execution.runner import apply_repository
 from etchlib.facts.repository import repository_facts
+from etchlib.importing.copy import import_module
 from etchlib.planning.build import plan_repository
 from etchlib.planning.render import render_plan
 from etchlib.plugins.loader import load_plugins
@@ -59,11 +60,32 @@ def main(argv: Optional[List[str]] = None) -> int:
             default=Path.cwd(),
             help="consumer repository root (default: current directory)",
         )
+    importer = commands.add_parser(
+        "import", help="copy a public Git module without executing it"
+    )
+    importer.add_argument("source")
+    importer.add_argument("--path", required=True, help="source module directory")
+    importer.add_argument(
+        "--ref", default="HEAD", help="HEAD, full branch/tag ref or full commit"
+    )
+    importer.add_argument("--repo", type=Path, default=Path.cwd())
+    importer.add_argument("--no-provenance", action="store_true")
     args = parser.parse_args(argv)
     if args.command is None:
         parser.print_help()
         return 0
     try:
+        if args.command == "import":
+            print(
+                import_module(
+                    args.repo,
+                    args.source,
+                    args.path,
+                    args.ref,
+                    provenance=not args.no_provenance,
+                )
+            )
+            return 0
         repository = load_repository(args.repo, args.profile, args.modules)
         loaded = load_plugins(
             repository.root, repository.defaults.get("plugins", []), core_registry()

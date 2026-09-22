@@ -1,7 +1,6 @@
 # 0002 — Copy-only module imports
 
-Status: proposed for review; implementation belongs to #25. This record does not
-add an `import` command to the current CLI.
+Status: accepted in #24; implemented in #25. See [import usage](../importing.md).
 
 Tracks [#24](https://github.com/rm-industries/etch/issues/24), implements the design
 boundary from architecture sections 97–100, and guides
@@ -200,7 +199,8 @@ unsafe/colliding paths, unsupported tree entries, non-executing provider reports
 existing destinations, resource limits and interrupted retrieval/publication.
 Use fake transport and local test object stores through the test harness without
 adding local transport to the production CLI. Exercise Python 3.9+ on Linux/macOS.
-This design PR introduces no executable code and does not claim those tests exist.
+The implementation covers these boundaries with local Git object stores and a
+test-only transport substitution; production accepts public HTTPS only.
 
 ## Git references
 
