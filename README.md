@@ -130,7 +130,7 @@ The launcher reports missing Python or missing Etch source; it never downloads
 Python or initializes submodules automatically. Python site packages are disabled
 with `-S`. Git is needed to retrieve submodules, but neither Git nor network access
 is required to start Etch after the sources are present. Bare `./install` currently
-shows CLI help; application is not implemented yet.
+shows CLI help; use an explicit command to inspect or apply configuration.
 
 The minimal example does not itself vendor Etch. To try the launcher, first place
 Etch source in that example's `vendor/etch` directory. The bootstrap tests construct
@@ -152,6 +152,6 @@ The [generic developer profile](examples/developer/) demonstrates all eight targ
 modules in an isolated consumer. See its [verification evidence](docs/developer-profile.md)
 for automated scenarios and the outstanding real-world migration.
 
-The proposed [module import contract](docs/decisions/0002-module-import.md) defines
-copy-only sharing. The `import` command is not implemented yet; implementation is
-tracked in #25.
+Use [`etch import`](docs/importing.md) to copy a public Git module into the fixed
+`modules/<name>/` consumer layout without executing it. Imports retain resolved-commit
+provenance and refuse existing destinations.
