@@ -1,8 +1,9 @@
 # Provider contracts
 
 Providers implement capabilities; plugins distribute providers. Core and external
-implementations register through the same `Registry`. This API is provisional
-while the engine and first integrations are built.
+implementations register through the same `Registry`. The API remains provisional;
+see the [authoring guide](provider-authoring.md) for shipped examples, distribution
+and core-promotion guidance.
 
 ## Files and responsibilities
 
@@ -52,16 +53,17 @@ apply. Plans carry module dependencies (`requires` and `after`), scoped fact inp
 filesystem claims, refresh references, execution resources, privilege requests,
 known network use and opaque-side-effect flags. Provider code must accurately
 declare these constraints. A successful plan is not permission to execute it:
-the future engine must validate dependency, ownership and privilege constraints
-before invoking `apply`. The apply contract returns an `ApplyResult`; this change
-does not add an executor or an apply CLI.
+the engine validates dependency, ownership, resource and privilege constraints
+before invoking `apply`. The apply contract returns an `ApplyResult`;
+[staged application](applying.md) describes dispatch, refresh and failure behavior.
 
 `gather_fact` validates and returns VALUE, UNAVAILABLE, STALE or ERROR observations.
 UNAVAILABLE and ERROR require explanations and cannot contain values. VALUE may
 legitimately contain `None`; STALE may retain an earlier observation. Fact references
 use separate module/name fields, so identical local names in different modules
 remain distinct. A `None` module denotes global built-ins. The [fact store](facts.md)
-implements lazy caching and invalidation; executor-driven refresh is upcoming.
+implements lazy caching and invalidation; successful apply triggers declared
+refresh. A fresh probe returning STALE is converted to ERROR by the store.
 
 Records have frozen fields and plan metadata uses tuples. Provider-owned payloads,
 observed values and the context's fact mapping are not recursively frozen; providers
@@ -72,14 +74,13 @@ Providers can normalize dictionary options with
 Composition is atomic replacement, not recursive merging. Non-dictionary provider
 payloads need provider-specific normalization; the registry does not assume a schema.
 
-## Current scope
+## Implemented scope
 
-The tests run stateful core-origin and external-origin fixtures through the same
-registration, validation, inspection, planning and explicit application interfaces.
-These are test fixtures, not shipped core providers. Explicit plugin loading and
-API compatibility checks are implemented; see [plugin loading](plugins.md).
-Core providers, planning, staged execution, scheduling, and [doctor diagnostics](diagnostics.md)
-now use these contracts.
+Shipped core providers and the external VS Code/Homebrew bundles use these
+contracts, exercised by provider and integration tests. Explicit plugin loading,
+API compatibility checks, planning, staged execution, resource scheduling and
+[doctor diagnostics](diagnostics.md) are implemented. See the
+[authoring guide](provider-authoring.md) for source and executable-test links.
 
 ## Concurrent application
 
