@@ -1,0 +1,3 @@
+# Generic example; no personal paths or credentials.
+autoload -Uz compinit
+compinit

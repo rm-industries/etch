@@ -147,3 +147,7 @@ Use `./etch facts --profile developer` to inspect scoped fact values and reasons
 or `./etch doctor --profile developer` to check provider schemas, probes, the
 current dependency graph, and destination claims. See [facts and doctor](docs/diagnostics.md)
 for selection, exit statuses, and inspection limits.
+
+The [generic developer profile](examples/developer/) demonstrates all eight target
+modules in an isolated consumer. See its [verification evidence](docs/developer-profile.md)
+for automated scenarios and the outstanding real-world migration.
