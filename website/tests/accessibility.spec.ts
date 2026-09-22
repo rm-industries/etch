@@ -79,7 +79,7 @@ test('honors reduced-motion preferences', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto(resolvePreviewPath('/'));
 
-  const motionStyles = await page.getByRole('link', { name: 'Browse the articles' }).evaluate((element) => {
+  const motionStyles = await page.getByRole('link', { name: 'Get started', exact: true }).evaluate((element) => {
     const styles = getComputedStyle(element);
 
     return {
