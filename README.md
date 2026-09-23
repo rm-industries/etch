@@ -14,6 +14,8 @@ non-mutating, provider-aware plans, including conditions, facts, dependency orde
 and destination ownership checks. Staged `apply` refreshes declared facts and
 revalidates newly active work. Use `--jobs` for [resource-aware concurrency](docs/scheduling.md).
 Further integrations are tracked in the [roadmap](https://github.com/rm-industries/etch/issues/2).
+See the [compatibility policy](docs/compatibility.md) and
+[release procedure](docs/releasing.md) before pinning a source release.
 
 To work on Etch, start with the [contributor guide](CONTRIBUTING.md).
 
