@@ -1,0 +1,64 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Terminal from '../components/ui/Terminal.astro';
+import WorkflowPreview from '../components/ui/WorkflowPreview.astro';
+import Card from '../components/ui/Card.astro';
+import Container from '../components/ui/Container.astro';
+import { resolveSiteHref } from '../lib/paths';
+---
+
+<BaseLayout>
+  <Container class="space-y-20 pb-20">
+    <section class="grid grid-cols-1 items-center gap-12 py-16 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:py-24">
+      <div class="min-w-0 space-y-8">
+        <p class="font-mono text-sm font-bold tracking-[0.12em] uppercase">Etch / By RM Industries</p>
+        <div class="space-y-6">
+          <h1 class="max-w-3xl text-[clamp(2.75rem,15vw,3.75rem)] leading-[0.94] font-bold tracking-[-0.055em] text-balance sm:text-7xl lg:text-8xl">Make your environment yours.</h1>
+          <p class="max-w-xl text-lg leading-relaxed">A portable, declarative environment manager for applying, composing, and sharing the configuration that makes a machine yours.</p>
+          <div class="flex flex-wrap gap-3">
+            <a href={resolveSiteHref('/docs/getting-started/')} class="btn btn-primary">Get started</a>
+            <a href="https://github.com/rm-industries/etch" class="btn btn-ghost">View on GitHub</a>
+          </div>
+        </div>
+      </div>
+      <WorkflowPreview />
+    </section>
+    <section class="space-y-10 border-t border-base-300 pt-10" aria-labelledby="workflow-title">
+      <div class="max-w-2xl space-y-3">
+        <h2 id="workflow-title" class="text-4xl leading-tight font-bold tracking-tight sm:text-5xl">Your configuration. A plan you can review.</h2>
+        <p>Keep modules and profiles in your own repository. Inspect what needs to change, apply it explicitly, and keep the engine pinned.</p>
+      </div>
+      <div class="grid gap-6 md:grid-cols-3">
+        <Card size="lg">
+          <div class="border-l-4 border-primary pl-3 font-mono text-sm font-bold">01 / Describe</div>
+          <h3 class="card-title">Small, portable modules</h3>
+          <p>Keep each capability with its configuration and assets. Compose the modules you need into a profile.</p>
+        </Card>
+        <Card size="lg">
+          <div class="border-l-4 border-primary pl-3 font-mono text-sm font-bold">02 / Inspect</div>
+          <h3 class="card-title">Facts before actions</h3>
+          <p>Use observed commands, versions, and platform facts to choose the right configuration. Review the plan before applying.</p>
+        </Card>
+        <Card size="lg">
+          <div class="border-l-4 border-primary pl-3 font-mono text-sm font-bold">03 / Apply</div>
+          <h3 class="card-title">Explicit changes</h3>
+          <p>Providers declare ownership, dependencies, and shared resources. Completed declarative state becomes a no-op on the next run.</p>
+        </Card>
+      </div>
+    </section>
+    <section class="border-y border-base-300" aria-labelledby="start-title">
+      <div class="grid items-start gap-6 py-10 lg:grid-cols-2">
+        <div class="space-y-5">
+        <h2 id="start-title" class="card-title text-4xl tracking-tight sm:text-5xl">Start with one module.</h2>
+        <p>The consumer template includes a Git module, a developer profile, and a pinned engine. After cloning with submodules, Python 3.9 or newer is the only Etch runtime dependency.</p>
+        <a href="https://github.com/rm-industries/etch-template" class="btn btn-primary">Use the template</a>
+        </div>
+        <Terminal>
+          <pre data-prefix="$"><code><span class="terminal-command">./etch</span> <span class="terminal-argument">plan</span> <span class="terminal-option">--profile</span> <span class="terminal-argument">developer</span></code></pre>
+          <pre data-prefix="$"><code><span class="terminal-command">./etch</span> <span class="terminal-argument">apply</span> <span class="terminal-option">--profile</span> <span class="terminal-argument">developer</span></code></pre>
+          <pre data-prefix="$"><code><span class="terminal-command">./etch</span> <span class="terminal-argument">doctor</span> <span class="terminal-option">--profile</span> <span class="terminal-argument">developer</span></code></pre>
+        </Terminal>
+      </div>
+    </section>
+  </Container>
+</BaseLayout>

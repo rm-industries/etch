@@ -1,0 +1,24 @@
+---
+import SeoHead from '../../components/seo/SeoHead.astro';
+import { site } from '../../config/site';
+---
+
+<!doctype html>
+<html lang={site.language}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="robots" content="noindex, nofollow" />
+    <SeoHead title="Content Manager" description={`Content management for ${site.name}.`} canonicalPath="/admin/" />
+    <script>
+      import { init } from '@sveltia/cms';
+
+      import { sveltiaConfig } from '../../integrations/sveltia/config';
+      import { registerSveltiaPreviews } from '../../integrations/sveltia/previews';
+
+      registerSveltiaPreviews();
+      init({ config: sveltiaConfig });
+    </script>
+  </head>
+  <body></body>
+</html>

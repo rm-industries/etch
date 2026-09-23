@@ -1,0 +1,41 @@
+---
+import Footer from '../components/navigation/Footer.astro';
+import Header from '../components/navigation/Header.astro';
+import SeoHead from '../components/seo/SeoHead.astro';
+import ThemeHead from '../components/theme/ThemeHead.astro';
+import { site } from '../config/site';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  canonicalPath?: string;
+  type?: 'article' | 'website';
+  publishedTime?: string;
+}
+
+const { title, description, canonicalPath, type, publishedTime } = Astro.props;
+---
+
+<!doctype html>
+<html lang={site.language}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <SeoHead {title} {description} {canonicalPath} {type} {publishedTime} />
+    <ThemeHead />
+  </head>
+  <body>
+    <a
+      href="#main-content"
+      class="btn btn-primary btn-sm sr-only opacity-0 focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:opacity-100"
+    >
+      Skip to content
+    </a>
+    <Header />
+    <main id="main-content" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

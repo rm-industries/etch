@@ -1,0 +1,34 @@
+---
+import { site } from '../../config/site';
+import { isExternalHref } from '../../lib/navigation';
+import { resolveSiteHref } from '../../lib/paths';
+import Container from '../ui/Container.astro';
+---
+
+<footer class="bg-base-200">
+  <Container class="footer footer-horizontal py-10">
+    <aside>
+      <h2>{site.name}</h2>
+      <p>{site.description}</p>
+      <p>© {new Date().getFullYear()} {site.name}</p>
+    </aside>
+
+    {
+      site.socialLinks.length > 0 && (
+        <nav aria-label="Social links">
+          <h2>Elsewhere</h2>
+          {site.socialLinks.map((item) => (
+            <a
+              href={resolveSiteHref(item.href)}
+              class="link link-hover"
+              target={isExternalHref(item.href) ? '_blank' : undefined}
+              rel={isExternalHref(item.href) ? 'noopener noreferrer' : undefined}
+            >
+              {item.label}
+            </a>
+          ))}
+        </nav>
+      )
+    }
+  </Container>
+</footer>

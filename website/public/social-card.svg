@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <title>Etch</title>
+  <desc>Etch: Make your environment yours.</desc>
+  <rect width="1200" height="630" fill="#1e1e2e" />
+  <rect x="72" y="72" width="1056" height="486" rx="40" fill="#313244" />
+  <text x="600" y="290" fill="#cdd6f4" font-family="system-ui, sans-serif" font-size="112" font-weight="700" text-anchor="middle">Etch</text>
+  <text x="600" y="380" fill="#bac2de" font-family="system-ui, sans-serif" font-size="38" text-anchor="middle">Make your environment yours.</text>
+</svg>

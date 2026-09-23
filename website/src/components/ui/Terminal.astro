@@ -1,0 +1,15 @@
+<div class="terminal mockup-code w-full min-w-0 bg-base-300 text-base-content shadow-xl">
+  <slot />
+</div>
+
+<style>
+  .terminal :global(pre) {
+    padding-right: 1rem;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .terminal :global(pre)::before {
+    margin-right: 1rem;
+  }
+</style>

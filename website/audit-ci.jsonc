@@ -1,0 +1,27 @@
+{
+  "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
+  "high": true,
+  "allowlist": [
+    {
+      "GHSA-jmr9-qjv8-65gv": {
+        "active": true,
+        "expiry": "2026-11-30",
+        "notes": "Lighthouse CI development-only browser download path; Forge uses the installed CI browser and does not extract untrusted archives.",
+      },
+    },
+    {
+      "GHSA-7pqw-9j4j-h8q3": {
+        "active": true,
+        "expiry": "2026-11-30",
+        "notes": "Lighthouse CI development-only browser download path; Forge uses the installed CI browser and does not extract untrusted archives.",
+      },
+    },
+    {
+      "GHSA-ph9p-34f9-6g65": {
+        "active": true,
+        "expiry": "2026-11-30",
+        "notes": "Lighthouse CI development-only temporary files use tool-controlled names and paths, not attacker-provided prefixes or postfixes.",
+      },
+    },
+  ],
+}
