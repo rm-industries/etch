@@ -36,9 +36,25 @@ Fonts deliberately exercise only destination selection without a licensed font
 payload. Existing bootstrap tests separately verify engine acquisition and
 isolated imports; this suite begins with an already vendored engine.
 
+## Template consumer smoke
+
+The [Etch template](https://github.com/rm-industries/etch-template) is also
+checked as a real consumer in `.github/workflows/template-consumer.yml`. The
+workflow pins a reviewed template revision, substitutes the candidate engine
+checkout for its submodule contents, and runs the template launcher on Linux
+and macOS with Python 3.9 and 3.14. Both the developer profile and standalone
+Git module run with an isolated home. The check verifies that bare `./etch`
+only previews, `plan` and `doctor` succeed, the first apply creates the expected
+Git link, and the second apply leaves declarative state unchanged. This catches
+integration drift between the template and the engine without moving the
+template's committed submodule pin.
+
+The template contains generic Git configuration only. It does not replace the
+eight-module fixture above or prove a personal dotfiles migration.
+
 ## Real-world dogfood evidence
 
-As of September 22, 2026, the linked
+The linked
 [personal migration issue](https://github.com/rahul0705/dotfiles/issues/81) is open,
 its acceptance checklist is unchecked, and it has no recorded run evidence in
 comments. **No real developer-profile migration or installation is claimed by

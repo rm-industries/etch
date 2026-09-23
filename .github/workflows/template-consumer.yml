@@ -1,0 +1,34 @@
+name: Template consumer smoke
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  consumer:
+    name: ${{ matrix.os }} / Python ${{ matrix.python }} / ${{ matrix.selection }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ['3.9', '3.14']
+        selection: [profile, git]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: rm-industries/etch-template
+          ref: 354d6e06bcf3f4c57269f60686f7520d31d90acb
+          path: consumer
+          persist-credentials: false
+          submodules: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify the candidate engine with the template
+        run: bash tests/template_consumer_smoke.sh "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE/consumer" "${{ matrix.selection }}"
