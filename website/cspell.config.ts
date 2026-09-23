@@ -13,6 +13,8 @@ export default defineConfig({
     'GHSA',
     'lhci',
     'lighthouseci',
+    'labelledby',
+    'linecap',
     'Macchiato',
     'prefersdark',
     'Sveltia',

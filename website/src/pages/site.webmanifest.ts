@@ -14,7 +14,7 @@ export const GET: APIRoute = () =>
       display: 'standalone',
       background_color: darkThemeColor,
       theme_color: darkThemeColor,
-      icons: [{ src: resolveSiteHref('/favicon.svg'), sizes: 'any', type: 'image/svg+xml' }],
+      icons: [{ src: resolveSiteHref('/logo.svg'), sizes: 'any', type: 'image/svg+xml' }],
     }),
     { headers: { 'Content-Type': 'application/manifest+json' } },
   );

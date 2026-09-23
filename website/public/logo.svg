@@ -1,8 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
-  <title>Etch</title>
-  <desc>Etch: Make your environment yours.</desc>
-  <rect width="1200" height="630" fill="#1e1e2e" />
-  <g transform="translate(-48 -17) scale(.54)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="227 215 800 800" role="img" aria-labelledby="title description">
+  <title id="title">Etch</title>
+  <desc id="description">A stylus marks a stack of three rounded layers beside a four-point spark.</desc>
   <defs>
     <linearGradient id="lavender" x1="328" y1="418" x2="927" y2="758" gradientUnits="userSpaceOnUse">
       <stop stop-color="#c0c2ff" />
@@ -29,7 +27,4 @@
   <path d="m757 410 68 44-39 50q-14 19-32 30l-48 20 4-65q1-24 17-44l30-35Z" fill="url(#stylus)" />
   <path d="m771 392 99-126q22-28 47-22 27 6 28 36 1 16-11 31l-94 125-69-44Z" fill="url(#stylus)" />
   <path d="M454 298q7-1 9 13 8 48 67 69 15 5 1 12-52 15-68 70-6 19-12 0-16-53-74-69-17-5-1-12 56-17 71-71 3-11 7-12Z" fill="url(#coral)" />
-  </g>
-  <text x="550" y="294" fill="#cdd6f4" font-family="system-ui, sans-serif" font-size="112" font-weight="700">Etch</text>
-  <text x="555" y="365" fill="#bac2de" font-family="system-ui, sans-serif" font-size="37">Make your environment yours.</text>
 </svg>

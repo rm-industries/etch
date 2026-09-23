@@ -8,7 +8,7 @@ import { resolveSiteHref } from '../../lib/paths.ts';
 export const sveltiaConfig = {
   load_config_file: false,
   app_title: cmsBranding.appTitle,
-  logo: { src: resolveSiteHref('/favicon.svg') },
+  logo: { src: resolveSiteHref('/logo.svg') },
   backend: {
     name: 'github',
     repo: 'rm-industries/etch',
