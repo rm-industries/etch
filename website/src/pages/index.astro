@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Terminal from '../components/ui/Terminal.astro';
 import WorkflowPreview from '../components/ui/WorkflowPreview.astro';
 import Card from '../components/ui/Card.astro';
 import Container from '../components/ui/Container.astro';
@@ -52,9 +53,11 @@ import { resolveSiteHref } from '../lib/paths';
         <p>The consumer template includes a Git module, a developer profile, and a pinned engine. After cloning with submodules, Python 3.9 or newer is the only Etch runtime dependency.</p>
         <a href="https://github.com/rm-industries/etch-template" class="btn btn-primary">Use the template</a>
         </div>
-        <pre class="w-full overflow-x-auto rounded-box bg-base-300 p-4"><code>./etch plan --profile developer
-./etch apply --profile developer
-./etch doctor --profile developer</code></pre>
+        <Terminal>
+          <pre data-prefix="$"><code><span class="terminal-command">./etch</span> <span class="terminal-argument">plan</span> <span class="terminal-option">--profile</span> <span class="terminal-argument">developer</span></code></pre>
+          <pre data-prefix="$"><code><span class="terminal-command">./etch</span> <span class="terminal-argument">apply</span> <span class="terminal-option">--profile</span> <span class="terminal-argument">developer</span></code></pre>
+          <pre data-prefix="$"><code><span class="terminal-command">./etch</span> <span class="terminal-argument">doctor</span> <span class="terminal-option">--profile</span> <span class="terminal-argument">developer</span></code></pre>
+        </Terminal>
       </div>
     </section>
   </Container>
