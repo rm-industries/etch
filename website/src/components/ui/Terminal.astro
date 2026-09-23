@@ -3,20 +3,6 @@
 </div>
 
 <style>
-  /* cspell:ignore oklch */
-  /* Lower lightness without mixing in gray; preserve the theme hue and chroma. */
-  .terminal :global(.terminal-command) {
-    color: light-dark(oklch(from var(--color-success) calc(l * 0.7) c h), var(--color-success));
-  }
-
-  .terminal :global(.terminal-option) {
-    color: light-dark(oklch(from var(--color-warning) calc(l * 0.7) c h), var(--color-warning));
-  }
-
-  .terminal :global(.terminal-argument) {
-    color: light-dark(oklch(from var(--color-info) calc(l * 0.7) c h), var(--color-info));
-  }
-
   .terminal :global(pre) {
     padding-right: 1rem;
     white-space: pre-wrap;

@@ -90,6 +90,19 @@ body {
   color: light-dark(oklch(from var(--shiki-light) calc(l * 0.7) c h), var(--shiki-dark));
 }
 
+/* cspell:ignore oklch */
+:is(.terminal, .astro-code) .terminal-command {
+  color: light-dark(oklch(from var(--color-success) calc(l * 0.7) c h), var(--color-success));
+}
+
+:is(.terminal, .astro-code) .terminal-option {
+  color: light-dark(oklch(from var(--color-warning) calc(l * 0.7) c h), var(--color-warning));
+}
+
+:is(.terminal, .astro-code) .terminal-argument {
+  color: light-dark(oklch(from var(--color-info) calc(l * 0.7) c h), var(--color-info));
+}
+
 :where(a, button, input, select, summary, textarea):focus-visible {
   border-radius: 0.125rem;
   outline: 0.1875rem solid var(--color-primary);

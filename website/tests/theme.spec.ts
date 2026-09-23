@@ -24,6 +24,33 @@ test('uses Latte for light mode and Mocha for dark mode', async ({ page }) => {
   await expect(page.locator('main h1')).toHaveCSS('color', toRgb(flavors.mocha.colors.text.hex));
 });
 
+test('uses the same shell token colors on the home page and in Docs', async ({ page }) => {
+  for (const colorScheme of ['light', 'dark'] as const) {
+    await page.emulateMedia({ colorScheme });
+    await page.goto(resolvePreviewPath('/'));
+    const homeColors = await page
+      .locator('.terminal')
+      .first()
+      .evaluate((terminal) =>
+        ['command', 'option', 'argument'].map(
+          (role) => getComputedStyle(terminal.querySelector(`.terminal-${role}`)!).color,
+        ),
+      );
+
+    await page.goto(resolvePreviewPath('/docs/getting-started/'));
+    const docsColors = await page
+      .locator('.astro-code')
+      .first()
+      .evaluate((terminal) =>
+        ['command', 'option', 'argument'].map(
+          (role) => getComputedStyle(terminal.querySelector(`.terminal-${role}`)!).color,
+        ),
+      );
+
+    expect(docsColors).toEqual(homeColors);
+  }
+});
+
 test('makes every Catppuccin flavor available explicitly', async ({ page }) => {
   await page.goto(resolvePreviewPath('/'));
 
