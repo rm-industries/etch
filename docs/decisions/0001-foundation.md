@@ -1,6 +1,7 @@
 # 0001 — Foundation and initial contracts
 
-Status: proposed for review; configuration-loading choices implemented in this branch.
+Status: accepted. The initial contracts below are implemented; linked decisions
+refine their boundaries.
 
 Source: [architecture baseline](https://github.com/rm-industries/etch/issues/1).
 Tracks [#3](https://github.com/rm-industries/etch/issues/3). This record distinguishes
@@ -23,10 +24,10 @@ Use `defaults.conf`, `modules/<name>/module.conf`, and `profiles/<name>.conf`.
 Every file is a literal dictionary declaring integer `schema_version: 1`.
 Module/profile names match their directory/filename. Profiles contain an ordered
 `modules` list. Module actions are ordered dictionaries; providers validate their
-own payloads in #6. Module conditions, facts, requires and after retain the source
+own payloads. Module conditions, facts, requires and after retain the source
 document's forms. Exact provider option schemas are owned by their implementation issues.
 
-The root defaults document will hold `plugins: ["vendor/etch-vscode"]` and
+The root defaults document accepts `plugins: ["vendor/etch-vscode"]` and
 `defaults: {"link": {...}}`. Each provider declares which options accept defaults.
 An action overrides individual allowed default keys; lists replace rather than
 concatenate, and nested merge is unsupported unless a provider documents it.
@@ -34,10 +35,11 @@ The loader checks defaults shape; `compose_defaults` provides opt-in atomic repl
 for provider implementations. Providers opt in during their own option normalization.
 
 Use `etch <command> [module ... | --profile NAME] --repo PATH`. Both selectors
-together are invalid. No implicit profile is applied. Doctor inspects all modules
-when no selector is supplied; plan/apply will require explicit selection until a
-default-profile policy is accepted. Discovery validates every module's structural
-identity, including unselected modules; provider applicability is resolved later.
+together are invalid. No implicit profile is applied by the core CLI. `facts`,
+`doctor`, `plan`, and `apply` select all discovered modules when no selector is
+supplied. The consumer template's bare `./etch` wrapper separately displays its
+developer plan. Discovery validates every module's structural identity, including
+unselected modules; provider applicability is resolved later.
 
 Assets resolve against the module root. Absolute paths, traversal and resolved
 symlink escapes are rejected by the asset resolver. Destination expansion is
@@ -81,19 +83,20 @@ API stabilizes; consumers can vendor them. Dedicated distribution repos can foll
 ## Ownership, ordering and staged validation
 
 Filesystem claims begin with exclusive managed destinations and compatible shared
-directory-creation requirements. Do not add non-filesystem claims yet. #12 must
-specify ancestor/descendant and symlink normalization before #13–#14 mutate files.
+directory-creation requirements. Non-filesystem claims are deferred.
+Ancestor/descendant and symlink normalization are specified in
+[ownership](../ownership.md).
 Clean must establish evidence of managed ownership; absence of evidence means
-preserve. The proof mechanism is delegated to #14 rather than assuming every broken
+preserve. Link receipts provide that proof; Etch does not assume every broken
 link is managed. Directories are not recursively owned simply because Etch creates them.
 
 `requires` must be local and active; `after` orders active references and emits a
 warning for missing/inactive names. Stable declaration order breaks scheduling ties.
-Explicit refresh is authoritative. #11/#18 determine producer edges and lazy refresh;
+Explicit refresh is authoritative. The graph validates producer edges;
 newly active nodes always receive complete validation before application.
 Providers report resources as strings, initially `package-manager:<name>`,
-`application:<name>`, `sudo-interactive`, and `network`. #19 owns capacities and
-interactive privilege scheduling. A resource name is not a destination ownership claim.
+`application:<name>`, `sudo-interactive`, and `network`.
+[Scheduling](../scheduling.md) defines capacities and interactive privilege handling. A resource name is not a destination ownership claim.
 
 ## Complete disposition of section 142 questions
 
@@ -125,8 +128,8 @@ interactive privilege scheduling. A resource name is not a destination ownership
 | Reference plugins in monorepo | initially yes, externally loaded bundles; #20/#21 |
 | providers command in v1 | deferred; origin visible in plan/doctor |
 | plugins command in v1 | deferred; compatibility visible in plan/doctor |
-| Inspection result types | normalized state plus observed data; finalize #6 |
-| Plan result types | normalized metadata plus apply payload; finalize #6 |
+| Inspection result types | normalized state plus observed data; [provider contracts](../providers.md) |
+| Plan result types | normalized metadata plus apply payload; [provider contracts](../providers.md) |
 | Claim hierarchy | filesystem destinations/shared directories; #12 |
 | Non-filesystem claims | deferred until a concrete integration needs them |
 | Execution resource naming | names above; #19 |
