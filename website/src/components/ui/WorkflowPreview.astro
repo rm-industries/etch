@@ -1,30 +1,40 @@
 <figure class="min-w-0" aria-label="Illustrative Etch plan for a developer profile">
-  <div class="flex items-center justify-between gap-4 border-b-2 border-base-content pb-4 font-mono text-xs tracking-widest uppercase">
-    <span>Environment / 001</span>
-    <span class="rounded-full border border-base-content px-3 py-1">Preview</span>
-  </div>
-  <div class="bg-base-200 p-5 sm:p-8">
-    <div class="mb-8 flex items-start justify-between gap-4">
-      <div>
-        <p class="mb-2 font-mono text-xs uppercase tracking-widest">Profile</p>
-        <p class="text-3xl font-bold tracking-tight">developer<span class="text-primary" aria-hidden="true">_</span></p>
-      </div>
-      <span class="font-mono text-4xl text-base-content/30" aria-hidden="true">~/</span>
-    </div>
-    <div class="border-y border-base-content/20">
-      <div class="grid grid-cols-[1.5rem_minmax(0,1fr)] gap-3 py-5">
-        <span class="font-mono" aria-hidden="true">+</span>
-        <div class="min-w-0">
-          <div class="flex flex-wrap items-center justify-between gap-2"><strong>git</strong><span class="font-mono text-xs">1 planned change</span></div>
-          <p class="mt-2 break-all font-mono text-sm">files/gitconfig → ~/.gitconfig</p>
-        </div>
-      </div>
-      <div class="flex items-center gap-3 border-t border-base-content/20 py-4 text-sm"><span class="font-mono" aria-hidden="true">→</span><span>Review first. Apply when ready.</span></div>
-    </div>
-    <div class="mt-7 space-y-3">
-      <p class="font-mono text-xs uppercase tracking-widest">Nothing changed yet</p>
-      <code class="block break-words text-sm">./etch plan --profile developer</code>
-    </div>
+  <div class="mockup-code w-full min-w-0 bg-base-300 text-base-content shadow-xl">
+    <pre data-prefix="$"><code><span class="terminal-command">./etch</span> <span class="terminal-argument">plan</span> <span class="terminal-option">--profile</span> <span class="terminal-argument">developer</span></code></pre>
+    <pre data-prefix=" "><code> </code></pre>
+    <pre data-prefix=" "><code>Profile: <span class="terminal-argument">developer</span></code></pre>
+    <pre data-prefix=" "><code> </code></pre>
+    <pre data-prefix="+"><code>git · <span class="terminal-option">1 planned change</span></code></pre>
+    <pre data-prefix=" "><code>files/gitconfig → ~/.gitconfig</code></pre>
+    <pre data-prefix=" "><code> </code></pre>
+    <pre data-prefix="→"><code>Review first. Apply when ready.</code></pre>
+    <pre data-prefix=" " class="terminal-command"><code>Nothing changed yet.</code></pre>
   </div>
   <figcaption class="mt-3 flex justify-between gap-4 font-mono text-xs"><span>An illustrative plan</span><span>Your configuration, made explicit.</span></figcaption>
 </figure>
+
+<style>
+  /* cspell:ignore oklch */
+  /* Lower lightness without mixing in gray; preserve the theme hue and chroma. */
+  .terminal-command {
+    color: light-dark(oklch(from var(--color-success) calc(l * 0.7) c h), var(--color-success));
+  }
+
+  .terminal-option {
+    color: light-dark(oklch(from var(--color-warning) calc(l * 0.7) c h), var(--color-warning));
+  }
+
+  .terminal-argument {
+    color: light-dark(oklch(from var(--color-info) calc(l * 0.7) c h), var(--color-info));
+  }
+
+  pre {
+    padding-right: 1rem;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  pre::before {
+    margin-right: 1rem;
+  }
+</style>
