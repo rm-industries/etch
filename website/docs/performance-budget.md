@@ -11,8 +11,8 @@ their production-relative locations.
 ## Enforced routes
 
 - `/` represents the landing-page layout and card content.
-- `/articles/` represents a content collection and repeated cards.
-- `/articles/getting-started/` represents rendered Markdown,
+- `/docs/` represents a content collection and repeated cards.
+- `/docs/getting-started/` represents rendered Markdown,
   typography, tags, and article pagination.
 
 The about and custom 404 pages reuse the same public layout with smaller or

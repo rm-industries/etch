@@ -1,12 +1,12 @@
 import { expect, test } from 'vitest';
 
-import { articleContentModel } from '../../config/content-models/articles.ts';
+import { docsContentModel } from '../../config/content-models/docs.ts';
 import { sveltiaConfig } from './config.ts';
 
 test('derives the article collection from the shared model', () => {
-  expect(sveltiaConfig.collections.map(({ name }) => name)).toEqual([articleContentModel.name]);
+  expect(sveltiaConfig.collections.map(({ name }) => name)).toEqual([docsContentModel.name]);
   expect(sveltiaConfig.collections[0]?.fields.map(({ name }) => name)).toEqual([
-    ...Object.keys(articleContentModel.fields),
+    ...Object.keys(docsContentModel.fields),
     'body',
   ]);
 });

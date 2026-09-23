@@ -8,11 +8,11 @@ test('uses primary navigation to move between pages and identify the current pag
   const navigation = page.getByRole('navigation', { name: 'Primary navigation' });
   await expect(navigation.getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
 
-  await navigation.getByRole('link', { name: 'Articles' }).click();
-  await expect(page).toHaveURL(resolvePreviewUrl('/articles/'));
-  await expect(page.getByRole('heading', { level: 1, name: 'Articles' })).toBeVisible();
+  await navigation.getByRole('link', { name: 'Docs' }).click();
+  await expect(page).toHaveURL(resolvePreviewUrl('/docs/'));
+  await expect(page.getByRole('heading', { level: 1, name: 'Docs' })).toBeVisible();
   await expect(
-    page.getByRole('navigation', { name: 'Primary navigation' }).getByRole('link', { name: 'Articles' }),
+    page.getByRole('navigation', { name: 'Primary navigation' }).getByRole('link', { name: 'Docs' }),
   ).toHaveAttribute('aria-current', 'page');
 });
 
@@ -30,14 +30,14 @@ test('opens mobile navigation and follows a configured link', async ({ page }) =
 });
 
 test('moves from the article listing into an article and through article pagination', async ({ page }) => {
-  await page.goto(resolvePreviewPath('/articles/'));
+  await page.goto(resolvePreviewPath('/docs/'));
 
   await page.getByRole('link', { name: /Getting started with Etch/u }).click();
-  await expect(page).toHaveURL(resolvePreviewUrl('/articles/getting-started/'));
+  await expect(page).toHaveURL(resolvePreviewUrl('/docs/getting-started/'));
   await expect(page.getByRole('heading', { level: 1, name: 'Getting started with Etch' })).toBeVisible();
 
-  const articleNavigation = page.getByRole('navigation', { name: 'Article navigation' });
+  const articleNavigation = page.getByRole('navigation', { name: 'Doc navigation' });
   await articleNavigation.getByRole('link', { name: /Modules and profiles/u }).click();
-  await expect(page).toHaveURL(resolvePreviewUrl('/articles/modules-and-profiles/'));
+  await expect(page).toHaveURL(resolvePreviewUrl('/docs/modules-and-profiles/'));
   await expect(page.getByRole('heading', { level: 1, name: 'Modules and profiles' })).toBeVisible();
 });

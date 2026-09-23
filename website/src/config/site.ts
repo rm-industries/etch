@@ -84,7 +84,7 @@ export const site = defineSiteConfig({
   socialImage: '/social-card.svg',
   navigation: [
     { label: 'Home', href: '/' },
-    { label: 'Articles', href: '/articles/' },
+    { label: 'Docs', href: '/docs/' },
     { label: 'About', href: '/about/' },
   ],
   socialLinks: [{ label: 'GitHub', href: 'https://github.com/rm-industries/etch' }],

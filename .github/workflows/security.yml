@@ -7,12 +7,14 @@ on: # yamllint disable-line rule:truthy
       - main
     paths:
       - 'website/**'
+      - 'docs/guides/**'
       - '.github/**'
   push:
     branches:
       - main
     paths:
       - 'website/**'
+      - 'docs/guides/**'
       - '.github/**'
   schedule:
     - cron: '40 5 * * 1'

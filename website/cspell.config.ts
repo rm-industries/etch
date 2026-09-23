@@ -16,6 +16,7 @@ export default defineConfig({
     'Macchiato',
     'prefersdark',
     'Sveltia',
+    'Shiki',
     'unreviewed',
     'WCAG',
     'Zizmor',

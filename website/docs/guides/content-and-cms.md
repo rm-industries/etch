@@ -1,12 +1,12 @@
 # Content and CMS editing
 
-Forge stores article content as Markdown in `src/content/articles/`. Astro and
+Forge stores article content as Markdown in `../docs/guides/`. Astro and
 Sveltia use the same model from
-`src/config/content-models/articles.ts`, so field rules are not duplicated.
+`src/config/content-models/docs.ts`, so field rules are not duplicated.
 
 ## Publish an article in Markdown
 
-Create `src/content/articles/my-first-article.md`:
+Create `../docs/guides/my-first-article.md`:
 
 ```md
 ---
@@ -27,7 +27,7 @@ development, type checking, and builds. Do not repeat the title as a top-level
 Markdown heading: the front matter `title` is the article's document title, and
 the article layout renders it as the page heading.
 
-Set `draft: true` while writing. Draft articles appear during local development
+Set `draft: true` while writing. Draft docs appear during local development
 but are omitted from production article pages and RSS output. Before publishing:
 
 ```sh
@@ -83,7 +83,7 @@ reachable on a deployed static site.
 
 ## Change article fields
 
-Edit only `src/config/content-models/articles.ts`. The registry passes the model
+Edit only `src/config/content-models/docs.ts`. The registry passes the model
 to both the Astro and Sveltia adapters.
 
 When adding or changing a field:

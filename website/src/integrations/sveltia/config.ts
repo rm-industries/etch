@@ -11,7 +11,7 @@ export const sveltiaConfig = {
   logo: { src: resolveSiteHref('/favicon.svg') },
   backend: {
     name: 'github',
-    repo: 'your-github-user/your-repository',
+    repo: 'rm-industries/etch',
     branch: 'main',
     auth_methods: ['token'],
     commit_messages: {
@@ -22,7 +22,7 @@ export const sveltiaConfig = {
       deleteMedia: 'content(assets): delete {{path}}',
     },
   },
-  media_folder: 'public/assets',
+  media_folder: 'website/public/assets',
   public_folder: resolveSiteHref('/assets'),
   output: { omit_empty_optional_fields: true },
   collections: contentModels.map((model) => createSveltiaCollection(model)),

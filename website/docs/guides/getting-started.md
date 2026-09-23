@@ -36,7 +36,7 @@ export const site = defineSiteConfig({
   socialImage: '/social-card.svg',
   navigation: [
     { label: 'Home', href: '/' },
-    { label: 'Articles', href: '/articles/' },
+    { label: 'Docs', href: '/docs/' },
     { label: 'About', href: '/about/' },
   ],
   socialLinks: [{ label: 'GitHub', href: 'https://github.com/example' }],
@@ -89,7 +89,7 @@ npm run quality:core
 npm run dev
 ```
 
-Inspect the homepage, the changed page, `/articles/`, and `/admin/` in the
+Inspect the homepage, the changed page, `/docs/`, and `/admin/` in the
 browser. Run the complete `npm run quality` gate before opening a pull request.
 
 Continue with [content and CMS editing](content-and-cms.md), then review

@@ -1,5 +1,12 @@
-import { createAstroCollections } from '@rm-industries/content-model/astro';
+import { createAstroSchema } from '@rm-industries/content-model/astro';
+import { glob } from 'astro/loaders';
+import { defineCollection } from 'astro:content';
 
-import { contentModels } from './config/content-models/registry.ts';
+import { docsContentModel } from './config/content-models/docs.ts';
 
-export const collections = createAstroCollections(contentModels);
+export const collections = {
+  docs: defineCollection({
+    loader: glob({ base: '../docs/guides', pattern: '**/*.md' }),
+    schema: (context) => createAstroSchema(docsContentModel, context),
+  }),
+};

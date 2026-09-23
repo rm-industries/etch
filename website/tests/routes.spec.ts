@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 import { site } from '../src/config/site';
 import { resolvePreviewPath, resolvePreviewUrl } from './preview';
 
-const routes = ['/', '/about/', '/articles/', '/articles/getting-started/', '/admin/', '/404/'];
+const routes = ['/', '/about/', '/docs/', '/docs/getting-started/', '/admin/', '/404/'];
 
 test('serves every baseline page with configured canonical and social metadata', async ({ page }) => {
   for (const route of routes) {
@@ -28,13 +28,13 @@ test('serves the content manager without allowing search indexing', async ({ pag
 });
 
 test('renders generic article tags on listings and detail pages', async ({ page }) => {
-  await page.goto(resolvePreviewPath('/articles/'));
+  await page.goto(resolvePreviewPath('/docs/'));
   await expect(
-    page.locator(`a[href="${resolvePreviewPath('/articles/getting-started/')}"]`).getByLabel('Article tags'),
+    page.locator(`a[href="${resolvePreviewPath('/docs/getting-started/')}"]`).getByLabel('Doc tags'),
   ).toContainText('Etch');
 
-  await page.goto(resolvePreviewPath('/articles/getting-started/'));
-  await expect(page.getByLabel('Article tags')).toContainText('Getting started');
+  await page.goto(resolvePreviewPath('/docs/getting-started/'));
+  await expect(page.getByLabel('Doc tags')).toContainText('Getting started');
 });
 
 test('resolves every internal page link', async ({ page, request }) => {
@@ -70,7 +70,7 @@ test('resolves every internal page link', async ({ page, request }) => {
 test('serves feed, crawler, manifest, and not-found metadata', async ({ request }) => {
   const feed = await request.get(resolvePreviewPath('/rss.xml'));
   expect(feed.ok()).toBe(true);
-  expect(await feed.text()).toContain(new URL('articles/getting-started/', site.url).href);
+  expect(await feed.text()).toContain(new URL('docs/getting-started/', site.url).href);
   expect(await feed.text()).not.toContain('future-draft');
 
   const robots = await request.get(resolvePreviewPath('/robots.txt'));

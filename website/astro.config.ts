@@ -11,6 +11,12 @@ export default defineConfig({
   base: deployment.base,
   integrations: [sitemap()],
   output: 'static',
+  markdown: {
+    shikiConfig: {
+      themes: { light: 'catppuccin-latte', dark: 'catppuccin-mocha' },
+      defaultColor: false,
+    },
+  },
   site: deployment.site,
   trailingSlash: 'always',
   vite: {

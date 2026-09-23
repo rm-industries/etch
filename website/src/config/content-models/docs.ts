@@ -1,10 +1,10 @@
 import { defineModel } from '@rm-industries/content-model';
 
-export const articleContentModel = defineModel({
-  name: 'articles',
-  label: 'Articles',
-  labelSingular: 'Article',
-  folder: 'src/content/articles',
+export const docsContentModel = defineModel({
+  name: 'docs',
+  label: 'Docs',
+  labelSingular: 'Doc',
+  folder: 'docs/guides',
   extensions: ['md', 'mdx'],
   slug: '{{slug}}',
   sort: {
@@ -32,7 +32,7 @@ export const articleContentModel = defineModel({
       kind: 'boolean',
       default: false,
       label: 'Draft',
-      help: 'Draft articles appear locally but are excluded from production builds and feeds.',
+      help: 'Draft docs appear locally but are excluded from production builds and feeds.',
     },
   },
   body: { name: 'body', label: 'Body', required: true },

@@ -23,7 +23,12 @@ Browser checks require Playwright browsers. Install them from this directory wit
 formatting, linting, spelling, unused-code checks, types, unit coverage, production
 build and artifact validation. Deployment smoke checks run after Pages deployment.
 
-Content lives in `src/content/articles/`, the landing/about pages in `src/pages/`,
+Public Markdown guides live in the repository’s `docs/guides/` directory. Only
+that directory is published as the `docs` collection at `/etch/docs/`; the other
+files in root `docs/` remain repository documentation. Fenced code blocks use
+shared terminal styling and Catppuccin syntax colors in both themes.
+
+The landing/about pages live in `src/pages/`,
 and shared identity/navigation in `src/config/site.ts`. Introductory pages link to
 the maintained repository documentation. The complete user guide and migration
 material remain tracked in Etch #29.
@@ -53,7 +58,7 @@ customized for Etch. Build/browser expectations use the resulting article routes
 ## Repository paths and Pages
 
 The repository-level [project workflow](../.github/workflows/project.yml) filters
-changes to `website/**` and its own workflow/composite action. Shell steps run in
+changes to `website/**`, `docs/guides/**`, and its own workflow/composite action. Shell steps run in
 `website`; dependency caching uses `website/package-lock.json`; build, download
 and Pages upload paths point to `website/dist`. Dependabot's npm directory is
 `/website`. The existing Python workflow is unchanged.

@@ -16,7 +16,7 @@ test('registers and renders the article preview', () => {
   const widgetFor = vi.fn<(name: string) => string>(() => 'rendered body');
   const result = render({ document: { body: { classList: { add } } }, widgetFor } as never);
 
-  expect(name).toBe('articles');
+  expect(name).toBe('docs');
   expect(add).toHaveBeenCalledWith('prose', 'mx-auto');
   expect(widgetFor).toHaveBeenCalledWith('body');
   expect(result).toBe('rendered body');

@@ -4,16 +4,16 @@ import { resolveSiteHref } from './paths';
 
 describe('resolveSiteHref', () => {
   it('keeps root-relative URLs unchanged for root deployments', () => {
-    expect(resolveSiteHref('/articles/', '/')).toBe('/articles/');
+    expect(resolveSiteHref('/docs/', '/')).toBe('/docs/');
   });
 
   it('prefixes root-relative URLs for project deployments', () => {
-    expect(resolveSiteHref('/articles/', '/forge/')).toBe('/forge/articles/');
-    expect(resolveSiteHref('/articles/', 'forge')).toBe('/forge/articles/');
+    expect(resolveSiteHref('/docs/', '/forge/')).toBe('/forge/docs/');
+    expect(resolveSiteHref('/docs/', 'forge')).toBe('/forge/docs/');
   });
 
   it('does not prefix an existing deployment base', () => {
-    expect(resolveSiteHref('/forge/articles/', '/forge/')).toBe('/forge/articles/');
+    expect(resolveSiteHref('/forge/docs/', '/forge/')).toBe('/forge/docs/');
     expect(resolveSiteHref('/forge', '/forge/')).toBe('/forge');
   });
 

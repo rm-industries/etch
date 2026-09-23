@@ -1,3 +1,3 @@
-import { articleContentModel } from '../../config/content-models/articles.ts';
+import { docsContentModel } from '../../config/content-models/docs.ts';
 
-export const previewCollectionNames = [articleContentModel.name] as const;
+export const previewCollectionNames = [docsContentModel.name] as const;

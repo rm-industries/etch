@@ -1,5 +1,5 @@
 import { defineModels } from '@rm-industries/content-model';
 
-import { articleContentModel } from './articles.ts';
+import { docsContentModel } from './docs.ts';
 
-export const contentModels = defineModels([articleContentModel]);
+export const contentModels = defineModels([docsContentModel]);

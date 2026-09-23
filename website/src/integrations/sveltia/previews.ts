@@ -2,12 +2,12 @@ import { registerPreviewTemplate, type CustomPreviewTemplateProps } from '@svelt
 
 import { previewCollectionNames } from './preview-collections';
 
-const renderArticlePreview = ({ document, widgetFor }: CustomPreviewTemplateProps) => {
+const renderDocPreview = ({ document, widgetFor }: CustomPreviewTemplateProps) => {
   document.body.classList.add('prose', 'mx-auto');
 
   return widgetFor('body');
 };
 
 export const registerSveltiaPreviews = (register = registerPreviewTemplate) => {
-  for (const name of previewCollectionNames) register(name, renderArticlePreview);
+  for (const name of previewCollectionNames) register(name, renderDocPreview);
 };
