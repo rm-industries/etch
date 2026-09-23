@@ -1,5 +1,7 @@
 # Etch
 
+<img src="website/public/logo.svg" alt="Etch logo" width="96" height="96">
+
 **Make your environment yours.**
 
 A portable, declarative environment manager for applying, composing, and sharing

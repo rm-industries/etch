@@ -53,7 +53,7 @@ repository does not exist, but configure it before using the deployed CMS.
 
 ## Replace identity assets
 
-- Replace `public/favicon.svg` with the browser icon.
+- Replace `public/logo.svg` with the browser icon.
 - Replace `public/social-card.svg` with the default sharing image.
 - Change `site.socialImage` when the sharing image has a different path.
 - Edit `src/pages/about.astro` and the homepage copy in
