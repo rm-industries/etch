@@ -10,7 +10,7 @@ import { resolveSiteHref } from '../lib/paths';
   <Container class="space-y-20 pb-20">
     <section class="grid grid-cols-1 items-center gap-12 py-16 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:py-24">
       <div class="min-w-0 space-y-8">
-        <p class="border-l-4 border-primary pl-3 font-mono text-sm font-bold tracking-[0.12em] uppercase">Etch / By RM Industries</p>
+        <p class="font-mono text-sm font-bold tracking-[0.12em] uppercase">Etch / By RM Industries</p>
         <div class="space-y-6">
           <h1 class="max-w-3xl text-[clamp(2.75rem,15vw,3.75rem)] leading-[0.94] font-bold tracking-[-0.055em] text-balance sm:text-7xl lg:text-8xl">Make your environment yours.</h1>
           <p class="max-w-xl text-lg leading-relaxed">A portable, declarative environment manager for applying, composing, and sharing the configuration that makes a machine yours.</p>
@@ -45,14 +45,16 @@ import { resolveSiteHref } from '../lib/paths';
         </Card>
       </div>
     </section>
-    <section class="card rounded-sm border-l-8 border-primary bg-base-200" aria-labelledby="start-title">
-      <div class="card-body items-start gap-5 p-8 sm:p-12">
+    <section class="border-y border-base-300" aria-labelledby="start-title">
+      <div class="grid items-start gap-6 py-10 lg:grid-cols-2">
+        <div class="space-y-5">
         <h2 id="start-title" class="card-title text-4xl tracking-tight sm:text-5xl">Start with one module.</h2>
         <p>The consumer template includes a Git module, a developer profile, and a pinned engine. After cloning with submodules, Python 3.9 or newer is the only Etch runtime dependency.</p>
+        <a href="https://github.com/rm-industries/etch-template" class="btn btn-primary">Use the template</a>
+        </div>
         <pre class="w-full overflow-x-auto rounded-box bg-base-300 p-4"><code>./etch plan --profile developer
 ./etch apply --profile developer
 ./etch doctor --profile developer</code></pre>
-        <a href="https://github.com/rm-industries/etch-template" class="btn btn-primary">Use the template</a>
       </div>
     </section>
   </Container>
