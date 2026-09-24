@@ -22,8 +22,10 @@ supported platforms.
 4. Create and push one immutable `vMAJOR.MINOR.PATCH` tag on that main commit.
    Never move or reuse a published tag; use a new patch version for a correction.
 
-The tag starts `.github/workflows/release.yml`. It reruns both reusable test
-workflows, verifies that the tag matches `etchlib.__version__`, checks the
+The tag starts `.github/workflows/project.yml`. The same project checks used
+for pull requests run before publication: the full Python matrix, website
+quality checks, and template consumer smoke test. The release job verifies
+that the tag matches `etchlib.__version__`, checks the
 checkout's `--version` under Python 3.9 with site packages disabled, and
 requires the tagged commit to be on `main`. Only after those gates pass does
 it create a GitHub Release. A failed gate leaves no new release.

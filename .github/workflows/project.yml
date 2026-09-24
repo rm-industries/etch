@@ -3,21 +3,10 @@ name: Project Continuous Integration
 
 on: # yamllint disable-line rule:truthy
   pull_request:
-    branches:
-      - main
-    paths:
-      - 'website/**'
-      - 'docs/guides/**'
-      - '.github/actions/setup-project/**'
-      - '.github/workflows/project.yml'
+    branches: [main]
   push:
-    branches:
-      - main
-    paths:
-      - 'website/**'
-      - 'docs/guides/**'
-      - '.github/actions/setup-project/**'
-      - '.github/workflows/project.yml'
+    branches: [main]
+    tags: ['v[0-9]*']
 
 permissions: {}
 
@@ -377,19 +366,7 @@ jobs:
 
   deploy:
     name: Deploy GitHub Pages
-    needs:
-      - format
-      - lint-code
-      - lint-styles
-      - lint-markdown
-      - spellcheck
-      - audit-unused
-      - typecheck
-      - unit-tests
-      - build
-      - validate-build
-      - browser-tests
-      - lighthouse
+    needs: [build, project-gate]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
@@ -442,3 +419,189 @@ jobs:
             website/test-results
           if-no-files-found: ignore
           retention-days: 7
+
+  python-format:
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: .
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.14'
+      - run: python -m pip install -c requirements/constraints.txt ruff
+      - run: ruff format --check .
+  python-lint:
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: .
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.14'
+      - run: python -m pip install -c requirements/constraints.txt ruff
+      - run: ruff check .
+  python-typecheck:
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: .
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.14'
+      - run: python -m pip install -c requirements/constraints.txt mypy
+      - run: python -m mypy etchlib plugins tests etch
+  python-test:
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: .
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install -c requirements/constraints.txt pytest
+      - run: python -m pytest
+      - run: python -S -m unittest discover -v
+      - run: python -S etch --version
+      - name: Diagnose the example in an isolated home
+        run: |
+          python -S - <<'PYTHON'
+          import os, subprocess, sys, tempfile
+          with tempfile.TemporaryDirectory() as home:
+              subprocess.run(
+                  [sys.executable, "-S", "etch", "doctor", "--repo", "examples/minimal", "--profile", "developer"],
+                  env=dict(os.environ, HOME=home), check=True,
+              )
+          PYTHON
+
+  template-consumer:
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: .
+    name: ${{ matrix.os }} / Python ${{ matrix.python }} / ${{ matrix.selection }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ['3.9', '3.14']
+        selection: [profile, git]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: rm-industries/etch-template
+          ref: 354d6e06bcf3f4c57269f60686f7520d31d90acb
+          path: consumer
+          persist-credentials: false
+          submodules: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify the candidate engine with the template
+        run: bash tests/template_consumer_smoke.sh "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE/consumer" "${{ matrix.selection }}"
+
+  project-gate:
+    name: Project
+    needs:
+      - validate-build
+      - browser-tests
+      - lighthouse
+      - python-format
+      - python-lint
+      - python-typecheck
+      - python-test
+      - template-consumer
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - run: echo "All project checks passed."
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    defaults:
+      run:
+        working-directory: .
+    needs: [project-gate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.9'
+      - name: Verify release tag and clean checkout
+        shell: bash
+        run: |
+          if [[ ! "$GITHUB_REF_NAME" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo 'Release tag must be a stable vMAJOR.MINOR.PATCH version.' >&2
+            exit 1
+          fi
+          version=${GITHUB_REF_NAME#v}
+          test "$(python3 -S -c 'from etchlib import __version__; print(__version__)')" = "$version"
+          test "$(python3 -S etch --version)" = "Etch $version"
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+      - name: Build and verify source archive
+        shell: bash
+        run: |
+          version=${GITHUB_REF_NAME#v}
+          archive="etch-${version}.tar.gz"
+          git archive --format=tar --prefix="etch-${version}/" "$GITHUB_SHA" | gzip -n > "$archive"
+          sha256sum "$archive" > "${archive}.sha256"
+          mkdir unpacked
+          tar -xzf "$archive" -C unpacked
+          test "$(python3 -S "unpacked/etch-${version}/etch" --version)" = "Etch $version"
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=${GITHUB_REF_NAME#v}
+          read -r schema api < <(python3 -S -c 'from etchlib import SCHEMA_VERSION, PLUGIN_API_VERSION; print(SCHEMA_VERSION, PLUGIN_API_VERSION)')
+          notes="Supported: Linux and macOS, Python 3.9–3.14. Configuration schema: ${schema}; plugin API: ${api}.
+
+          Known limits: no Windows support, package solving, automatic engine or module updates, or general lifecycle hooks. Reference plugins have independent versions. Full compatibility details are in docs/compatibility.md at this tag."
+          gh release create "$GITHUB_REF_NAME" "etch-${version}.tar.gz" "etch-${version}.tar.gz.sha256" \
+            --verify-tag --fail-on-no-commits --generate-notes --notes "$notes" --title "Etch ${version}"
