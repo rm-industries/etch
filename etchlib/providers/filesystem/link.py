@@ -11,6 +11,7 @@ from etchlib.providers.plans import ApplyResult, ClaimKind, PathClaim, Plan, Pla
 
 from .receipts import record
 from .state import check_parent, kind
+from .submodules import check_submodules
 
 
 @dataclass(frozen=True)
@@ -68,6 +69,7 @@ def entries(config: Any, context: Context) -> tuple[Link, ...]:
 def needed(link: Link) -> bool:
     if not link.source.exists():
         raise ValueError("link source does not exist: {}".format(link.source))
+    check_submodules(link.source)
     if link.destination == link.source or link.destination in link.source.parents:
         raise ValueError(
             "link destination would replace its own source: {}".format(link.destination)

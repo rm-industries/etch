@@ -26,6 +26,11 @@ currently accepted for create.
 ```
 
 Sources are existing module-relative assets, contained within the module root.
+When a linked directory contains Git submodules, inspection checks their pinned
+checkouts before planning or applying the link. Missing, uninitialized, or
+different revisions report the affected path and the Git initialization command;
+Etch never runs that command itself. See [submodule-backed assets](submodules.md)
+for a Vim/tmux migration layout.
 Destinations use the common destination resolver. Links point to the resolved
 absolute source; moving a module and planning again uses its new location.
 An existing equivalent link is SKIP. A missing destination is created. Different
