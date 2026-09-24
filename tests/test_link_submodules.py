@@ -9,7 +9,7 @@ from etchlib.core import core_registry
 from etchlib.providers.contracts import Context
 from etchlib.providers.errors import ProviderError
 from etchlib.providers.lifecycle import plan_action
-from etchlib.providers.plans import PlanStatus
+from etchlib.providers.plans import Plan, PlanStatus
 
 
 def git(directory: Path, *args: str) -> str:
@@ -74,7 +74,7 @@ class LinkSubmoduleTests(unittest.TestCase):
         self.action = core_registry().action("link")
         self.config = {str(self.target): "bundle"}
 
-    def plan(self):
+    def plan(self) -> Plan:
         return plan_action(self.action, self.config, self.context)
 
     def test_uninitialized_submodule_is_diagnosed_without_mutation(self) -> None:
