@@ -39,7 +39,10 @@ npm run lighthouse:ci
 ## Replace fonts
 
 Fira Sans and Fira Code are installed through Fontsource and imported by
-`src/styles/global.css`; no remote font service is used. To replace them:
+`src/styles/global.css`; no remote font service is used. The imports use Latin
+subsets for the site's English content and load only the weights used by the
+interface. Weight synthesis is disabled, while italic synthesis remains available
+for emphasized text. To replace them:
 
 ```sh
 npm uninstall @fontsource/fira-sans @fontsource/fira-code

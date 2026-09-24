@@ -38,7 +38,7 @@ const formattedDate = article.data.publishedAt.toLocaleDateString('en', {
   publishedTime={publishedAt}
 >
   <Container size="md" class="space-y-10 pt-10 pb-16">
-    <article class="prose mx-auto">
+    <article class="prose prose-h1:text-4xl prose-h1:leading-tight prose-h1:font-bold prose-h1:tracking-tight prose-h2:text-2xl md:prose-h1:text-5xl md:prose-h2:text-3xl mx-auto">
       {article.data.draft && <div class="badge badge-warning">Draft preview</div>}
       <h1>{article.data.title}</h1>
       <p><time datetime={publishedAt}>{formattedDate}</time></p>
