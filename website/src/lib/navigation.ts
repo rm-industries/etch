@@ -10,13 +10,13 @@ const normalizePath = (path: string) => {
 
 export const isExternalHref = (href: string) => /^https?:\/\//u.test(href);
 
-export const isCurrentPath = (currentPath: string, href: string) => {
+export const isCurrentPath = (currentPath: string, href: string, siteRoot = '/') => {
   if (!href.startsWith('/')) return false;
 
   const current = normalizePath(currentPath);
   const target = normalizePath(href);
 
-  if (target === '/') return current === target;
+  if (target === normalizePath(siteRoot)) return current === target;
 
   return current === target || current.startsWith(`${target}/`);
 };
