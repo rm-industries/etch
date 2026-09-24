@@ -12,6 +12,7 @@ interface Props {
 
 const { brand, brandHref = '/', links, currentPath } = Astro.props;
 const resolvedBrandHref = resolveSiteHref(brandHref);
+const siteRoot = resolveSiteHref('/');
 ---
 
 <div class="navbar min-h-0 p-0">
@@ -24,7 +25,7 @@ const resolvedBrandHref = resolveSiteHref(brandHref);
       {
         links.map((item) => {
           const href = resolveSiteHref(item.href);
-          const isCurrent = isCurrentPath(currentPath, href);
+          const isCurrent = isCurrentPath(currentPath, href, siteRoot);
 
           return (
             <li>
@@ -46,7 +47,7 @@ const resolvedBrandHref = resolveSiteHref(brandHref);
           {
             links.map((item) => {
               const href = resolveSiteHref(item.href);
-              const isCurrent = isCurrentPath(currentPath, href);
+              const isCurrent = isCurrentPath(currentPath, href, siteRoot);
 
               return (
                 <li>
