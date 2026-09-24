@@ -39,7 +39,7 @@ isolated imports; this suite begins with an already vendored engine.
 ## Template consumer smoke
 
 The [Etch template](https://github.com/rm-industries/etch-template) is also
-checked as a real consumer in `.github/workflows/template-consumer.yml`. The
+checked as a real consumer in `.github/workflows/project.yml`. The
 workflow pins a reviewed template revision, substitutes the candidate engine
 checkout for its submodule contents, and runs the template launcher on Linux
 and macOS with Python 3.9 and 3.14. Both the developer profile and standalone

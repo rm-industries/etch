@@ -83,7 +83,7 @@ the validator when introducing a route that is part of the public contract.
 
 ### GitHub Pages does not deploy
 
-Open the `Project Continuous Integration` workflow first. Deployment depends
+Open the `Website Continuous Integration` workflow first. Deployment depends
 directly on every applicable source and artifact check. If they pass, inspect
 the `github-pages` environment, Pages source, branch restrictions, URL
 configuration, and deploy job. Follow the [GitHub Pages guide](../github-pages.md)

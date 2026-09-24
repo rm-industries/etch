@@ -3,21 +3,10 @@ name: Project Continuous Integration
 
 on: # yamllint disable-line rule:truthy
   pull_request:
-    branches:
-      - main
-    paths:
-      - 'website/**'
-      - 'docs/guides/**'
-      - '.github/actions/setup-project/**'
-      - '.github/workflows/project.yml'
+    branches: [main]
   push:
-    branches:
-      - main
-    paths:
-      - 'website/**'
-      - 'docs/guides/**'
-      - '.github/actions/setup-project/**'
-      - '.github/workflows/project.yml'
+    branches: [main]
+    tags: ['v[0-9]*']
 
 permissions: {}
 
@@ -28,417 +17,170 @@ concurrency:
 defaults:
   run:
     shell: bash
-    working-directory: website
+    working-directory: .
 
 jobs:
-  format:
-    name: Format
-    runs-on: ubuntu-latest
-
+  python-format:
     permissions:
       contents: read
-
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-
-      - name: Setup project
-        uses: ./.github/actions/setup-project
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
-          node-version: '26.x'
-
-      - name: Check formatting
-        run: npm run format
-
-  spellcheck:
-    name: Spellcheck
-    runs-on: ubuntu-latest
-
+          python-version: '3.14'
+      - run: python -m pip install -c requirements/constraints.txt ruff
+      - run: ruff format --check .
+  python-lint:
     permissions:
       contents: read
-
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-
-      - name: Setup project
-        uses: ./.github/actions/setup-project
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
-          node-version: '26.x'
-
-      - name: Check spelling
-        run: npm run spellcheck
-
-  lint-code:
-    name: Lint code
-    runs-on: ubuntu-latest
-
+          python-version: '3.14'
+      - run: python -m pip install -c requirements/constraints.txt ruff
+      - run: ruff check .
+  python-typecheck:
     permissions:
       contents: read
-
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-
-      - name: Setup project
-        uses: ./.github/actions/setup-project
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
-          node-version: '26.x'
-
-      - name: Lint code
-        run: npm run lint:code
-
-  lint-styles:
-    name: Lint styles
-    runs-on: ubuntu-latest
+          python-version: '3.14'
+      - run: python -m pip install -c requirements/constraints.txt mypy
+      - run: python -m mypy etchlib plugins tests etch
+  python-test:
     permissions:
       contents: read
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
+    runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - name: Setup project
-        uses: ./.github/actions/setup-project
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
-          node-version: '26.x'
-      - name: Lint styles
-        run: npm run lint:css
-
-  lint-markdown:
-    name: Lint Markdown
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-      - name: Setup project
-        uses: ./.github/actions/setup-project
-        with:
-          node-version: '26.x'
-      - name: Lint source Markdown
-        run: npm run lint:markdown
-
-  audit-unused:
-    name: Audit unused code
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-      - name: Setup project
-        uses: ./.github/actions/setup-project
-        with:
-          node-version: '26.x'
-      - name: Audit unused code and dependencies
-        run: npm run audit:unused
-
-  typecheck:
-    name: Type-check
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-      - name: Setup project
-        uses: ./.github/actions/setup-project
-        with:
-          node-version: '26.x'
-      - name: Check TypeScript and Astro diagnostics
-        run: npm run typecheck
-
-  dependency-audit:
-    name: Dependency audit
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-
-      - name: Setup project
-        uses: ./.github/actions/setup-project
-        with:
-          node-version: '26.x'
-
-      - name: Audit dependencies
-        id: audit
-        continue-on-error: true
-        run: npm run audit
-
-      - name: Report dependency audit
-        if: steps.audit.outcome == 'failure'
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install -c requirements/constraints.txt pytest
+      - run: python -m pytest
+      - run: python -S -m unittest discover -v
+      - run: python -S etch --version
+      - name: Diagnose the example in an isolated home
         run: |
-          echo '::warning title=Dependency security findings::Review Dependabot alerts and the audit output. Dependency findings are reported here but do not block pull-request remediation.'
-          echo '## Dependency security findings' >> "$GITHUB_STEP_SUMMARY"
-          echo 'The dependency audit found blocking-severity advisories. Review the audit output and Dependabot alerts. Release security gates remain blocking.' >> "$GITHUB_STEP_SUMMARY"
+          python -S - <<'PYTHON'
+          import os, subprocess, sys, tempfile
+          with tempfile.TemporaryDirectory() as home:
+              subprocess.run(
+                  [sys.executable, "-S", "etch", "doctor", "--repo", "examples/minimal", "--profile", "developer"],
+                  env=dict(os.environ, HOME=home), check=True,
+              )
+          PYTHON
 
-  unit-tests:
-    name: Unit tests and coverage
-    runs-on: ubuntu-latest
-
+  template-consumer:
     permissions:
       contents: read
-
+    name: ${{ matrix.os }} / Python ${{ matrix.python }} / ${{ matrix.selection }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ['3.9', '3.14']
+        selection: [profile, git]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-
-      - name: Setup project
-        uses: ./.github/actions/setup-project
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          node-version: '26.x'
-
-      - name: Run unit tests with coverage
-        run: npm run test:coverage
-
-      - name: Upload coverage report
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: unit-coverage
-          path: website/coverage
-          if-no-files-found: error
-          retention-days: 7
-
-  build:
-    name: Production build
-    needs:
-      - format
-      - lint-code
-      - lint-styles
-      - lint-markdown
-      - spellcheck
-      - audit-unused
-      - typecheck
-      - unit-tests
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
+          repository: rm-industries/etch-template
+          ref: 354d6e06bcf3f4c57269f60686f7520d31d90acb
+          path: consumer
           persist-credentials: false
-
-      - name: Setup project
-        uses: ./.github/actions/setup-project
+          submodules: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
-          node-version: '26.x'
+          python-version: ${{ matrix.python }}
+      - name: Verify the candidate engine with the template
+        run: bash tests/template_consumer_smoke.sh "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE/consumer" "${{ matrix.selection }}"
 
-      - name: Build production site once
-        run: npm run build
-
-      - name: Upload production build
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: site-build
-          path: website/dist
-          if-no-files-found: error
-          retention-days: 7
-
-      - name: Upload GitHub Pages artifact
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
-        with:
-          path: website/dist
-
-  validate-build:
-    name: Validate build
+  project-gate:
+    name: Project
     needs:
-      - build
+      - python-format
+      - python-lint
+      - python-typecheck
+      - python-test
+      - template-consumer
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-      - name: Setup project
-        uses: ./.github/actions/setup-project
-        with:
-          node-version: '26.x'
-      - name: Download production build
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          name: site-build
-          path: website/dist
-      - name: Validate production artifacts
-        run: npm run validate:build
+      - run: echo "All project checks passed."
 
-  browser-tests:
-    name: Browser and accessibility tests
-    needs:
-      - build
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [project-gate]
     runs-on: ubuntu-latest
-
+    timeout-minutes: 10
     permissions:
-      contents: read
-
+      contents: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          fetch-depth: 0
           persist-credentials: false
-
-      - name: Setup project
-        uses: ./.github/actions/setup-project
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
-          node-version: '26.x'
-
-      - name: Install supported browsers
-        run: npx playwright install --with-deps chromium firefox webkit
-
-      - name: Download production build
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          name: site-build
-          path: website/dist
-
-      - name: Run browser and accessibility tests
-        run: npm run test:e2e
-
-      - name: Upload browser failure evidence
-        if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: browser-test-failures
-          path: |
-            website/playwright-report
-            website/test-results
-          if-no-files-found: error
-          retention-days: 7
-
-  lighthouse:
-    name: Lighthouse budgets
-    needs:
-      - build
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-
-      - name: Setup project
-        uses: ./.github/actions/setup-project
-        with:
-          node-version: '26.x'
-
-      - name: Install Lighthouse browser
-        run: npx playwright install --with-deps chromium
-
-      - name: Download production build
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          name: site-build
-          path: website/dist
-
-      - name: Enforce Lighthouse budgets
-        run: npm run lighthouse:ci
-
-      - name: Upload Lighthouse reports
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: lighthouse-reports
-          path: website/.lighthouseci
-          include-hidden-files: true
-          if-no-files-found: error
-          retention-days: 7
-
-  deploy:
-    name: Deploy GitHub Pages
-    needs:
-      - format
-      - lint-code
-      - lint-styles
-      - lint-markdown
-      - spellcheck
-      - audit-unused
-      - typecheck
-      - unit-tests
-      - build
-      - validate-build
-      - browser-tests
-      - lighthouse
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-
-    permissions:
-      pages: write
-      id-token: write
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    outputs:
-      page-url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Deploy GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
-
-  smoke-deployed:
-    name: Verify deployed website
-    needs:
-      - deploy
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-      - name: Setup project
-        uses: ./.github/actions/setup-project
-        with:
-          node-version: '26.x'
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-      - name: Verify deployed routes, assets, and mobile layout
+          python-version: '3.9'
+      - name: Verify release tag and clean checkout
+        shell: bash
+        run: |
+          if [[ ! "$GITHUB_REF_NAME" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo 'Release tag must be a stable vMAJOR.MINOR.PATCH version.' >&2
+            exit 1
+          fi
+          version=${GITHUB_REF_NAME#v}
+          test "$(python3 -S -c 'from etchlib import __version__; print(__version__)')" = "$version"
+          test "$(python3 -S etch --version)" = "Etch $version"
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+      - name: Build and verify source archive
+        shell: bash
+        run: |
+          version=${GITHUB_REF_NAME#v}
+          archive="etch-${version}.tar.gz"
+          git archive --format=tar --prefix="etch-${version}/" "$GITHUB_SHA" | gzip -n > "$archive"
+          sha256sum "$archive" > "${archive}.sha256"
+          mkdir unpacked
+          tar -xzf "$archive" -C unpacked
+          test "$(python3 -S "unpacked/etch-${version}/etch" --version)" = "Etch $version"
+      - name: Publish GitHub release
         env:
-          DEPLOYMENT_URL: ${{ needs.deploy.outputs.page-url }}
-        run: npm run test:smoke
-      - name: Upload deployed smoke failure evidence
-        if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: deployed-smoke-results
-          path: |
-            website/playwright-report
-            website/test-results
-          if-no-files-found: ignore
-          retention-days: 7
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=${GITHUB_REF_NAME#v}
+          read -r schema api < <(python3 -S -c 'from etchlib import SCHEMA_VERSION, PLUGIN_API_VERSION; print(SCHEMA_VERSION, PLUGIN_API_VERSION)')
+          notes="Supported: Linux and macOS, Python 3.9–3.14. Configuration schema: ${schema}; plugin API: ${api}.
+
+          Known limits: no Windows support, package solving, automatic engine or module updates, or general lifecycle hooks. Reference plugins have independent versions. Full compatibility details are in docs/compatibility.md at this tag."
+          gh release create "$GITHUB_REF_NAME" "etch-${version}.tar.gz" "etch-${version}.tar.gz.sha256" \
+            --verify-tag --fail-on-no-commits --generate-notes --notes "$notes" --title "Etch ${version}"
