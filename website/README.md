@@ -57,11 +57,11 @@ customized for Etch. Build/browser expectations use the resulting article routes
 
 ## Repository paths and Pages
 
-The repository-level [project workflow](../.github/workflows/project.yml) filters
+The repository-level [website workflow](../.github/workflows/website.yml) filters
 changes to `website/**`, `docs/guides/**`, and its own workflow/composite action. Shell steps run in
 `website`; dependency caching uses `website/package-lock.json`; build, download
 and Pages upload paths point to `website/dist`. Dependabot's npm directory is
-`/website`. The existing Python workflow is unchanged.
+`/website`. Python and template checks run in the separate project workflow.
 
 The canonical URL sets Astro's origin to `https://www.rm-industries.com` and its
 base to `/etch`. Links, feeds, sitemap and static assets retain that base path.

@@ -23,8 +23,9 @@ supported platforms.
    Never move or reuse a published tag; use a new patch version for a correction.
 
 The tag starts `.github/workflows/project.yml`. The same project checks used
-for pull requests run before publication: the full Python matrix, website
-quality checks, and template consumer smoke test. The release job verifies
+for pull requests run before publication: the full Python matrix and template
+consumer smoke test. Website checks and Pages deployment run separately in
+`.github/workflows/website.yml`. The release job verifies
 that the tag matches `etchlib.__version__`, checks the
 checkout's `--version` under Python 3.9 with site packages disabled, and
 requires the tagged commit to be on `main`. Only after those gates pass does
