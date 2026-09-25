@@ -35,16 +35,25 @@ Destinations use the common destination resolver. Links point to the resolved
 absolute source; moving a module and planning again uses its new location.
 An existing equivalent link is SKIP. A missing destination is created. Different
 or broken symlinks require `relink: True`; files and directories are never replaced.
-Successful creation/relinking records local ownership for the [clean provider](clean.md).
+By default, `target_match: "resolved"` treats links through intermediate symlinks
+as equivalent. Set `target_match: "direct"` to compare the immediate symlink
+target with the module asset without following intermediate links. Relative
+targets are normalized against the destination's parent. An aliasing legacy
+link then requires `relink: True` to replace it; without `relink`, it reports
+the different-link error.
+Successful creation/relinking records local ownership for the
+[clean provider](clean.md).
 Already-correct links are not automatically adopted.
-`create: True` allows missing destination parents to be created. Both options default
-to False and can be set in provider defaults:
+`create: True` allows missing destination parents to be created. `create` and
+`relink` default to False; `target_match` defaults to `"resolved"`. All three
+can be set in provider defaults:
 
 ```python
-{"schema_version": 1, "defaults": {"link": {"create": True, "relink": False}}}
+{"schema_version": 1, "defaults": {"link": {"target_match": "direct"}}}
 ```
 
-Each link entry overrides those defaults independently. Unknown/nonboolean options,
+Each link entry overrides those defaults independently. Unknown options,
+nonboolean `create`/`relink`, invalid `target_match` values,
 missing or escaping sources, duplicate or nested destinations, and destinations
 that overwrite sources in the same action fail validation. Recursive directory
 links into their own source are rejected. Each destination has an exclusive claim;
