@@ -97,19 +97,27 @@ class FilesystemTests(unittest.TestCase):
         target.symlink_to(legacy_dir / "config")
         config = {str(target): {"path": "files/config", "target_match": "direct"}}
 
-        self.assertEqual(self.plan("link", {str(target): "files/config"}).status, PlanStatus.SKIP)
+        self.assertEqual(
+            self.plan("link", {str(target): "files/config"}).status, PlanStatus.SKIP
+        )
         with self.assertRaisesRegex(ProviderError, "enable relink"):
             self.plan("link", config)
-        config[str(target)]["relink"] = True
-        plan = self.plan("link", config)
+        relink_config = {
+            str(target): {
+                "path": "files/config",
+                "target_match": "direct",
+                "relink": True,
+            }
+        }
+        plan = self.plan("link", relink_config)
         self.assertEqual(plan.status, PlanStatus.CHANGE)
         self.assertTrue(self.apply("link", plan).changed)
         self.assertEqual(target.readlink(), source)
-        self.assertEqual(self.plan("link", config).status, PlanStatus.SKIP)
+        self.assertEqual(self.plan("link", relink_config).status, PlanStatus.SKIP)
 
         target.unlink()
         target.symlink_to(Path("module/files/../files/config"))
-        self.assertEqual(self.plan("link", config).status, PlanStatus.SKIP)
+        self.assertEqual(self.plan("link", relink_config).status, PlanStatus.SKIP)
 
     def test_module_relocation(self) -> None:
         moved = self.root / "moved"

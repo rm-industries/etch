@@ -37,7 +37,9 @@ def entries(config: Any, context: Context) -> tuple[Link, ...]:
             "relink",
             "target_match",
         }:
-            raise ValueError("link entries accept path, create, relink and target_match")
+            raise ValueError(
+                "link entries accept path, create, relink and target_match"
+            )
         options = compose_defaults(
             "link",
             context.defaults.get("link", {}),
