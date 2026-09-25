@@ -18,23 +18,26 @@ supported platforms.
 3. Merge the change to `main`. Confirm the quality matrix passes on Linux and
    macOS for Python 3.9–3.14, including reference-plugin integration tests.
    Confirm the template consumer workflow passes for the developer profile
-   and standalone Git module on both OSes with Python 3.9 and 3.14.
+   and standalone Git module on both OSes with Python 3.9 and 3.14. Confirm
+   the release-candidate job builds the source archive twice with identical
+   bytes and runs `--version`, `doctor`, and `plan` from the extracted copy.
 4. Create and push one immutable `vMAJOR.MINOR.PATCH` tag on that main commit.
    Never move or reuse a published tag; use a new patch version for a correction.
 
 The tag starts `.github/workflows/project.yml`. The same project checks used
-for pull requests run before publication: the full Python matrix and template
-consumer smoke test. Website checks and Pages deployment run separately in
-`.github/workflows/website.yml`. The release job verifies
-that the tag matches `etchlib.__version__`, checks the
+for pull requests run before publication: the full Python matrix, template
+consumer smoke test, and release-candidate archive test. Website checks and
+Pages deployment run separately in `.github/workflows/website.yml`. The
+release job verifies that the tag matches `etchlib.__version__`, checks the
 checkout's `--version` under Python 3.9 with site packages disabled, and
 requires the tagged commit to be on `main`. Only after those gates pass does
 it create a GitHub Release. A failed gate leaves no new release.
 
 The release attaches a `git archive` source tarball and SHA-256 checksum.
 The archive contains tracked source at the tagged commit, with a stable prefix
-and gzip metadata suppressed; the workflow extracts it and checks startup
-before publishing. GitHub also displays its automatic tag source archives.
+and gzip metadata suppressed; the workflow extracts it and checks startup,
+diagnosis, and planning before publishing. GitHub also displays its automatic
+tag source archives.
 Neither archive includes a consumer's engine pin, profiles, plugins sourced
 from another repository, or personal configuration.
 The release description prepends the supported runtime, current schema and
