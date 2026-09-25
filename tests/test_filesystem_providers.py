@@ -88,6 +88,29 @@ class FilesystemTests(unittest.TestCase):
             self.plan("link", {str(target): {"path": "files/config", "relink": True}})
         self.assertEqual(target.read_text(), "preserve")
 
+    def test_direct_match_replaces_legacy_alias_only_when_requested(self) -> None:
+        source = self.module / "files/config"
+        legacy_dir = self.root / "tools/vcs/git"
+        legacy_dir.parent.mkdir(parents=True)
+        legacy_dir.symlink_to(self.module / "files", target_is_directory=True)
+        target = self.root / "config"
+        target.symlink_to(legacy_dir / "config")
+        config = {str(target): {"path": "files/config", "target_match": "direct"}}
+
+        self.assertEqual(self.plan("link", {str(target): "files/config"}).status, PlanStatus.SKIP)
+        with self.assertRaisesRegex(ProviderError, "enable relink"):
+            self.plan("link", config)
+        config[str(target)]["relink"] = True
+        plan = self.plan("link", config)
+        self.assertEqual(plan.status, PlanStatus.CHANGE)
+        self.assertTrue(self.apply("link", plan).changed)
+        self.assertEqual(target.readlink(), source)
+        self.assertEqual(self.plan("link", config).status, PlanStatus.SKIP)
+
+        target.unlink()
+        target.symlink_to(Path("module/files/../files/config"))
+        self.assertEqual(self.plan("link", config).status, PlanStatus.SKIP)
+
     def test_module_relocation(self) -> None:
         moved = self.root / "moved"
         shutil.move(str(self.module), str(moved))
@@ -120,10 +143,29 @@ class FilesystemTests(unittest.TestCase):
                 "link", {"nested/config": {"path": "files/config", "create": False}}
             )
 
+    def test_target_match_default_can_be_overridden(self) -> None:
+        target = self.root / "config"
+        alias = self.root / "old-config"
+        alias.symlink_to(self.module / "files/config")
+        target.symlink_to(alias)
+        self.context = Context(
+            self.root, self.module, "demo", {}, {"link": {"target_match": "direct"}}
+        )
+        with self.assertRaisesRegex(ProviderError, "enable relink"):
+            self.plan("link", {str(target): "files/config"})
+        self.assertEqual(
+            self.plan(
+                "link",
+                {str(target): {"path": "files/config", "target_match": "resolved"}},
+            ).status,
+            PlanStatus.SKIP,
+        )
+
     def test_invalid_options_missing_sources_and_escapes(self) -> None:
         for config in [
             {"out": {"path": "files/config", "create": "yes"}},
             {"out": {"path": "files/config", "force": True}},
+            {"out": {"path": "files/config", "target_match": "alias"}},
             {"out": "files/missing"},
             {"out": "../outside"},
         ]:

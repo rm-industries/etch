@@ -1,5 +1,6 @@
 """Module-owned source links with explicit parent creation and relinking."""
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,7 @@ class Link:
     source: Path
     create: bool
     relink: bool
+    target_match: str
 
 
 def entries(config: Any, context: Context) -> tuple[Link, ...]:
@@ -33,14 +35,20 @@ def entries(config: Any, context: Context) -> tuple[Link, ...]:
             "path",
             "create",
             "relink",
+            "target_match",
         }:
-            raise ValueError("link entries accept path, create and relink")
+            raise ValueError("link entries accept path, create, relink and target_match")
         options = compose_defaults(
-            "link", context.defaults.get("link", {}), raw_options, ("create", "relink")
+            "link",
+            context.defaults.get("link", {}),
+            raw_options,
+            ("create", "relink", "target_match"),
         )
         for key in ("create", "relink"):
             if type(options.get(key, False)) is not bool:
                 raise ValueError("link {} must be boolean".format(key))
+        if options.get("target_match", "resolved") not in ("resolved", "direct"):
+            raise ValueError("link target_match must be 'resolved' or 'direct'")
         source = module.asset(options.get("path"))
         result.append(
             Link(
@@ -48,6 +56,7 @@ def entries(config: Any, context: Context) -> tuple[Link, ...]:
                 source,
                 options.get("create", False),
                 options.get("relink", False),
+                options.get("target_match", "resolved"),
             )
         )
     if len({link.destination for link in result}) != len(result):
@@ -84,7 +93,14 @@ def needed(link: Link) -> bool:
         raise ValueError(
             "refusing to replace file or directory: {}".format(link.destination)
         )
-    if link.destination.resolve() == link.source:
+    if link.target_match == "direct":
+        target = Path(os.readlink(link.destination))
+        if not target.is_absolute():
+            target = link.destination.parent / target
+        matched = Path(os.path.normpath(target)) == link.source
+    else:
+        matched = link.destination.resolve() == link.source
+    if matched:
         return False
     if not link.relink:
         raise ValueError(
