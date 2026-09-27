@@ -44,12 +44,12 @@ class PlanningConditionsTests(PlanningFixture):
         self.assertEqual(status, 0, error)
         for text in (
             "DEFERRED",
-            "unavailable",
             "waiting for demo:action[0]",
             "refresh",
             "fresh conditions",
         ):
             self.assertIn(text, output)
+        self.assertIn("unavailable", self.cli("--verbose")[1])
 
     def test_absent_later_self_and_skipped_producers_cannot_justify_deferral(
         self,
@@ -101,7 +101,7 @@ class PlanningConditionsTests(PlanningFixture):
     def test_unused_bad_fact_is_not_gathered(self) -> None:
         self.module(facts={"unused": {"version": {"invalid": True}}})
         self.assertTrue(all(value is None for value in self.plan().facts.values()))
-        self.assertIn("demo.unused: not requested", self.cli()[1])
+        self.assertIn("demo.unused: not requested", self.cli("--verbose")[1])
 
     def test_dependency_order_and_cycles(self) -> None:
         self.module("a", requires=["z"], actions=[{"shell": {"command": "true"}}])

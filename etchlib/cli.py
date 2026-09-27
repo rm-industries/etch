@@ -15,6 +15,7 @@ from etchlib.execution.render import render_apply
 from etchlib.execution.runner import apply_repository
 from etchlib.facts.repository import repository_facts
 from etchlib.importing.copy import import_module
+from etchlib.output import write_output
 from etchlib.planning.build import plan_repository
 from etchlib.planning.render import render_plan
 from etchlib.plugins.loader import load_plugins
@@ -76,7 +77,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 0
     try:
         if args.command == "import":
-            print(
+            write_output(
                 import_module(
                     args.repo,
                     args.source,
@@ -92,7 +93,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         )
         if args.command == "facts":
             observations = gather(repository_facts(repository, loaded.registry))
-            print(render_facts(observations))
+            write_output(render_facts(observations))
             return (
                 1
                 if any(fact.state is FactState.ERROR for fact in observations.values())
@@ -100,19 +101,21 @@ def main(argv: Optional[List[str]] = None) -> int:
             )
         if args.command == "doctor":
             diagnosis = diagnose(repository, loaded.registry)
-            print(render_doctor(repository, loaded.registry, loaded.plugins, diagnosis))
+            write_output(
+                render_doctor(repository, loaded.registry, loaded.plugins, diagnosis)
+            )
             return 1 if diagnosis.errors else 0
         if args.command == "apply":
             applied = apply_repository(
                 repository, loaded.registry, allow_sudo=args.allow_sudo, jobs=args.jobs
             )
-            print(render_apply(applied))
+            write_output(render_apply(applied))
             return 0 if applied.succeeded else 1
         if args.command == "plan":
             report = plan_repository(repository, loaded.registry)
-            print(render_plan(repository, report, loaded.plugins, args.verbose))
+            write_output(render_plan(repository, report, loaded.plugins, args.verbose))
             return 0
     except (ValueError, ProviderError, OSError) as exc:
-        print("Etch: {}".format(exc), file=sys.stderr)
+        write_output("Etch: Error: {}".format(exc), sys.stderr)
         return 1
     return 0

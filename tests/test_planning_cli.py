@@ -49,6 +49,11 @@ class PlanningCliTests(PlanningFixture):
         for name in ("directory", "link", "changed", ".etch"):
             self.assertFalse((self.root / name).exists())
             self.assertFalse((module / name).exists())
+        status, output, error = self.cli()
+        self.assertEqual(status, 0, error)
+        self.assertIn("Plan summary:", output)
+        self.assertNotIn("current:", output)
+        self.assertNotIn("Ownership:", output)
         status, output, error = self.cli("--verbose")
         self.assertEqual(status, 0, error)
         for text in (
@@ -102,9 +107,9 @@ class PlanningCliTests(PlanningFixture):
         )
         status, output, error = self.cli("--profile", "dev")
         self.assertEqual(status, 0, error)
-        self.assertIn("b: true", output)
+        self.assertIn("Selected modules:\n  b", output)
         self.assertNotIn("a: true", output)
-        self.assertIn("a: true", self.cli("a")[1])
+        self.assertIn("Selected modules:\n  a", self.cli("a")[1])
 
     def test_plugin_compatibility_and_fact_origin(self) -> None:
         write_plugin(self.root / "vendor/example")
