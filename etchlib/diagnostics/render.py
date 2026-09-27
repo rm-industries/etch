@@ -8,6 +8,7 @@ from etchlib.conditions.results import Outcome
 from etchlib.config import Repository
 from etchlib.graph.model import NodeId
 from etchlib.plugins.metadata import Metadata
+from etchlib.providers.plans import PlanStatus
 from etchlib.providers.registry import Registry
 
 from .doctor import Diagnosis
@@ -51,6 +52,19 @@ def render_doctor(
     lines.append(render_facts(diagnosis.facts))
     if diagnosis.plan is not None:
         lines.append("Dependencies and destination claims: current snapshot checked.")
+        changes = [
+            (node, plan)
+            for node, plan in diagnosis.plan.plans.items()
+            if plan.status is not PlanStatus.SKIP
+        ]
+        if changes:
+            lines.append("Changes needed:")
+            lines.extend(
+                "  {}: {} — {}".format(
+                    node, plan.status.value.upper(), plan.description
+                )
+                for node, plan in changes
+            )
         for module, selection in diagnosis.plan.selections.items():
             for index, result in enumerate((selection.module,) + selection.actions):
                 if result.outcome is Outcome.DEFERRED:
