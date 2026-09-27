@@ -1,3 +1,4 @@
+import platform
 from unittest.mock import patch
 
 from etchlib.execution.results import Status
@@ -8,6 +9,34 @@ from tests.execution_fixtures import ExecutionFixture
 
 
 class ExecutionRefreshTests(ExecutionFixture):
+    def test_conditional_fact_refresh_after_install(self) -> None:
+        system = {"darwin": "macos"}.get(
+            platform.system().lower(), platform.system().lower()
+        )
+        self.module(
+            facts={
+                "tool": [
+                    {"when": {"os": system}, "state": "tool"},
+                    {"when": {"not": {"os": system}}, "state": "unused"},
+                ]
+            },
+            actions=[
+                {
+                    "establish": {"name": "install", "values": {"tool": "1.2.3"}},
+                    "refresh": ["tool"],
+                },
+                {
+                    "establish": {"name": "configure"},
+                    "when": {"fact": {"name": "tool", "matches": ">=1"}},
+                },
+            ],
+        )
+        report = self.apply_repo()
+        self.assertTrue(report.succeeded, report.error)
+        self.assertEqual(self.action.applied, ["install", "configure"])
+        self.assertEqual(self.fact.calls, ["tool", "tool"])
+        self.assertEqual(report.actions[0].refreshed, (FactRef("demo", "tool"),))
+
     def test_establish_refresh_configure_without_repeating_completed_actions(
         self,
     ) -> None:

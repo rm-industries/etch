@@ -263,11 +263,42 @@ def load_repository(
             raise ConfigError("{}: facts must be a dictionary".format(path))
         for fact, declaration in config.get("facts", {}).items():
             names([fact], path, "fact name")
-            if not isinstance(declaration, dict) or len(declaration) != 1:
+            alternatives = (
+                declaration if isinstance(declaration, list) else [declaration]
+            )
+            if not alternatives:
                 raise ConfigError(
-                    "{}: fact {!r} must declare exactly one provider".format(path, fact)
+                    "{}: fact {!r} alternatives cannot be empty".format(path, fact)
                 )
-            names(list(declaration), path, "fact {!r} provider".format(fact))
+            for index, alternative in enumerate(alternatives):
+                if not isinstance(alternative, dict):
+                    raise ConfigError(
+                        "{}: fact {!r} alternative {} must be a dictionary".format(
+                            path, fact, index
+                        )
+                    )
+                if isinstance(declaration, list):
+                    if "when" not in alternative:
+                        raise ConfigError(
+                            "{}: fact {!r} alternative {} needs when".format(
+                                path, fact, index
+                            )
+                        )
+                    condition(
+                        alternative["when"],
+                        path,
+                        "fact {!r} alternative {} when".format(fact, index),
+                    )
+                provider_names = [key for key in alternative if key != "when"]
+                if len(provider_names) != 1 or (
+                    not isinstance(declaration, list) and "when" in alternative
+                ):
+                    raise ConfigError(
+                        "{}: fact {!r} must declare exactly one provider".format(
+                            path, fact
+                        )
+                    )
+                names(provider_names, path, "fact {!r} provider".format(fact))
         available[name] = Module(name, path.parent, config)
     if profile is not None:
         names([profile], root, "profile")
