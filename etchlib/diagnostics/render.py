@@ -24,6 +24,7 @@ def render_doctor(
         "Doctor: {}".format(repository.root),
         "Runtime: Python {}; {}".format(platform.python_version(), platform.system()),
         "Configuration structure OK: {}".format(repository.root),
+        "",
         "Selected modules:",
     ]
     lines.extend("  " + module.name for module in repository.modules)
@@ -33,6 +34,7 @@ def render_doctor(
                 plugin.name, plugin.version, plugin.api, plugin.root
             )
         )
+    lines.append("")
     lines.append("Registered providers:")
     for entry in registry.entries():
         lines.append(
@@ -45,6 +47,7 @@ def render_doctor(
                 PLUGIN_API_VERSION,
             )
         )
+    lines.append("")
     lines.append(render_facts(diagnosis.facts))
     if diagnosis.plan is not None:
         lines.append("Dependencies and destination claims: current snapshot checked.")
@@ -64,6 +67,7 @@ def render_doctor(
     lines.append(
         "Inspection only: no actions applied. Deferred actions need fresh inspection after refresh; opaque commands are not verified. Plugins and fact probes are trusted code."
     )
+    lines.append("")
     lines.append(
         "Doctor {}: {} errors, {} warnings.".format(
             "FAILED" if diagnosis.errors else "OK",

@@ -17,6 +17,8 @@ def render_apply(report: ExecutionReport) -> str:
                     ref.module or "global", ref.name
                 )
             )
+    if report.warnings or report.error:
+        lines.append("")
     lines.extend("Warning: " + warning for warning in report.warnings)
     if report.error:
         lines.append("FAIL: " + report.error)
@@ -24,12 +26,19 @@ def render_apply(report: ExecutionReport) -> str:
         status: sum(result.status is status for result in report.actions)
         for status in Status
     }
+    summary = (
+        ", ".join(
+            "{} {}".format(count, status.value)
+            for status, count in counts.items()
+            if count
+        )
+        or "no actions"
+    )
+    lines.append("")
     lines.append(
         "Apply {}: {}".format(
             "complete" if report.succeeded else "failed",
-            ", ".join(
-                "{} {}".format(count, status.value) for status, count in counts.items()
-            ),
+            summary,
         )
     )
     return "\n".join(lines)

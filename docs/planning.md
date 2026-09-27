@@ -11,19 +11,15 @@ As with `doctor`, choose either a profile or explicit module names. With neither
 Etch selects every discovered module in lexical order. Profile order is retained
 where dependencies permit. Required modules must be selected explicitly.
 
-The output includes:
+The default output groups selected modules, proposed `CHANGE`, `RUN`, or `SKIP`
+actions in dependency order, and a short count summary. Conditional skips and
+deferred work remain visible with their reasons. Use `--verbose` to inspect
+current provider observations, job limits, resource capacities, refresh points,
+network and elevation declarations, ownership claims, facts, and provider origins.
+Opaque actions may do more than Etch can predict.
 
-- Selected modules, false-condition skips and deferred actions.
-- A stable dependency order, current provider observations and proposed
-  `CHANGE`, `RUN` or `SKIP` outcomes.
-- Configured job limits and resource capacities, refresh points, resource constraints,
-  elevation requests, and known network
-  and executable behavior. Opaque actions may do more than Etch can predict.
-- Active destination ownership, with conflicts reported as errors.
-- Requested fact values and unavailable observations. Unused declarations remain
-  unprobed and are labeled `not requested`.
-- Plugin compatibility; `--verbose` also lists core and plugin provider origins
-  and versions, including fact providers.
+Status words carry the meaning in both terminal and plain-text output. Etch
+colors them only in an interactive terminal; `NO_COLOR` disables color.
 
 Planning returns zero for a valid snapshot, including valid deferred work. Invalid
 configuration, provider errors, unresolved required facts, missing hard dependencies,
