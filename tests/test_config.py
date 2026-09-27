@@ -111,7 +111,13 @@ class ConfigTests(unittest.TestCase):
         self.assertEqual(load_repository(self.repo).modules[0].config, config)
 
     def test_fact_envelopes(self) -> None:
-        for fact in [[], {}, {"command": "git", "env": "HOME"}]:
+        for fact in [
+            [],
+            {},
+            {"command": "git", "env": "HOME"},
+            [{"version": {"command": ["tool", "--version"]}}],
+            [{"when": {"os": "linux"}, "command": "git", "env": "HOME"}],
+        ]:
             self.write(
                 "modules/git/module.conf",
                 repr(

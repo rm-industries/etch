@@ -27,6 +27,27 @@ the [version probe](versions.md) explicitly executes its declared argv without a
 Distro reads `/etc/os-release`, falling back to
 `/usr/lib/os-release` if absent, without shell evaluation.
 
+## Conditional alternatives
+
+One fact name can choose between platform-specific providers or configurations:
+
+```python
+"facts": {
+    "version": [
+        {"when": {"os": "linux"}, "version": {"command": ["/usr/local/bin/tool", "--version"]}},
+        {"when": {"os": "macos"}, "version": {"command": ["tool", "--version"]}},
+    ]
+}
+```
+
+Each alternative needs a `when` condition and exactly one fact provider. Conditions
+can use `os`, `distro`, `arch`, `command`, `env`, and `not`; fact conditions are
+excluded to avoid a fact depending on itself during selection. Exactly one
+alternative must match. None or multiple matches are configuration errors, so
+add explicit alternatives for every supported platform. Only the selected
+provider is bound, and its probe remains lazy. Conditions and `refresh` continue
+to refer to the single fact name. A single provider declaration still works.
+
 ## Scope and lifecycle
 
 Declare module facts as `"facts": {"available": {"command": "git"}}`.
