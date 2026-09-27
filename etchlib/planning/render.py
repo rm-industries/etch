@@ -3,9 +3,11 @@
 from typing import Iterable
 
 from etchlib import PLUGIN_API_VERSION
+from etchlib.conditions.render import describe_condition
 from etchlib.conditions.results import Outcome
 from etchlib.config import Repository
 from etchlib.graph.model import NodeId
+from etchlib.output import action_lines
 from etchlib.plugins.metadata import Metadata
 from etchlib.providers.observations import FactState
 from etchlib.scheduling.resources import options, requirements
@@ -56,30 +58,63 @@ def render_plan(
                 )
             )
     lines.append("")
-    lines.append("Selected modules:")
-    for module in repository.modules:
-        selection = report.selections[module.name]
-        outcome = selection.module.outcome
-        lines.append(
-            "  {}{}".format(
-                module.name,
-                "" if outcome is Outcome.TRUE else ": " + outcome.value.upper(),
-            )
-        )
-        for index, result in enumerate(selection.actions):
-            if result.outcome is Outcome.TRUE:
+    if not verbose:
+        lines.append("Here's what Etch found:")
+        for module in repository.modules:
+            selection = report.selections[module.name]
+            lines.append("{}:".format(module.name))
+            if selection.module.outcome is not Outcome.TRUE:
+                detail = describe_condition(module.config.get("when", {}))
+                label = (
+                    "SKIP" if selection.module.outcome is Outcome.FALSE else "DEFERRED"
+                )
+                lines.append("  {} — {}".format(label, detail))
                 continue
-            label = (
-                "SKIP (condition false)"
-                if result.outcome is Outcome.FALSE
-                else "DEFERRED"
+            for index, result in enumerate(selection.actions):
+                key = NodeId(module.name, "action", index)
+                plan = report.plans.get(key)
+                if plan is not None:
+                    lines.extend(
+                        action_lines(plan.status.value.upper(), plan.description, "  ")
+                    )
+                else:
+                    label = "SKIP" if result.outcome is Outcome.FALSE else "DEFERRED"
+                    detail = describe_condition(
+                        module.config["actions"][index].get("when", {})
+                    )
+                    lines.append("  {} — {}".format(label, detail))
+                    lines.extend("    " + reason for reason in result.reasons)
+            lines.append("")
+    else:
+        lines.append("Selected modules:")
+        for module in repository.modules:
+            selection = report.selections[module.name]
+            outcome = selection.module.outcome
+            lines.append(
+                "  {}{}".format(
+                    module.name,
+                    "" if outcome is Outcome.TRUE else ": " + outcome.value.upper(),
+                )
             )
-            lines.append("  {}: {}".format(NodeId(module.name, "action", index), label))
-            lines.extend("    " + reason for reason in result.reasons)
-    lines.append("")
-    lines.append("Actions (dependency order):")
+            for index, result in enumerate(selection.actions):
+                if result.outcome is Outcome.TRUE:
+                    continue
+                detail = describe_condition(
+                    module.config["actions"][index].get("when", {})
+                )
+                lines.append(
+                    "  {}: {} — {}".format(
+                        NodeId(module.name, "action", index),
+                        "SKIP" if result.outcome is Outcome.FALSE else "DEFERRED",
+                        detail,
+                    )
+                )
+                lines.extend("    " + reason for reason in result.reasons)
+    if verbose:
+        lines.append("")
+        lines.append("Actions (dependency order):")
     shown = 0
-    for key in report.graph.order():
+    for key in report.graph.order() if verbose else ():
         node = report.graph.node(key)
         plan = report.plans.get(key)
         if plan is None:
@@ -95,8 +130,8 @@ def render_plan(
             continue
         observation = report.inspections[key]
         shown += 1
-        lines.append(
-            "  {}: {} — {}".format(key, plan.status.value.upper(), plan.description)
+        lines.extend(
+            action_lines(plan.status.value.upper(), plan.description, "  ", str(key))
         )
         if verbose:
             lines.append(
@@ -132,7 +167,7 @@ def render_plan(
                     PLUGIN_API_VERSION,
                 )
             )
-    if not shown:
+    if verbose and not shown:
         lines.append("  None.")
     if verbose:
         lines.append("")

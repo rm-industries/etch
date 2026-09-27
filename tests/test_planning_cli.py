@@ -9,6 +9,29 @@ from tests.plugin_fixtures import write_plugin
 
 
 class PlanningCliTests(PlanningFixture):
+    def test_module_groups_and_multiline_links(self) -> None:
+        self.module(
+            actions=[
+                {
+                    "link": {
+                        str(self.root / "one"): "module.conf",
+                        str(self.root / "two"): "module.conf",
+                    }
+                },
+                {"create": ["three"]},
+                {"create": ["four"]},
+            ]
+        )
+        status, output, error = self.cli()
+        self.assertEqual(status, 0, error)
+        self.assertEqual(output.count("demo:\n"), 1)
+        self.assertIn(
+            "  CHANGE — Link 2 paths:\n    - " + str(self.root / "one"), output
+        )
+        self.assertIn("\n    - " + str(self.root / "two"), output)
+        self.assertNotIn("demo:action[", output)
+        self.assertIn("demo:action[0]", self.cli("--verbose")[1])
+
     def test_plan_never_applies_downloads_or_runs_actions(self) -> None:
         module = self.root / "modules/demo"
         module.mkdir(parents=True)
@@ -107,9 +130,9 @@ class PlanningCliTests(PlanningFixture):
         )
         status, output, error = self.cli("--profile", "dev")
         self.assertEqual(status, 0, error)
-        self.assertIn("Selected modules:\n  b", output)
+        self.assertIn("Here's what Etch found:\nb:", output)
         self.assertNotIn("a: true", output)
-        self.assertIn("Selected modules:\n  a", self.cli("a")[1])
+        self.assertIn("Here's what Etch found:\na:", self.cli("a")[1])
 
     def test_plugin_compatibility_and_fact_origin(self) -> None:
         write_plugin(self.root / "vendor/example")

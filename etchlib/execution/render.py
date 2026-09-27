@@ -1,15 +1,21 @@
 """Concise apply results, including partial success and blocked work."""
 
+from etchlib.output import action_lines
+
 from .results import ExecutionReport, Status
 
 
 def render_apply(report: ExecutionReport) -> str:
-    lines = []
+    lines: list[str] = []
+    current_module = None
     for result in report.actions:
-        lines.append(
-            "{} {}: {}".format(
-                result.status.value.upper(), result.node, result.description
-            )
+        if result.node.module != current_module:
+            if lines:
+                lines.append("")
+            current_module = result.node.module
+            lines.append("{}:".format(current_module))
+        lines.extend(
+            action_lines(result.status.value.upper(), result.description, "  ")
         )
         for ref in result.refreshed:
             lines.append(

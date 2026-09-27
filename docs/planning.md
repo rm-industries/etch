@@ -12,9 +12,10 @@ Etch selects every discovered module in lexical order. Profile order is retained
 where dependencies permit. Required modules must be selected explicitly.
 
 The default output groups selected modules, proposed `CHANGE`, `RUN`, or `SKIP`
-actions in dependency order, and a short count summary. Conditional skips and
-deferred work remain visible with their reasons. Use `--verbose` to inspect
-current provider observations, job limits, resource capacities, refresh points,
+actions within each module, and a short count summary. Conditional skips and
+deferred work remain visible with their reasons. Use `--verbose` for dependency
+order and action IDs, and to inspect current provider observations, job limits,
+resource capacities, refresh points,
 network and elevation declarations, ownership claims, facts, and provider origins.
 Opaque actions may do more than Etch can predict.
 

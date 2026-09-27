@@ -90,7 +90,7 @@ class PlanningConditionsTests(PlanningFixture):
         )
         report = self.plan()
         self.assertEqual(len(report.plans), 0)
-        self.assertIn("SKIP (condition false)", self.cli()[1])
+        self.assertIn("SKIP — Needs OS never", self.cli()[1])
 
     def test_invalid_condition_in_false_module_still_fails(self) -> None:
         self.module(

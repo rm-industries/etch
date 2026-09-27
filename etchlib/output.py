@@ -38,6 +38,17 @@ def present(text: str, color: bool) -> str:
     return "\n".join(_STATUS.sub(highlight, line) for line in text.split("\n"))
 
 
+def action_lines(
+    status: str, description: str, indent: str, node: str = ""
+) -> list[str]:
+    """Lay out a provider's short title and optional item lines."""
+    title, *items = description.splitlines()
+    heading = "{}{} — {}".format(indent, status, title)
+    if node:
+        heading += " [{}]".format(node)
+    return [heading] + [indent + "  " + item.strip() for item in items]
+
+
 def write_output(text: str, stream: Optional[TextIO] = None) -> None:
     stream = stream or sys.stdout
     color = (
