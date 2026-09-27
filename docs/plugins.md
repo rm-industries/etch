@@ -1,5 +1,9 @@
 # Loading source plugins
 
+Reference bundles include [Homebrew](../plugins/homebrew/README.md),
+[VS Code](../plugins/vscode/README.md), and
+[macOS preferences](../plugins/macos_defaults/README.md).
+
 Declare roots explicitly in the consumer's `defaults.conf`:
 
 ```python
