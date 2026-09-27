@@ -11,6 +11,7 @@ from etchlib.providers.observations import Inspection, InspectionState
 from etchlib.providers.plans import ApplyResult, ClaimKind, PathClaim, Plan, PlanStatus
 
 from .receipts import record
+from .render import describe_links
 from .state import check_parent, kind
 from .submodules import check_submodules
 
@@ -136,7 +137,7 @@ class LinkProvider:
             PlanStatus.SKIP
             if observation.state is InspectionState.SATISFIED
             else PlanStatus.CHANGE,
-            "Link: " + ", ".join(str(link.destination) for link in observation.data),
+            describe_links((link.destination for link in observation.data), "Link"),
             payload=observation.data,
             claims=tuple(claims),
         )
@@ -150,7 +151,7 @@ class LinkProvider:
                 raise ValueError("destination parent changed since planning")
             link.source.resolve().relative_to(context.module_root.resolve())
             needed(link)
-        changed = False
+        changed = []
         for link in plan.payload:
             if not needed(link):
                 continue
@@ -160,7 +161,8 @@ class LinkProvider:
                 link.destination.unlink()
             link.destination.symlink_to(link.source)
             record(context.repo_root, link.destination, context.module_name)
-            changed = True
+            changed.append(link.destination)
         return ApplyResult(
-            changed, "Links updated" if changed else "Links already correct"
+            bool(changed),
+            describe_links(changed, "Linked") if changed else "Links already correct",
         )

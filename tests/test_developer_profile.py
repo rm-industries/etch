@@ -45,8 +45,12 @@ class DeveloperProfileTests(DeveloperFixture):
         second = self.cli("apply", "--jobs", "4")
         self.assertEqual(second.returncode, 0, second.stdout + second.stderr)
         self.assertEqual(
-            [line for line in second.stdout.splitlines() if line.startswith("CHANGED")],
-            ["CHANGED zsh:action[1]: Commands ran"],
+            [
+                line
+                for line in second.stdout.splitlines()
+                if line.strip().startswith("CHANGED")
+            ],
+            ["  CHANGED — Commands ran"],
         )
         self.assertEqual(len(self.server.requests), 1)
         self.assertEqual(

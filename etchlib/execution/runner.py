@@ -3,6 +3,7 @@
 from types import MappingProxyType
 from typing import Optional
 
+from etchlib.conditions.render import describe_condition
 from etchlib.conditions.results import Outcome
 from etchlib.config import Repository
 from etchlib.facts.repository import repository_facts
@@ -113,7 +114,16 @@ def apply_repository(
                     Status.BLOCKED if error else Status.SKIPPED,
                     "Not run after failure (fail-fast policy)"
                     if error
-                    else "Condition false",
+                    else "Not run: "
+                    + describe_condition(
+                        (
+                            module.config.get("when", {})
+                            if report is not None
+                            and report.selections[module.name].module.outcome
+                            is Outcome.FALSE
+                            else module.config["actions"][index].get("when", {})
+                        ),
+                    ),
                 )
     return ExecutionReport(
         tuple(results.values()),

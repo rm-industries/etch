@@ -4,6 +4,7 @@ from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from types import MappingProxyType
 from typing import Optional
 
+from etchlib.conditions.render import describe_condition
 from etchlib.conditions.results import Outcome
 from etchlib.config import Repository
 from etchlib.execution.results import ActionResult, ExecutionReport, Status
@@ -165,7 +166,16 @@ class Scheduler:
                         Status.BLOCKED if self.error else Status.SKIPPED,
                         "Not run after failure (fail-fast policy)"
                         if self.error
-                        else "Condition false",
+                        else "Not run: "
+                        + describe_condition(
+                            (
+                                module.config.get("when", {})
+                                if self.report is not None
+                                and self.report.selections[module.name].module.outcome
+                                is Outcome.FALSE
+                                else module.config["actions"][index].get("when", {})
+                            ),
+                        ),
                     )
         return ExecutionReport(
             tuple(ordered.values()),

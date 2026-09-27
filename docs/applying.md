@@ -69,6 +69,9 @@ both import declared plugins, and neither sandboxes their Python code.
 
 ## Results and failure policy
 
+Apply output groups results by module and lists multiple link destinations on separate lines.
+Conditional skips name the unmet requirement without printing observed values.
+
 Every selected action receives one terminal status:
 
 - `CHANGED`: the provider reported changes.

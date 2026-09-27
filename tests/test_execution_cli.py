@@ -20,7 +20,7 @@ class ApplyCliTests(PlanningFixture):
         self.module("b", actions=[{"create": ["b-directory"]}])
         status, output = self.run_cli("a")
         self.assertEqual(status, 0, output)
-        self.assertIn("CHANGED a:action[0]", output)
+        self.assertIn("a:\n  CHANGED", output)
         self.assertTrue((self.root / "a-directory").is_dir())
         self.assertFalse((self.root / "b-directory").exists())
         self.assertIn("SKIPPED", self.run_cli("a")[1])
@@ -60,8 +60,8 @@ class ApplyCliTests(PlanningFixture):
         )
         status, output = self.run_cli()
         self.assertEqual(status, 1)
-        self.assertIn("FAILED demo:action[0]", output)
-        self.assertIn("BLOCKED demo:action[1]", output)
+        self.assertIn("demo:\n  FAILED", output)
+        self.assertIn("BLOCKED", output)
         self.assertFalse((self.root / "not-created").exists())
 
     def test_false_conditions_are_reported_as_skips(self) -> None:
