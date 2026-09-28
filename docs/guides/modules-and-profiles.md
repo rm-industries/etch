@@ -33,7 +33,8 @@ as `['tmux', '-V']` stay on one line; longer lists split. Comments are retained.
 ```
 
 `format --check` reports differences without changing files, so it works in CI.
-`validate` separately checks static configuration declarations. `.editorconfig`
+`validate` separately checks configuration declarations without inspecting or
+applying them; declared plugins are loaded as trusted Python code. `.editorconfig`
 helps your editor follow Etch's style but does not change the formatter's rules.
 
 ## Select deliberately

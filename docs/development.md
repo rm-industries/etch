@@ -70,8 +70,9 @@ Etch's `format` command uses a fixed two-space style for module and profile
 configuration. Short scalar lists stay inline; longer or nested lists split.
 `.editorconfig` offers matching editor hints; it does not configure the formatter.
 Comments are preserved when they can be placed safely; unsupported positions
-fail clearly without changing files. `etch validate` separately checks static
-module, profile, and condition declarations without running actions.
+fail clearly without changing files. `etch validate` separately checks module,
+profile, condition, and provider declarations without inspecting state or running
+actions. It loads declared plugins, which are trusted Python code.
 
 ## Static typing
 

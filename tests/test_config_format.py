@@ -103,6 +103,23 @@ class ConfigFormatTests(unittest.TestCase):
             with redirect_stdout(StringIO()), redirect_stderr(StringIO()):
                 self.assertEqual(main(["validate", "--repo", str(root)]), 1)
 
+    def test_validate_checks_provider_declarations_without_inspection(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            module = root / "modules/git/module.conf"
+            module.parent.mkdir(parents=True)
+            module.write_text(
+                repr(
+                    {
+                        "schema_version": 1,
+                        "name": "git",
+                        "actions": [{"create": "wrong shape"}],
+                    }
+                )
+            )
+            with redirect_stdout(StringIO()), redirect_stderr(StringIO()):
+                self.assertEqual(main(["validate", "--repo", str(root)]), 1)
+
 
 if __name__ == "__main__":
     unittest.main()
