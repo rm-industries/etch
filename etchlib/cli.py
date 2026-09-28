@@ -7,6 +7,7 @@ from typing import List, Optional
 
 from etchlib import __version__
 from etchlib.config import load_repository
+from etchlib.config_format import format_repository
 from etchlib.core import core_registry
 from etchlib.diagnostics.doctor import diagnose
 from etchlib.diagnostics.facts import gather, render_facts
@@ -71,11 +72,30 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     importer.add_argument("--repo", type=Path, default=Path.cwd())
     importer.add_argument("--no-provenance", action="store_true")
+    formatter = commands.add_parser(
+        "format", help="format module and profile configuration"
+    )
+    formatter.add_argument("--repo", type=Path, default=Path.cwd())
+    formatter.add_argument(
+        "--check", action="store_true", help="report files that need formatting"
+    )
     args = parser.parse_args(argv)
     if args.command is None:
         parser.print_help()
         return 0
     try:
+        if args.command == "format":
+            changed = format_repository(args.repo, check=args.check)
+            if changed:
+                write_output(
+                    "{}: {}".format(
+                        "Needs formatting" if args.check else "Formatted",
+                        ", ".join(str(path.relative_to(args.repo)) for path in changed),
+                    )
+                )
+            else:
+                write_output("Module and profile configuration is formatted.")
+            return 1 if args.check and changed else 0
         if args.command == "import":
             write_output(
                 import_module(
