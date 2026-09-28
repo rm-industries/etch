@@ -34,6 +34,8 @@ jobs:
           python-version: '3.14'
       - run: python -m pip install -c requirements/constraints.txt ruff
       - run: ruff format --check .
+      - run: python -S etch format --check --repo examples/minimal
+      - run: python -S etch format --check --repo examples/developer
   python-lint:
     permissions:
       contents: read

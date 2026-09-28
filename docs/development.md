@@ -45,12 +45,16 @@ Apply formatting and safe lint fixes:
 ```sh
 ruff format .
 ruff check --fix .
+python3 -S etch format --repo examples/minimal
+python3 -S etch format --repo examples/developer
 ```
 
 Check without modifying files and run all tests:
 
 ```sh
 ruff format --check .
+python3 -S etch format --check --repo examples/minimal
+python3 -S etch format --check --repo examples/developer
 ruff check .
 mypy etchlib plugins tests etch
 pytest
@@ -61,6 +65,14 @@ extensionless `etch` launcher, `etchlib`, reference plugins, and tests. Its init
 rules cover import ordering, syntax and name errors, common style errors, and Bugbear correctness
 checks. Add exceptions only for concrete cases at the smallest practical scope.
 pytest collects the existing unittest suite, including bootstrap integration tests.
+
+Etch's `format` command uses a fixed two-space style for module and profile
+configuration. Short scalar lists stay inline; longer or nested lists split.
+`.editorconfig` offers matching editor hints; it does not configure the formatter.
+Comments are preserved when they can be placed safely; unsupported positions
+fail clearly without changing files. `etch validate` separately checks module,
+profile, condition, and provider declarations without inspecting state or running
+actions. It loads declared plugins, which are trusted Python code.
 
 ## Static typing
 

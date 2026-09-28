@@ -20,6 +20,23 @@ asset. Etch reads literal configuration data rather than executing it as Python.
 Repository-wide `defaults.conf` holds default provider options and explicit plugin
 paths. Actions can override supported defaults. Profiles live under `profiles/`.
 
+## Keep configuration readable
+
+Etch formats module and profile files with two-space indentation. Short lists such
+as `['tmux', '-V']` stay on one line; longer lists split. Comments are retained.
+
+```sh
+./etch format
+./etch format modules/git/module.conf
+./etch format --check
+./etch validate
+```
+
+`format --check` reports differences without changing files, so it works in CI.
+`validate` separately checks configuration declarations without inspecting or
+applying them; declared plugins are loaded as trusted Python code. `.editorconfig`
+helps your editor follow Etch's style but does not change the formatter's rules.
+
 ## Select deliberately
 
 ```sh

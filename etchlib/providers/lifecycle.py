@@ -34,6 +34,11 @@ def validate_action(entry: Registration, config: Any, context: Context) -> None:
     _validate(entry, "action", config, context)
 
 
+def validate_fact(entry: Registration, config: Any, context: Context) -> None:
+    """Check a fact schema without gathering it."""
+    _validate(entry, "fact", config, context)
+
+
 def plan_action(entry: Registration, config: Any, context: Context) -> Plan:
     return inspect_action(entry, config, context)[1]
 
