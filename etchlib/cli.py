@@ -8,6 +8,7 @@ from typing import List, Optional
 from etchlib import __version__
 from etchlib.config import load_repository
 from etchlib.config_format import format_repository
+from etchlib.config_validate import validate_repository
 from etchlib.core import core_registry
 from etchlib.diagnostics.doctor import diagnose
 from etchlib.diagnostics.facts import gather, render_facts
@@ -79,23 +80,37 @@ def main(argv: Optional[List[str]] = None) -> int:
     formatter.add_argument(
         "--check", action="store_true", help="report files that need formatting"
     )
+    formatter.add_argument(
+        "files", nargs="*", type=Path, help="specific module or profile files"
+    )
+    validator = commands.add_parser(
+        "validate", help="validate module and profile configuration"
+    )
+    validator.add_argument("--repo", type=Path, default=Path.cwd())
     args = parser.parse_args(argv)
     if args.command is None:
         parser.print_help()
         return 0
     try:
         if args.command == "format":
-            changed = format_repository(args.repo, check=args.check)
+            changed = format_repository(args.repo, check=args.check, files=args.files)
             if changed:
                 write_output(
                     "{}: {}".format(
                         "Needs formatting" if args.check else "Formatted",
-                        ", ".join(str(path.relative_to(args.repo)) for path in changed),
+                        ", ".join(
+                            str(path.relative_to(args.repo.resolve()))
+                            for path in changed
+                        ),
                     )
                 )
             else:
                 write_output("Module and profile configuration is formatted.")
             return 1 if args.check and changed else 0
+        if args.command == "validate":
+            validate_repository(args.repo)
+            write_output("Configuration is valid.")
+            return 0
         if args.command == "import":
             write_output(
                 import_module(

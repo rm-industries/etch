@@ -67,8 +67,11 @@ checks. Add exceptions only for concrete cases at the smallest practical scope.
 pytest collects the existing unittest suite, including bootstrap integration tests.
 
 Etch's `format` command uses a fixed two-space style for module and profile
-configuration. `.editorconfig` offers matching editor hints; it does not configure
-the formatter. Formatting rejects comments rather than removing them.
+configuration. Short scalar lists stay inline; longer or nested lists split.
+`.editorconfig` offers matching editor hints; it does not configure the formatter.
+Comments are preserved when they can be placed safely; unsupported positions
+fail clearly without changing files. `etch validate` separately checks static
+module, profile, and condition declarations without running actions.
 
 ## Static typing
 
