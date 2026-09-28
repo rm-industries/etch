@@ -7,7 +7,7 @@ from tests.execution_fixtures import ExecutionFixture
 class ExecutionValidationTests(ExecutionFixture):
     def activated(self, config: dict[str, object]) -> None:
         self.module(
-            facts={"tool": {"state": "tool"}},
+            facts={"tool": {"provider": "state", "config": "tool"}},
             actions=[
                 {
                     "establish": {
@@ -46,7 +46,7 @@ class ExecutionValidationTests(ExecutionFixture):
 
     def test_invalid_activated_filesystem_source_is_rejected(self) -> None:
         self.module(
-            facts={"tool": {"state": "tool"}},
+            facts={"tool": {"provider": "state", "config": "tool"}},
             actions=[
                 {
                     "establish": {"name": "install", "values": {"tool": "1"}},
@@ -94,7 +94,7 @@ class ExecutionValidationTests(ExecutionFixture):
     def test_late_condition_cannot_insert_work_before_completed_actions(self) -> None:
         self.fact.values["tool"] = "0"
         self.module(
-            facts={"tool": {"state": "tool"}},
+            facts={"tool": {"provider": "state", "config": "tool"}},
             actions=[
                 {
                     "establish": {"name": "early"},

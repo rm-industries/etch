@@ -31,9 +31,9 @@ Example module:
     "schema_version": 1,
     "name": "tools",
     "facts": {
-        "git_command": {"command": "git"},
-        "git_version": {"version": {"command": ["git", "--version"]}},
-        "packages": {"brew.formulae": {}},
+        "git_command": {"provider": "command", "config": "git"},
+        "git_version": {"provider": "version", "command": ["git", "--version"]},
+        "packages": {"provider": "brew.formulae"},
     },
     "actions": [
         {

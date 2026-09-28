@@ -31,9 +31,9 @@ Example `modules/editor/module.conf`:
     "schema_version": 1,
     "name": "editor",
     "facts": {
-        "editor_command": {"vscode.command": {}},
-        "editor_version": {"vscode.version": {}},
-        "editor_extensions": {"vscode.extensions": {}},
+        "editor_command": {"provider": "vscode.command"},
+        "editor_version": {"provider": "vscode.version"},
+        "editor_extensions": {"provider": "vscode.extensions"},
     },
     "actions": [
         {

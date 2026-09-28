@@ -75,7 +75,7 @@ class SchedulerValidationTests(ExecutionFixture):
     def test_worker_observations_are_detached_and_do_not_gather(self) -> None:
         self.fact.values["tool"] = ["original"]
         self.module(
-            facts={"tool": {"state": "tool"}},
+            facts={"tool": {"provider": "state", "config": "tool"}},
             actions=[{"establish": {"name": "consume", "facts": [["demo", "tool"]]}}],
         )
         original = self.action.apply
@@ -95,7 +95,10 @@ class SchedulerValidationTests(ExecutionFixture):
     def test_false_resolution_unblocks_following_activated_action(self) -> None:
         self.fact.values["later"] = []
         self.module(
-            facts={name: {"state": name} for name in ("tool", "flag", "later")},
+            facts={
+                name: {"provider": "state", "config": name}
+                for name in ("tool", "flag", "later")
+            },
             actions=[
                 {
                     "establish": {

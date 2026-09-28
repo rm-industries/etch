@@ -10,7 +10,8 @@ class PlanningConditionsTests(PlanningFixture):
         self.module(
             facts={
                 "tool": {
-                    "version": {"command": [str(self.root / "missing"), "--version"]}
+                    "provider": "version",
+                    "command": [str(self.root / "missing"), "--version"],
                 }
             },
             actions=actions,
@@ -99,7 +100,7 @@ class PlanningConditionsTests(PlanningFixture):
         self.assertEqual(self.cli()[0], 1)
 
     def test_unused_bad_fact_is_not_gathered(self) -> None:
-        self.module(facts={"unused": {"version": {"invalid": True}}})
+        self.module(facts={"unused": {"provider": "version", "invalid": True}})
         self.assertTrue(all(value is None for value in self.plan().facts.values()))
         self.assertIn("demo.unused: not requested", self.cli("--verbose")[1])
 

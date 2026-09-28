@@ -52,7 +52,7 @@ class ImportCopyTests(ImportFixture):
         self.config(
             requires=["absent"],
             after=["optional"],
-            facts={"custom": {"external.fact": {}}},
+            facts={"custom": {"provider": "external.fact"}},
             actions=[
                 {"external.action": {}},
                 {"shell": {"command": "touch NEVER"}},

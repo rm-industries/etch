@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from etchlib.conditions.schema import validate as validate_condition
-from etchlib.config import load_repository
+from etchlib.config import fact_provider, load_repository
 from etchlib.core import core_registry
 from etchlib.plugins.loader import load_plugins
 from etchlib.providers.contracts import Context
@@ -35,7 +35,7 @@ def validate_repository(root: Path) -> None:
             for alternative in fact if isinstance(fact, list) else [fact]:
                 if "when" in alternative:
                     validate_condition(alternative["when"])
-                name = next(key for key in alternative if key != "when")
-                validate_fact(registry.fact(name), alternative[name], context)
+                name, options = fact_provider(alternative)
+                validate_fact(registry.fact(name), options, context)
     for path in sorted((root / "profiles").glob("*.conf")):
         load_repository(root, profile=path.stem)

@@ -91,7 +91,7 @@ class ExecutionFixture(PlanningFixture):
 
     def staged(self, **producer: Any) -> None:
         self.module(
-            facts={"tool": {"state": "tool"}},
+            facts={"tool": {"provider": "state", "config": "tool"}},
             actions=[
                 {
                     "establish": dict(

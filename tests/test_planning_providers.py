@@ -20,7 +20,7 @@ class PlanningProviderTests(PlanningFixture):
         self.module("base")
         self.module(
             actions=[{"memory": {"value": "new"}}],
-            facts={"installed": {"memory_value": {"value": "old"}}},
+            facts={"installed": {"provider": "memory_value", "value": "old"}},
         )
         report = self.plan()
         key = NodeId("demo", "action", 0)
@@ -45,7 +45,10 @@ class PlanningProviderTests(PlanningFixture):
             self.module(
                 requires=requires,
                 facts={
-                    "version": {"version": {"command": [str(self.root / "absent")]}}
+                    "version": {
+                        "provider": "version",
+                        "command": [str(self.root / "absent")],
+                    }
                 },
                 actions=[
                     {
@@ -71,7 +74,7 @@ class PlanningProviderTests(PlanningFixture):
         self.module("base")
         self.module(
             actions=[{"memory": {"value": "new"}}],
-            facts={"installed": {"memory_value": {"value": ["old"]}}},
+            facts={"installed": {"provider": "memory_value", "value": ["old"]}},
         )
         original_inspect = action.inspect
 

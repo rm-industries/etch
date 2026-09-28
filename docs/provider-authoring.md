@@ -173,7 +173,7 @@ installer in the consumer, then declare `tool_version` there, for example:
 
 ```python
 {"facts": {"tool_version": {
-    "version": {"command": ["example-tool", "--version"]}
+    "provider": "version", "command": ["example-tool", "--version"]
 }}}
 ```
 
