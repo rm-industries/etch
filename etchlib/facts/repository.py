@@ -5,7 +5,7 @@ from typing import Any
 from etchlib.conditions.evaluator import Evaluator
 from etchlib.conditions.results import ConditionError, Outcome
 from etchlib.conditions.schema import validate
-from etchlib.config import Repository
+from etchlib.config import Repository, fact_provider
 from etchlib.providers.contracts import Context
 from etchlib.providers.errors import ProviderError
 from etchlib.providers.observations import FactRef
@@ -38,7 +38,7 @@ def _select(declaration: Any, store: FactStore, context: Context) -> tuple[str, 
                 "expected one matching fact alternative, found {}".format(len(matches))
             )
         declaration = declaration[matches[0]]
-    return next((key, value) for key, value in declaration.items() if key != "when")
+    return fact_provider(declaration)
 
 
 def repository_facts(repository: Repository, registry: Registry) -> FactStore:

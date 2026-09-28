@@ -3,12 +3,14 @@ import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 from etchlib.config import (
     ConfigError,
     compose_defaults,
     destination,
+    fact_provider,
     load_repository,
     read_config,
 )
@@ -101,11 +103,11 @@ class ConfigTests(unittest.TestCase):
             "when": {"os": "linux"},
             "refresh": ["installed"],
         }
-        config = {
+        config: dict[str, Any] = {
             "schema_version": 1,
             "name": "git",
             "actions": [action],
-            "facts": {"installed": {"custom_fact": {}}},
+            "facts": {"installed": {"provider": "custom_fact"}},
         }
         self.write("modules/git/module.conf", repr(config))
         self.assertEqual(load_repository(self.repo).modules[0].config, config)
@@ -114,9 +116,16 @@ class ConfigTests(unittest.TestCase):
         for fact in [
             [],
             {},
-            {"command": "git", "env": "HOME"},
-            [{"version": {"command": ["tool", "--version"]}}],
-            [{"when": {"os": "linux"}, "command": "git", "env": "HOME"}],
+            {"command": "git"},
+            [{"provider": "version", "command": ["tool", "--version"]}],
+            [
+                {
+                    "when": {"os": "linux"},
+                    "provider": "command",
+                    "config": "git",
+                    "env": "HOME",
+                }
+            ],
         ]:
             self.write(
                 "modules/git/module.conf",
@@ -125,6 +134,32 @@ class ConfigTests(unittest.TestCase):
                 ),
             )
             with self.subTest(fact=fact), self.assertRaisesRegex(ConfigError, "fact"):
+                load_repository(self.repo)
+
+    def test_explicit_fact_provider_and_reserved_option_escape(self) -> None:
+        config: dict[str, Any] = {
+            "schema_version": 1,
+            "name": "git",
+            "facts": {
+                "tool": {"provider": "command", "config": "git"},
+                "version": {"provider": "version", "command": ["git", "--version"]},
+                "plugin": {"provider": "custom", "config": {"provider": "source"}},
+            },
+        }
+        self.write("modules/git/module.conf", repr(config))
+        self.assertEqual(load_repository(self.repo).modules[0].config, config)
+        self.assertEqual(fact_provider(config["facts"]["tool"]), ("command", "git"))
+        self.assertEqual(
+            fact_provider(config["facts"]["plugin"]),
+            ("custom", {"provider": "source"}),
+        )
+        for declaration in (
+            {"version": {"command": ["git", "--version"]}},
+            {"provider": "version", "config": {}, "command": ["git"]},
+        ):
+            config["facts"]["version"] = declaration
+            self.write("modules/git/module.conf", repr(config))
+            with self.subTest(declaration=declaration), self.assertRaises(ConfigError):
                 load_repository(self.repo)
 
     def test_profile_order_and_duplicate_selection(self) -> None:

@@ -188,7 +188,7 @@ class SchedulerTests(ExecutionFixture):
         self.fact.values["tool"] = "old"
         self.module(
             "a",
-            facts={"tool": {"state": "tool"}},
+            facts={"tool": {"provider": "state", "config": "tool"}},
             actions=[
                 {
                     "establish": {"name": "writer", "values": {"tool": "new"}},

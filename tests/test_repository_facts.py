@@ -43,11 +43,13 @@ class RepositoryFactTests(unittest.TestCase):
                                 "installed": [
                                     {
                                         "when": {"os": "linux"},
-                                        "file_exists": "linux-tool",
+                                        "provider": "file_exists",
+                                        "config": "linux-tool",
                                     },
                                     {
                                         "when": {"os": "macos"},
-                                        "file_exists": "macos-tool",
+                                        "provider": "file_exists",
+                                        "config": "macos-tool",
                                     },
                                 ]
                             },
@@ -91,7 +93,11 @@ class RepositoryFactTests(unittest.TestCase):
                                 "name": "git",
                                 "facts": {
                                     "installed": [
-                                        {"when": {"os": name}, "file_exists": "tool"}
+                                        {
+                                            "when": {"os": name},
+                                            "provider": "file_exists",
+                                            "config": "tool",
+                                        }
                                         for name in conditions
                                     ]
                                 },
@@ -119,8 +125,11 @@ class RepositoryFactTests(unittest.TestCase):
                         "schema_version": 1,
                         "name": "git",
                         "facts": {
-                            "plugin_value": {"example_fact": {}},
-                            "config_present": {"file_exists": "files/gitconfig"},
+                            "plugin_value": {"provider": "example_fact"},
+                            "config_present": {
+                                "provider": "file_exists",
+                                "config": "files/gitconfig",
+                            },
                         },
                     }
                 )

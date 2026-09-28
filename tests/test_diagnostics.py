@@ -19,10 +19,10 @@ class DiagnosticTests(PlanningFixture):
     def test_facts_filter_and_scope_without_actions(self) -> None:
         self.module(
             "global",
-            facts={"os": {"env": "ETCH_DIAGNOSTIC_VALUE"}},
+            facts={"os": {"provider": "env", "config": "ETCH_DIAGNOSTIC_VALUE"}},
             actions=[{"missing_provider": {}}],
         )
-        self.module("excluded", facts={"bad": {"version": []}})
+        self.module("excluded", facts={"bad": {"provider": "version", "config": []}})
         self.write(
             "profiles/demo.conf",
             {"schema_version": 1, "name": "demo", "modules": ["global"]},
@@ -38,8 +38,11 @@ class DiagnosticTests(PlanningFixture):
     def test_unused_probe_error_and_missing_command(self) -> None:
         self.module(
             facts={
-                "bad": {"version": []},
-                "tool": {"command": "etch-impossible-command-123456"},
+                "bad": {"provider": "version", "config": []},
+                "tool": {
+                    "provider": "command",
+                    "config": "etch-impossible-command-123456",
+                },
             }
         )
         for command in ("facts", "doctor"):
@@ -50,7 +53,14 @@ class DiagnosticTests(PlanningFixture):
             self.assertIn("not found", out)
 
     def test_unavailable_is_warning_not_failure(self) -> None:
-        self.module(facts={"tool": {"command": "etch-impossible-command-123456"}})
+        self.module(
+            facts={
+                "tool": {
+                    "provider": "command",
+                    "config": "etch-impossible-command-123456",
+                }
+            }
+        )
         status, out, err = self.invoke("doctor")
         self.assertEqual((status, err), (0, ""))
         self.assertIn("Warning: module/demo/tool", out)
@@ -127,7 +137,12 @@ class DiagnosticTests(PlanningFixture):
         self.assertEqual(status, 1)
         self.assertIn("undeclared refresh fact", out)
         self.module(
-            facts={"tool": {"command": "etch-impossible-command-123456"}},
+            facts={
+                "tool": {
+                    "provider": "command",
+                    "config": "etch-impossible-command-123456",
+                }
+            },
             actions=[{"create": ["output"], "when": {"fact": {"name": "tool"}}}],
         )
         self.assertEqual(self.invoke("doctor")[0], 1)
@@ -137,7 +152,7 @@ class DiagnosticTests(PlanningFixture):
         self.write(
             "defaults.conf", {"schema_version": 1, "plugins": ["plugins/example"]}
         )
-        self.module(facts={"custom": {"example_fact": {}}})
+        self.module(facts={"custom": {"provider": "example_fact"}})
         status, out, err = self.invoke("doctor")
         self.assertEqual((status, err), (0, ""))
         self.assertIn("API 1 compatible", out)
@@ -158,7 +173,12 @@ class DiagnosticTests(PlanningFixture):
 
     def test_deferred_installer_is_explained_without_download(self) -> None:
         self.module(
-            facts={"tool": {"command": "etch-impossible-command-123456"}},
+            facts={
+                "tool": {
+                    "provider": "command",
+                    "config": "etch-impossible-command-123456",
+                }
+            },
             actions=[
                 {
                     "installer": {"url": "https://example.invalid/install"},

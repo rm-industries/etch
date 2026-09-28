@@ -9,7 +9,7 @@ package dependencies. They use the core `version` provider and normal scoped cac
     "name": "tmux",
     "facts": {
         "tmux_version": {
-            "version": {"command": ["tmux", "-V"], "timeout": 10},
+            "provider": "version", "command": ["tmux", "-V"], "timeout": 10,
         },
     },
 }

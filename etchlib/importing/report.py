@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from etchlib.conditions.schema import validate
-from etchlib.config import Module, load_repository
+from etchlib.config import Module, fact_provider, load_repository
 from etchlib.core import core_registry
 
 from .tree import Entry
@@ -55,7 +55,11 @@ def inventory(module: Module, consumer: Path, selected: tuple[Entry, ...]) -> li
 
     dependencies(module.config, "module")
     for name, declaration in module.config.get("facts", {}).items():
-        provider("fact", next(iter(declaration)), "fact {!r}".format(name))
+        for alternative in (
+            declaration if isinstance(declaration, list) else [declaration]
+        ):
+            fact_name, _ = fact_provider(alternative)
+            provider("fact", fact_name, "fact {!r}".format(name))
     for index, action in enumerate(module.config.get("actions", [])):
         location = "action[{}]".format(index)
         name = next(iter(set(action) - {"when", "requires", "after", "refresh"}))

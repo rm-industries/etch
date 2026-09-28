@@ -95,7 +95,12 @@ class PlanningCliTests(PlanningFixture):
 
     def test_requested_version_probe_is_allowed_and_observed(self) -> None:
         self.module(
-            facts={"python": {"version": {"command": [sys.executable, "--version"]}}},
+            facts={
+                "python": {
+                    "provider": "version",
+                    "command": [sys.executable, "--version"],
+                }
+            },
             actions=[
                 {
                     "create": [str(self.root / "new")],
@@ -140,7 +145,7 @@ class PlanningCliTests(PlanningFixture):
             "defaults.conf", {"schema_version": 1, "plugins": ["vendor/example"]}
         )
         self.module(
-            facts={"plugin": {"example_fact": {}}},
+            facts={"plugin": {"provider": "example_fact"}},
             when={"fact": {"name": "plugin", "equals": "from plugin"}},
         )
         status, output, error = self.cli("-v")

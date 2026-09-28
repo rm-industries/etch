@@ -34,13 +34,13 @@ One fact name can choose between platform-specific providers or configurations:
 ```python
 "facts": {
     "version": [
-        {"when": {"os": "linux"}, "version": {"command": ["/usr/local/bin/tool", "--version"]}},
-        {"when": {"os": "macos"}, "version": {"command": ["tool", "--version"]}},
+        {"when": {"os": "linux"}, "provider": "version", "command": ["/usr/local/bin/tool", "--version"]},
+        {"when": {"os": "macos"}, "provider": "version", "command": ["tool", "--version"]},
     ]
 }
 ```
 
-Each alternative needs a `when` condition and exactly one fact provider. Conditions
+Each alternative needs a `when` condition and an explicit `provider`. Conditions
 can use `os`, `distro`, `arch`, `command`, `env`, and `not`; fact conditions are
 excluded to avoid a fact depending on itself during selection. Exactly one
 alternative must match. None or multiple matches are configuration errors, so
@@ -50,7 +50,14 @@ to refer to the single fact name. A single provider declaration still works.
 
 ## Scope and lifecycle
 
-Declare module facts as `"facts": {"available": {"command": "git"}}`.
+Declare module facts as `"facts": {"available": {"provider": "command", "config": "git"}}`.
+Dictionary provider options sit beside `provider`, as in
+`{"provider": "version", "command": ["git", "--version"]}`. For a scalar
+provider payload, use `config`; it cannot be mixed with flat options. The names
+`provider`, `when` and `config` are reserved at this declaration level. A plugin
+whose own options use one of those names can place its complete payload under
+`config`, for example `{"provider": "custom", "config": {"provider": "source"}}`.
+The former one-key provider declaration is no longer accepted.
 `repository_facts(repository, registry)` binds global os/distro/arch and selected
 module declarations without probing. Local instances use `FactRef("git", "available")`;
 globals use `FactRef(None, "os")`, avoiding collisions with real module names.

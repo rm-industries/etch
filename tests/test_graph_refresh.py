@@ -21,7 +21,7 @@ class RefreshTests(ConditionFixture, unittest.TestCase):
             module(
                 "demo",
                 [{"test": {}, "refresh": ["version"]}, {"test": {}}],
-                facts={"version": {"version": {}}},
+                facts={"version": {"provider": "version"}},
             )
         )
         selections["demo"] = Selection(
@@ -63,7 +63,8 @@ class RefreshTests(ConditionFixture, unittest.TestCase):
     def test_unordered_producer_needs_explicit_fact_link(self) -> None:
         ref = FactRef("consumer", "version")
         repository, selections, plans = inputs(
-            module("consumer", facts={"version": {"version": {}}}), module("installer")
+            module("consumer", facts={"version": {"provider": "version"}}),
+            module("installer"),
         )
         consumer, producer = (
             NodeId("consumer", "action", 0),
@@ -94,7 +95,8 @@ class RefreshTests(ConditionFixture, unittest.TestCase):
     def test_module_gate_can_wait_on_external_producer(self) -> None:
         ref = FactRef("consumer", "version")
         repository, selections, plans = inputs(
-            module("consumer", facts={"version": {"version": {}}}), module("installer")
+            module("consumer", facts={"version": {"provider": "version"}}),
+            module("installer"),
         )
         gate, producer = NodeId("consumer", "start"), NodeId("installer", "action", 0)
         selections["consumer"] = Selection(
@@ -110,7 +112,7 @@ class RefreshTests(ConditionFixture, unittest.TestCase):
     def test_producer_blocked_by_deferred_dependency_is_not_eligible(self) -> None:
         ref = FactRef("consumer", "version")
         repository, selections, plans = inputs(
-            module("consumer", facts={"version": {"version": {}}}),
+            module("consumer", facts={"version": {"provider": "version"}}),
             module("installer", requires=["blocked"]),
             module("blocked"),
         )

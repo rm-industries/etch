@@ -15,7 +15,8 @@ class StagedInstallerTests(InstallerFixture):
                     {
                         "facts": {
                             "starship_version": {
-                                "version": {"command": ["./starship", "--version"]}
+                                "provider": "version",
+                                "command": ["./starship", "--version"],
                             }
                         },
                         "actions": [

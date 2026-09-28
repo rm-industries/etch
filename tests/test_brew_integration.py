@@ -18,7 +18,7 @@ class BrewIntegrationTests(BrewFixture):
         )
         self.module(
             facts={
-                name: {"brew." + name: {"command": str(self.brew)}}
+                name: {"provider": "brew." + name, "command": str(self.brew)}
                 for name in ("command", "version", "formulae", "casks")
             }
         )
@@ -32,7 +32,9 @@ class BrewIntegrationTests(BrewFixture):
         self.assertEqual(store.get(FactRef("demo", "casks")).value, ["firefox"])
 
     def test_absent_command_and_probe_failure_facts(self) -> None:
-        self.module(facts={"packages": {"brew.formulae": {"command": str(self.brew)}}})
+        self.module(
+            facts={"packages": {"provider": "brew.formulae", "command": str(self.brew)}}
+        )
         self.state(fail="list")
         store = repository_facts(load_repository(self.root), self.registry)
         self.assertEqual(store.get(FactRef("demo", "packages")).state, FactState.ERROR)
@@ -46,9 +48,9 @@ class BrewIntegrationTests(BrewFixture):
         tool = str(self.bin / "installed-tool")
         self.module(
             facts={
-                "tool": {"command": tool},
-                "version": {"version": {"command": [tool, "--version"]}},
-                "packages": {"brew.formulae": {"command": str(self.brew)}},
+                "tool": {"provider": "command", "config": tool},
+                "version": {"provider": "version", "command": [tool, "--version"]},
+                "packages": {"provider": "brew.formulae", "command": str(self.brew)},
             },
             actions=[
                 {

@@ -10,7 +10,7 @@ class VSCodeFactTests(VSCodeFixture):
     def declare(self) -> None:
         self.module(
             facts={
-                kind: {"vscode." + kind: {"command": str(self.code)}}
+                kind: {"provider": "vscode." + kind, "command": str(self.code)}
                 for kind in ("command", "version", "extensions")
             }
         )
@@ -50,7 +50,12 @@ class VSCodeFactTests(VSCodeFixture):
 
     def test_successful_changes_refresh_facts_and_activate_configuration(self) -> None:
         self.module(
-            facts={"extensions": {"vscode.extensions": {"command": str(self.code)}}},
+            facts={
+                "extensions": {
+                    "provider": "vscode.extensions",
+                    "command": str(self.code),
+                }
+            },
             actions=[
                 {
                     "vscode": {
@@ -86,7 +91,12 @@ class VSCodeFactTests(VSCodeFixture):
     def test_failed_install_does_not_refresh_or_configure(self) -> None:
         self.state(extensions=[], fail_extension="ms-python.python")
         self.module(
-            facts={"extensions": {"vscode.extensions": {"command": str(self.code)}}},
+            facts={
+                "extensions": {
+                    "provider": "vscode.extensions",
+                    "command": str(self.code),
+                }
+            },
             actions=[
                 {
                     "vscode": {

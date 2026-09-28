@@ -16,8 +16,12 @@ class ExecutionRefreshTests(ExecutionFixture):
         self.module(
             facts={
                 "tool": [
-                    {"when": {"os": system}, "state": "tool"},
-                    {"when": {"not": {"os": system}}, "state": "unused"},
+                    {"when": {"os": system}, "provider": "state", "config": "tool"},
+                    {
+                        "when": {"not": {"os": system}},
+                        "provider": "state",
+                        "config": "unused",
+                    },
                 ]
             },
             actions=[
@@ -107,7 +111,7 @@ class ExecutionRefreshTests(ExecutionFixture):
         self.assertEqual(self.fact.calls, ["tool", "tool"])
         self.fact.calls.clear()
         self.module(
-            facts={"unused": {"state": "unused"}},
+            facts={"unused": {"provider": "state", "config": "unused"}},
             actions=[
                 {"establish": {"name": "skip", "skip": True}, "refresh": ["unused"]}
             ],
@@ -122,7 +126,7 @@ class ExecutionRefreshTests(ExecutionFixture):
 
     def test_unused_refresh_is_never_gathered(self) -> None:
         self.module(
-            facts={"unused": {"state": "unused"}},
+            facts={"unused": {"provider": "state", "config": "unused"}},
             actions=[{"establish": {"name": "install"}, "refresh": ["unused"]}],
         )
         report = self.apply_repo()
@@ -151,7 +155,7 @@ class ExecutionRefreshTests(ExecutionFixture):
             ],
         )
         self.module(
-            facts={"tool": {"state": "tool"}},
+            facts={"tool": {"provider": "state", "config": "tool"}},
             requires=["producer"],
             actions=[
                 {
@@ -167,7 +171,10 @@ class ExecutionRefreshTests(ExecutionFixture):
     def test_unrelated_cached_fact_is_not_invalidated(self) -> None:
         self.fact.values["stable"] = True
         self.module(
-            facts={"tool": {"state": "tool"}, "stable": {"state": "stable"}},
+            facts={
+                "tool": {"provider": "state", "config": "tool"},
+                "stable": {"provider": "state", "config": "stable"},
+            },
             actions=[
                 {
                     "establish": {"name": "install", "values": {"tool": "1"}},
@@ -188,7 +195,7 @@ class ExecutionRefreshTests(ExecutionFixture):
 
     def test_deferred_condition_can_resolve_false(self) -> None:
         self.module(
-            facts={"tool": {"state": "tool"}},
+            facts={"tool": {"provider": "state", "config": "tool"}},
             actions=[
                 {
                     "establish": {"name": "install", "values": {"tool": "0.5"}},

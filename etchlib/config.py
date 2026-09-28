@@ -144,6 +144,18 @@ def names(value: Any, path: Path, field: str) -> List[str]:
     return value
 
 
+def fact_provider(declaration: Dict[str, Any]) -> Tuple[str, Any]:
+    """Extract an explicit provider and its flat or wrapped payload."""
+    options = {
+        key: value
+        for key, value in declaration.items()
+        if key not in ("provider", "when")
+    }
+    return declaration["provider"], options[
+        "config"
+    ] if "config" in options else options
+
+
 @dataclass(frozen=True)
 class Module:
     name: str
@@ -289,16 +301,25 @@ def load_repository(
                         path,
                         "fact {!r} alternative {} when".format(fact, index),
                     )
-                provider_names = [key for key in alternative if key != "when"]
-                if len(provider_names) != 1 or (
+                if "provider" not in alternative or (
                     not isinstance(declaration, list) and "when" in alternative
                 ):
                     raise ConfigError(
-                        "{}: fact {!r} must declare exactly one provider".format(
+                        "{}: fact {!r} needs an explicit provider".format(path, fact)
+                    )
+                names(
+                    [alternative["provider"]], path, "fact {!r} provider".format(fact)
+                )
+                if "config" in alternative and set(alternative) - {
+                    "provider",
+                    "when",
+                    "config",
+                }:
+                    raise ConfigError(
+                        "{}: fact {!r} cannot mix config with flat provider options".format(
                             path, fact
                         )
                     )
-                names(provider_names, path, "fact {!r} provider".format(fact))
         available[name] = Module(name, path.parent, config)
     if profile is not None:
         names([profile], root, "profile")
