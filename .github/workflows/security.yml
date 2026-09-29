@@ -5,17 +5,9 @@ on: # yamllint disable-line rule:truthy
   pull_request:
     branches:
       - main
-    paths:
-      - 'website/**'
-      - 'docs/guides/**'
-      - '.github/**'
   push:
     branches:
       - main
-    paths:
-      - 'website/**'
-      - 'docs/guides/**'
-      - '.github/**'
   schedule:
     - cron: '40 5 * * 1'
 
@@ -41,6 +33,7 @@ jobs:
         language:
           - actions
           - javascript-typescript
+          - python
 
     steps:
       - name: Checkout repository
