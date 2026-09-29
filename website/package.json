@@ -54,7 +54,7 @@
     "@playwright/test": "^1.63.0",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.3",
-    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/coverage-v8": "^5.0.0",
     "audit-ci": "7.1.0",
     "cspell": "^10.3.4",
     "daisyui": "^5.7.46",
