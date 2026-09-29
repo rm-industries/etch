@@ -6,10 +6,10 @@ from typing import Any
 
 from etchlib.providers.commands.runtime import checked, run
 from etchlib.providers.contracts import Context
+from etchlib.providers.download.transfer import download
 from etchlib.providers.observations import Inspection, InspectionState
 from etchlib.providers.plans import ApplyResult, Plan, PlanStatus
 
-from .download import download
 from .schema import Installer, normalize
 
 
@@ -34,11 +34,11 @@ class InstallerProvider:
         options = installer.options
         description = (
             "Check satisfied; skip " if skip else "Download and execute "
-        ) + installer.url
+        ) + installer.transfer.url
         description += " [interpreter: {}]".format(installer.shell)
         if options.get("description"):
             description = options["description"] + ": " + description
-        if not installer.verify:
+        if not installer.transfer.verify:
             description += " (TLS verification disabled)"
         resources: tuple[str, ...] = (
             ("sudo-interactive",) if options.get("sudo", False) and not skip else ()
@@ -61,13 +61,15 @@ class InstallerProvider:
             return ApplyResult(False, "Installer check already satisfied")
         if installer.options.get("sudo", False) and not context.elevation_allowed:
             raise ValueError("installer privilege escalation has not been authorized")
-        if installer.ca_file is not None:
-            installer.ca_file.resolve().relative_to(context.module_root.resolve())
+        if installer.transfer.ca_file is not None:
+            installer.transfer.ca_file.resolve().relative_to(
+                context.module_root.resolve()
+            )
         with tempfile.TemporaryDirectory(prefix="etch-installer-") as directory:
             script = Path(directory) / "installer"
-            download(installer, script)
+            download(installer.transfer, script)
             options = dict(
                 installer.options, argv=(installer.shell, str(script)) + installer.args
             )
             run(options, context)
-        return ApplyResult(True, "Installer ran: " + installer.url)
+        return ApplyResult(True, "Installer ran: " + installer.transfer.url)

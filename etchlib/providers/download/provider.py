@@ -2,7 +2,7 @@
 
 import os
 import tempfile
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
@@ -10,10 +10,9 @@ from etchlib.config import compose_defaults, destination
 from etchlib.providers.commands.options import validate_options
 from etchlib.providers.commands.runtime import checked
 from etchlib.providers.contracts import Context
+from etchlib.providers.download.schema import Transfer, normalize_transfer
+from etchlib.providers.download.transfer import download
 from etchlib.providers.filesystem.state import check_parent, kind
-from etchlib.providers.installer.download import download
-from etchlib.providers.installer.schema import Installer
-from etchlib.providers.installer.schema import normalize as normalize_installer
 from etchlib.providers.observations import Inspection, InspectionState
 from etchlib.providers.plans import ApplyResult, ClaimKind, PathClaim, Plan, PlanStatus
 
@@ -23,7 +22,7 @@ from .receipts import owned_asset, record
 @dataclass(frozen=True)
 class Asset:
     destination: Path
-    transfer: Installer
+    transfer: Transfer
     check: Optional[dict[str, str]]
     description: Optional[str]
 
@@ -52,13 +51,13 @@ def normalize(config: Any, context: Context) -> Asset:
     validate_options(
         {key: values[key] for key in ("check", "description") if key in values}
     )
-    transfer = normalize_installer(
+    transfer = normalize_transfer(
         {
             key: values[key]
             for key in ("url", "sha256", "tls", "download_timeout")
             if key in values
         },
-        replace(context, defaults={}),
+        context,
     )
     return Asset(
         destination(values["destination"], context.repo_root),

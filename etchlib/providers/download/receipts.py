@@ -6,7 +6,7 @@ import tempfile
 from pathlib import Path
 from typing import Optional, Tuple
 
-from etchlib.providers.installer.download import MAX_BYTES
+from etchlib.providers.download.transfer import MAX_BYTES
 
 
 def _receipt(repo: Path, destination: Path, create: bool = False) -> Path:

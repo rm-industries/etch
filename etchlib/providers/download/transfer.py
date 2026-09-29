@@ -8,7 +8,7 @@ from typing import IO, Optional
 from urllib.error import HTTPError
 from urllib.request import HTTPRedirectHandler, HTTPSHandler, Request, build_opener
 
-from .schema import Installer
+from .schema import Transfer
 
 MAX_BYTES = 8 * 1024 * 1024
 
@@ -27,16 +27,16 @@ class NoRedirects(HTTPRedirectHandler):
         raise ValueError("download redirects are not allowed; use the final HTTPS URL")
 
 
-def download(installer: Installer, destination: Path, label: str = "installer") -> None:
+def download(transfer: Transfer, destination: Path, label: str = "installer") -> None:
     context = ssl.create_default_context()
-    if installer.ca_file is not None:
-        context.load_verify_locations(cafile=str(installer.ca_file))
-    if not installer.verify:
+    if transfer.ca_file is not None:
+        context.load_verify_locations(cafile=str(transfer.ca_file))
+    if not transfer.verify:
         context.check_hostname = False
         context.verify_mode = ssl.CERT_NONE
     opener = build_opener(HTTPSHandler(context=context), NoRedirects())
     request = Request(
-        installer.url,
+        transfer.url,
         headers={
             "User-Agent": "Etch installer" if label == "installer" else "Etch download",
             "Accept-Encoding": "identity",
@@ -45,7 +45,7 @@ def download(installer: Installer, destination: Path, label: str = "installer") 
     digest = hashlib.sha256()
     size = 0
     try:
-        response = opener.open(request, timeout=installer.download_timeout)
+        response = opener.open(request, timeout=transfer.download_timeout)
     except HTTPError as exc:
         exc.close()
         raise ValueError("{} download failed: HTTP {}".format(label, exc.code)) from exc
@@ -76,5 +76,5 @@ def download(installer: Installer, destination: Path, label: str = "installer") 
                 stream.write(chunk)
     if not size or (length is not None and size != int(length)):
         raise ValueError("{} download is empty or truncated".format(label))
-    if installer.sha256 is not None and digest.hexdigest() != installer.sha256:
+    if transfer.sha256 is not None and digest.hexdigest() != transfer.sha256:
         raise ValueError("{} SHA-256 mismatch".format(label))
