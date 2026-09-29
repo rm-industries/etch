@@ -3,6 +3,7 @@
 from etchlib import __version__
 from etchlib.facts.core import core_registry as fact_registry
 from etchlib.providers.commands.provider import CommandProvider
+from etchlib.providers.download.provider import DownloadProvider
 from etchlib.providers.filesystem.clean import CleanProvider
 from etchlib.providers.filesystem.create import CreateProvider
 from etchlib.providers.filesystem.link import LinkProvider
@@ -21,6 +22,7 @@ def core_registry() -> Registry:
             CommandProvider("shell"),
             CommandProvider("script"),
             InstallerProvider(),
+            DownloadProvider(),
         ],
     )
     return registry

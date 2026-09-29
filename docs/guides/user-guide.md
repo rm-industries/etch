@@ -75,6 +75,10 @@ the module. Disabling TLS verification removes certificate validation. An instal
 claim every path it might touch. See the [installer
 reference](https://github.com/rm-industries/etch/blob/main/docs/installers.md).
 
+Use `download` for an upstream asset that must be placed on disk without execution.
+It claims its destination and refuses unrelated existing files; see the
+[download reference](https://github.com/rm-industries/etch/blob/main/docs/downloads.md).
+
 ## Select, share, and update modules
 
 `./etch import github:owner/repo --path modules/git` copies one module into the fixed `modules/git/` destination in your

@@ -56,7 +56,7 @@ class DownloadTests(InstallerFixture):
         self.assertEqual(self.server.requests, ["/install"] * 5)
 
     def test_size_limit_is_enforced(self) -> None:
-        with patch("etchlib.providers.installer.download.MAX_BYTES", 8):
+        with patch("etchlib.providers.download.transfer.MAX_BYTES", 8):
             with self.assertRaisesRegex(ValueError, "Content-Length"):
                 self.apply(self.plan())
             self.server.omit_length = True
