@@ -166,3 +166,26 @@ cancel the others, so all compatibility failures remain visible.
 CI does not apply formatting or lint fixes. A failing quality job must be corrected
 locally and checked again before merging. Keep the supported-version list and
 workflow matrix in sync when adding support for a new stable Python minor.
+
+`project.yml` also runs weekly to catch Python and operating-system drift. Its
+release-candidate job boots a source archive with Python 3.9, site packages
+disabled, and no installed Etch package. The template-consumer job applies a
+candidate engine to the generic starter on Linux and macOS. Etch owns the deeper
+provider, planning, reconciliation, conflict, and resource tests; the
+`etch-template` and `rahul0705/dotfiles` repositories test their own consumer
+configurations rather than copying this engine matrix. Their consumer workflows
+can use the same plan/apply/doctor and second-apply pattern.
+
+Repository automation is separate from engine CI. `automation.yml` runs
+actionlint and zizmor for workflow changes and weekly drift. Dependency Review
+checks every pull request and fails on high-severity dependency changes. CodeQL
+uses GitHub's repository-level default setup for Actions, JavaScript/TypeScript,
+and Python, including its managed schedule, instead of a maintained workflow.
+That CodeQL setting and the labels live on GitHub, so a new repository must
+enable or create them separately; they are not copied with this Git tree.
+Dependabot checks GitHub Actions at 05:00 UTC and website npm dependencies at
+05:30 UTC each Monday; `dependencies`, `github-actions`, and `npm` are repository
+labels. The seven-day cooldown avoids brand-new releases; Actions updates are
+grouped, while npm minor and patch updates are grouped by production or
+development and majors remain separate. Website-specific formatting, tests,
+and publishing remain in `website.yml`.
