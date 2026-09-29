@@ -15,16 +15,24 @@ from tests.execution_fixtures import ExecutionFixture
 class SchedulerTests(ExecutionFixture):
     def test_independent_actions_overlap(self) -> None:
         barrier = threading.Barrier(2)
+        announced: list[str] = []
         for name in ("a", "b"):
             self.module(name, actions=[{"establish": {"name": name}}])
 
         def apply(plan: Plan, context: Context) -> ApplyResult:
+            self.assertIn(context.module_name, announced)
             barrier.wait(timeout=5)
             return ApplyResult(True, context.module_name)
 
         with patch.object(self.action, "apply", side_effect=apply):
-            report = apply_repository(load_repository(self.root), self.registry, jobs=2)
+            report = apply_repository(
+                load_repository(self.root),
+                self.registry,
+                jobs=2,
+                on_start=announced.append,
+            )
         self.assertTrue(report.succeeded, report.error)
+        self.assertEqual(announced, ["a", "b"])
         self.assertEqual([result.node.module for result in report.actions], ["a", "b"])
 
     def test_shared_resource_excludes_second_writer_but_not_unrelated_work(

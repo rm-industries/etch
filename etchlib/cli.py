@@ -142,7 +142,13 @@ def main(argv: Optional[List[str]] = None) -> int:
             return 1 if diagnosis.errors else 0
         if args.command == "apply":
             applied = apply_repository(
-                repository, loaded.registry, allow_sudo=args.allow_sudo, jobs=args.jobs
+                repository,
+                loaded.registry,
+                allow_sudo=args.allow_sudo,
+                jobs=args.jobs,
+                on_start=lambda module: write_output(
+                    "Applying {}...".format(module), flush=True
+                ),
             )
             write_output(render_apply(applied))
             return 0 if applied.succeeded else 1
