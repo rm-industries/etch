@@ -26,7 +26,10 @@ class SchedulerTests(ExecutionFixture):
 
         with patch.object(self.action, "apply", side_effect=apply):
             report = apply_repository(
-                load_repository(self.root), self.registry, jobs=2, on_start=announced.append
+                load_repository(self.root),
+                self.registry,
+                jobs=2,
+                on_start=announced.append,
             )
         self.assertTrue(report.succeeded, report.error)
         self.assertEqual(announced, ["a", "b"])

@@ -49,7 +49,9 @@ def action_lines(
     return [heading] + [indent + "  " + item.strip() for item in items]
 
 
-def write_output(text: str, stream: Optional[TextIO] = None, *, flush: bool = False) -> None:
+def write_output(
+    text: str, stream: Optional[TextIO] = None, *, flush: bool = False
+) -> None:
     stream = stream or sys.stdout
     color = (
         stream.isatty()
