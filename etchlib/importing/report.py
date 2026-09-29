@@ -67,7 +67,7 @@ def inventory(module: Module, consumer: Path, selected: tuple[Entry, ...]) -> li
         dependencies(action, location)
         if name in ("shell", "script", "installer"):
             lines.append("Executable behavior: {} {}".format(location, name))
-        if name == "installer" and isinstance(action[name], dict):
+        if name in ("installer", "download") and isinstance(action[name], dict):
             # Do not leak URL credentials or query parameters from arbitrary data.
             from urllib.parse import urlsplit
 
@@ -81,7 +81,9 @@ def inventory(module: Module, consumer: Path, selected: tuple[Entry, ...]) -> li
                 except ValueError:
                     display = "<invalid URL>"
                 lines.append(
-                    "Installer URL (credentials/query omitted): {!r}".format(display)
+                    "{} URL (credentials/query omitted): {!r}".format(
+                        name.capitalize(), display
+                    )
                 )
     for entry in selected:
         if entry.executable or entry.path.endswith(".py"):

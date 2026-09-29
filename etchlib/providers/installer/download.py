@@ -24,10 +24,10 @@ class NoRedirects(HTTPRedirectHandler):
         newurl: str,
     ) -> Optional[Request]:
         fp.close()
-        raise ValueError("installer redirects are not allowed; use the final HTTPS URL")
+        raise ValueError("download redirects are not allowed; use the final HTTPS URL")
 
 
-def download(installer: Installer, destination: Path) -> None:
+def download(installer: Installer, destination: Path, label: str = "installer") -> None:
     context = ssl.create_default_context()
     if installer.ca_file is not None:
         context.load_verify_locations(cafile=str(installer.ca_file))
@@ -37,7 +37,10 @@ def download(installer: Installer, destination: Path) -> None:
     opener = build_opener(HTTPSHandler(context=context), NoRedirects())
     request = Request(
         installer.url,
-        headers={"User-Agent": "Etch installer", "Accept-Encoding": "identity"},
+        headers={
+            "User-Agent": "Etch installer" if label == "installer" else "Etch download",
+            "Accept-Encoding": "identity",
+        },
     )
     digest = hashlib.sha256()
     size = 0
@@ -45,22 +48,22 @@ def download(installer: Installer, destination: Path) -> None:
         response = opener.open(request, timeout=installer.download_timeout)
     except HTTPError as exc:
         exc.close()
-        raise ValueError("installer download failed: HTTP {}".format(exc.code)) from exc
+        raise ValueError("{} download failed: HTTP {}".format(label, exc.code)) from exc
     with response:
         if response.status != 200:
-            raise ValueError("installer download requires HTTP 200")
+            raise ValueError("{} download requires HTTP 200".format(label))
         if response.headers.get_content_type() in (
             "text/html",
             "application/xhtml+xml",
         ):
-            raise ValueError("installer download returned an HTML document")
+            raise ValueError("{} download returned an HTML document".format(label))
         length = response.headers.get("Content-Length")
         if length is not None and (
             not length.isascii() or not length.isdigit() or int(length) > MAX_BYTES
         ):
-            raise ValueError("invalid or excessive installer Content-Length")
+            raise ValueError("invalid or excessive {} Content-Length".format(label))
         if response.headers.get("Content-Encoding", "identity").lower() != "identity":
-            raise ValueError("encoded installer responses are not supported")
+            raise ValueError("encoded {} responses are not supported".format(label))
         with destination.open("xb") as stream:
             while True:
                 chunk = response.read(min(65536, MAX_BYTES + 1 - size))
@@ -68,10 +71,10 @@ def download(installer: Installer, destination: Path) -> None:
                     break
                 size += len(chunk)
                 if size > MAX_BYTES:
-                    raise ValueError("installer exceeds 8 MiB download limit")
+                    raise ValueError("{} exceeds 8 MiB download limit".format(label))
                 digest.update(chunk)
                 stream.write(chunk)
     if not size or (length is not None and size != int(length)):
-        raise ValueError("installer download is empty or truncated")
+        raise ValueError("{} download is empty or truncated".format(label))
     if installer.sha256 is not None and digest.hexdigest() != installer.sha256:
-        raise ValueError("installer SHA-256 mismatch")
+        raise ValueError("{} SHA-256 mismatch".format(label))

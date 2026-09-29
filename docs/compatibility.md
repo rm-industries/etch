@@ -38,7 +38,7 @@ on both OSes.
 
 For a released schema and application version, the core provider names and
 their documented options are supported contracts: `create`, `link`, `clean`,
-`shell`, `script`, and `installer`, plus the built-in fact providers. Provider
+`shell`, `script`, `installer`, and `download`, plus the built-in fact providers. Provider
 outputs describe planned behavior, but Etch cannot guarantee arbitrary shell
 or installer side effects. Reference Homebrew and VS Code providers are
 external plugins with their own versions and compatibility declarations, not
