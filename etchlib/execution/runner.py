@@ -1,7 +1,7 @@
 """Fail-fast serial execution, with fresh validation between successful actions."""
 
 from types import MappingProxyType
-from typing import Optional
+from typing import Callable, Optional
 
 from etchlib.conditions.render import describe_condition
 from etchlib.conditions.results import Outcome
@@ -27,12 +27,13 @@ def apply_repository(
     *,
     allow_sudo: bool = False,
     jobs: Optional[int] = None,
+    on_start: Optional[Callable[[str], None]] = None,
 ) -> ExecutionReport:
     settings = options(repository.defaults.get("execution", {}), jobs)
     if settings.jobs > 1:
         from etchlib.scheduling.engine import Scheduler
 
-        return Scheduler(repository, registry, settings, allow_sudo).run()
+        return Scheduler(repository, registry, settings, allow_sudo, on_start).run()
     store = repository_facts(repository, registry)
     modules = {module.name: module for module in repository.modules}
     results: dict[NodeId, ActionResult] = {}
@@ -40,6 +41,7 @@ def apply_repository(
     error = None
     warnings: dict[str, None] = {}
     current: Optional[NodeId] = None
+    announced: set[str] = set()
     try:
         validate_refresh(repository, store)
         while True:
@@ -71,6 +73,9 @@ def apply_repository(
                     current, Status.SKIPPED, plan.description
                 )
                 continue
+            if on_start is not None and current.module not in announced:
+                on_start(current.module)
+                announced.add(current.module)
             module = modules[current.module]
             context = provider_context(repository, module, store, allow_sudo)
             outcome = apply_action(report.providers[current], plan, context)

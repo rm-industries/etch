@@ -2,7 +2,7 @@
 
 from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from types import MappingProxyType
-from typing import Optional
+from typing import Callable, Optional
 
 from etchlib.conditions.render import describe_condition
 from etchlib.conditions.results import Outcome
@@ -28,9 +28,12 @@ class Scheduler:
         registry: Registry,
         settings: Options,
         allow_sudo: bool,
+        on_start: Optional[Callable[[str], None]] = None,
     ) -> None:
         self.repository, self.registry = repository, registry
         self.settings, self.allow_sudo = settings, allow_sudo
+        self.on_start = on_start
+        self.announced: set[str] = set()
         self.store = repository_facts(repository, registry)
         self.resources = Resources(settings.capacities)
         self.results: dict[NodeId, ActionResult] = {}
@@ -88,6 +91,9 @@ class Scheduler:
             context = context_snapshot(
                 self.repository, key, self.store, self.allow_sudo
             )
+            if self.on_start is not None and key.module not in self.announced:
+                self.on_start(key.module)
+                self.announced.add(key.module)
             self.resources.acquire(names)
             self.running[key] = pool.submit(
                 invoke,

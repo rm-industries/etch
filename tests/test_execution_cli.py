@@ -9,6 +9,26 @@ from tests.planning_fixtures import PlanningFixture
 
 
 class ApplyCliTests(PlanningFixture):
+    def test_progress_precedes_summary_and_is_flushed(self) -> None:
+        class Output(io.StringIO):
+            flushes = 0
+
+            def flush(self) -> None:
+                self.flushes += 1
+
+        for jobs in ("1", "2"):
+            with self.subTest(jobs=jobs):
+                self.module("a", actions=[{"create": ["a-" + jobs]}])
+                self.module("b", actions=[{"create": ["b-" + jobs]}])
+                output = Output()
+                with contextlib.redirect_stdout(output):
+                    status = main(["apply", "--repo", str(self.root), "--jobs", jobs])
+                self.assertEqual(status, 0, output.getvalue())
+                lines = output.getvalue().splitlines()
+                self.assertEqual(lines[:2], ["Applying a...", "Applying b..."])
+                self.assertIn("Apply complete:", lines[-1])
+                self.assertEqual(output.flushes, 2)
+
     def run_cli(self, *args: str) -> tuple[int, str]:
         output = io.StringIO()
         with contextlib.redirect_stdout(output), contextlib.redirect_stderr(output):
