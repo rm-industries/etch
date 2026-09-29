@@ -177,12 +177,14 @@ configurations rather than copying this engine matrix. Their consumer workflows
 can use the same plan/apply/doctor and second-apply pattern.
 
 Repository automation is separate from engine CI. `automation.yml` runs
-actionlint and zizmor for workflow changes and weekly drift. Dependency Review
-checks every pull request and fails on high-severity dependency changes. CodeQL
-uses GitHub's repository-level default setup for Actions, JavaScript/TypeScript,
-and Python, including its managed schedule, instead of a maintained workflow.
-That CodeQL setting and the labels live on GitHub, so a new repository must
-enable or create them separately; they are not copied with this Git tree.
+actionlint and zizmor for workflow changes and weekly drift. Like Forge,
+`security.yml` keeps CodeQL and Dependency Review in one workflow on pull
+requests, main pushes, and a weekly schedule. Dependency Review runs only on
+pull requests and is advisory rather than blocking. Etch scans Actions,
+JavaScript/TypeScript, and Python; Python coverage reflects its engine
+responsibility. The repository's CodeQL default setup is disabled to avoid
+duplicate scanning. Repository labels live on GitHub and must be created
+separately in a new repository; they are not copied with this Git tree.
 Dependabot checks GitHub Actions at 05:00 UTC and website npm dependencies at
 05:30 UTC each Monday; `dependencies`, `github-actions`, and `npm` are repository
 labels. The seven-day cooldown avoids brand-new releases; Actions updates are
