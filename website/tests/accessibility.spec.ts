@@ -31,6 +31,17 @@ for (const colorScheme of ['light', 'dark'] as const) {
   }
 }
 
+for (const theme of ['latte', 'frappe', 'macchiato', 'mocha'] as const) {
+  for (const route of publicRoutes) {
+    test(`${route.name} remains accessible in Catppuccin ${theme}`, async ({ page }) => {
+      await page.goto(resolvePreviewPath(route.path));
+      await page.locator('html').evaluate((element, value) => element.setAttribute('data-theme', value), theme);
+
+      expect(await analyzePage(page)).toEqual([]);
+    });
+  }
+}
+
 for (const route of publicRoutes) {
   test(`${route.name} exposes one main landmark and one level-one heading`, async ({ page }) => {
     await page.goto(resolvePreviewPath(route.path));

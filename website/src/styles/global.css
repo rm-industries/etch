@@ -67,27 +67,23 @@ body {
   text-underline-offset: 0.1875rem;
 }
 
-.prose pre.astro-code {
-  position: relative;
-  padding: 3rem 1.5rem 1.5rem;
-  border-radius: 0.5rem;
-  background-color: var(--color-base-300);
-  color: var(--color-base-content);
+.terminal pre {
+  width: auto;
+  padding-right: 1rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
-.prose pre.astro-code::before {
-  position: absolute;
-  top: 1rem;
-  left: 1.5rem;
-  width: 0.65rem;
-  height: 0.65rem;
-  border-radius: 50%;
-  background: currentcolor;
-  box-shadow:
-    1.1rem 0 currentcolor,
-    2.2rem 0 currentcolor;
-  opacity: 0.35;
-  content: '';
+.terminal pre::before {
+  margin-right: 1rem;
+}
+
+.terminal pre.astro-code {
+  padding-left: 1.5rem;
+}
+
+.terminal pre.astro-code::before {
+  content: none;
 }
 
 .astro-code span {
