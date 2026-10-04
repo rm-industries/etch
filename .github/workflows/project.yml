@@ -191,8 +191,18 @@ jobs:
         run: |
           version=${GITHUB_REF_NAME#v}
           read -r schema api < <(python3 -S -c 'from etchlib import SCHEMA_VERSION, PLUGIN_API_VERSION; print(SCHEMA_VERSION, PLUGIN_API_VERSION)')
+          plugins=$(python3 -S - <<'PYTHON'
+          from plugins.homebrew.etch_plugin import PLUGIN as homebrew
+          from plugins.macos_defaults.etch_plugin import PLUGIN as macos_defaults
+          from plugins.vscode.etch_plugin import PLUGIN as vscode
+
+          print(", ".join("{} {} (API {})".format(plugin["name"], plugin["version"], plugin["api"]) for plugin in (homebrew, macos_defaults, vscode)))
+          PYTHON
+          )
           notes="Supported: Linux and macOS, Python 3.9–3.14. Configuration schema: ${schema}; plugin API: ${api}.
 
-          Known limits: no Windows support, package solving, automatic engine or module updates, or general lifecycle hooks. Reference plugins have independent versions. Full compatibility details are in docs/compatibility.md at this tag."
+          Reference plugins: ${plugins}.
+
+          Known limits: no Windows support, package solving, automatic engine or module updates, or general lifecycle hooks. Full compatibility details are in docs/compatibility.md at this tag."
           gh release create "$GITHUB_REF_NAME" "etch-${version}.tar.gz" "etch-${version}.tar.gz.sha256" \
             --verify-tag --fail-on-no-commits --generate-notes --notes "$notes" --title "Etch ${version}"
