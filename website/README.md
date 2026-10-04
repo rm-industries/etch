@@ -33,6 +33,33 @@ and shared identity/navigation in `src/config/site.ts`. Introductory pages link 
 the maintained repository documentation. The complete user guide and migration
 material remain tracked in Etch #29.
 
+## Website presentation
+
+Use the company site's action hierarchy: `btn-primary` for a section's main
+action (Get started, Use the template, Return home), `btn-outline` for peer
+alternatives and pagination, and `btn-ghost` for utility controls such as Menu.
+Forge's matching adoption is tracked in `rm-industries/forge#227`.
+
+Keep the Catppuccin DaisyUI theme mapping in `src/themes/`. Primary identifies
+the main action and brand; secondary supports quieter surfaces; accent is for
+an intentional point of emphasis. Base surfaces and base content handle normal
+reading. Reserve success, warning, error, and info for the corresponding state
+or message. Terminal syntax uses the same theme's green, yellow, and sky roles
+to distinguish commands, options, and arguments; those colors do not report
+whether an illustrative command succeeded.
+
+The component audit uses DaisyUI cards and card actions, neutral outline tag
+badges, warning draft badges, menus, dropdowns, joined pagination, and the 404
+hero. There are currently no standalone alert callouts. Add DaisyUI alerts if
+content needs a warning or notice. Branded outline badges use base-content text
+to preserve contrast. Documentation prose uses the typography plugin with theme
+tokens for readable text, links, borders, and code.
+
+The illustrative workflow and Markdown code blocks share DaisyUI `mockup-code`
+through `src/lib/terminal.ts`. Custom terminal CSS only handles wrapping, code
+spacing, and syntax colors; DaisyUI owns the frame. Tailwind utilities handle
+responsive layouts, typography, and the cards' Etch brand borders.
+
 ## Nested generation provenance
 
 Generated with Forge commit `f4382661fb37cce2da2eaac9959562dff338d746`, including

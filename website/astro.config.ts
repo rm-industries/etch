@@ -5,6 +5,7 @@ import { defineConfig } from 'astro/config';
 import { getDeploymentConfig } from './src/config/deployment';
 import { site } from './src/config/site';
 import { shellCodeColors } from './src/lib/shell-code-colors';
+import { terminalCodeBlocks } from './src/lib/terminal';
 
 const deployment = getDeploymentConfig(site.url);
 
@@ -16,7 +17,7 @@ export default defineConfig({
     shikiConfig: {
       themes: { light: 'catppuccin-latte', dark: 'catppuccin-mocha' },
       defaultColor: false,
-      transformers: [shellCodeColors],
+      transformers: [shellCodeColors, terminalCodeBlocks],
     },
   },
   site: deployment.site,

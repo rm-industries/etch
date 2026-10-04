@@ -24,30 +24,65 @@ test('uses Latte for light mode and Mocha for dark mode', async ({ page }) => {
   await expect(page.locator('main h1')).toHaveCSS('color', toRgb(flavors.mocha.colors.text.hex));
 });
 
-test('uses the same shell token colors on the home page and in Docs', async ({ page }) => {
-  for (const colorScheme of ['light', 'dark'] as const) {
-    await page.emulateMedia({ colorScheme });
+test('uses the same terminal frame and shell token colors on the home page and in Docs', async ({ page }) => {
+  for (const theme of ['latte', 'frappe', 'macchiato', 'mocha'] as const) {
     await page.goto(resolvePreviewPath('/'));
+    await page.locator('html').evaluate((element, value) => element.setAttribute('data-theme', value), theme);
     const homeColors = await page
       .locator('.terminal')
       .first()
-      .evaluate((terminal) =>
-        ['command', 'option', 'argument'].map(
+      .evaluate((terminal) => [
+        getComputedStyle(terminal).backgroundColor,
+        ...['command', 'option', 'argument'].map(
           (role) => getComputedStyle(terminal.querySelector(`.terminal-${role}`)!).color,
         ),
-      );
+      ]);
 
     await page.goto(resolvePreviewPath('/docs/getting-started/'));
+    await page.locator('html').evaluate((element, value) => element.setAttribute('data-theme', value), theme);
     const docsColors = await page
-      .locator('.astro-code')
+      .locator('.terminal')
       .first()
-      .evaluate((terminal) =>
-        ['command', 'option', 'argument'].map(
+      .evaluate((terminal) => [
+        getComputedStyle(terminal).backgroundColor,
+        ...['command', 'option', 'argument'].map(
           (role) => getComputedStyle(terminal.querySelector(`.terminal-${role}`)!).color,
         ),
-      );
+      ]);
 
     expect(docsColors).toEqual(homeColors);
+  }
+});
+
+test('keeps documentation code within a small viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto(resolvePreviewPath('/docs/user-guide/'));
+
+  const terminals = page.locator('.terminal');
+  expect(await terminals.count()).toBeGreaterThan(0);
+  for (const terminal of await terminals.all()) {
+    expect(await terminal.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(
+    true,
+  );
+});
+
+test('preserves focus and disabled pagination in every flavor', async ({ page }) => {
+  await page.goto(resolvePreviewPath('/docs/user-guide/'));
+  const navigation = page.getByRole('navigation', { name: 'Doc navigation' });
+  const disabled = navigation.locator('[aria-disabled="true"]');
+  const link = navigation.getByRole('link');
+
+  for (const theme of ['latte', 'frappe', 'macchiato', 'mocha'] as const) {
+    await page.locator('html').evaluate((element, value) => element.setAttribute('data-theme', value), theme);
+    await disabled.focus();
+    await expect(disabled).not.toBeFocused();
+    await expect(disabled).not.toHaveAttribute('href');
+    await expect(disabled).toHaveCSS('pointer-events', 'none');
+    await link.focus();
+    await expect(link).toBeFocused();
+    await expect(link).not.toHaveCSS('outline-style', 'none');
   }
 });
 
