@@ -9,6 +9,7 @@ import unittest
 from pathlib import Path
 from typing import Any
 
+from etchlib import __version__
 from etchlib.cli import main
 from etchlib.config import ConfigError, load_repository, read_config
 
@@ -155,7 +156,7 @@ class FoundationTests(unittest.TestCase):
             text=True,
         )
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(result.stdout.strip(), "Etch 0.1.0-dev")
+        self.assertEqual(result.stdout.strip(), "Etch " + __version__)
 
     def test_unsupported_python_guard(self) -> None:
         result = subprocess.run(
