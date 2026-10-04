@@ -54,24 +54,15 @@ eight-module fixture above or prove a personal dotfiles migration.
 
 ## Real-world dogfood evidence
 
-The linked
-[personal migration issue](https://github.com/rahul0705/dotfiles/issues/81) is open,
-its acceptance checklist is unchecked, and it has no recorded run evidence in
-comments. **No real developer-profile migration or installation is claimed by
-this change.** No personal files, packages, or editor state were changed to
-produce the automated evidence above.
+The [personal migration issue](https://github.com/rahul0705/dotfiles/issues/81)
+records the completed dotfiles migration and the user's confirmation that its
+`dev` checkout works locally. Its
+[developer-migration run](https://github.com/rahul0705/dotfiles/actions/runs/36505610544)
+passed on Ubuntu and macOS with Python 3.9 and 3.14, including a first apply
+and an idempotent second apply. The issue also records the Vim plugin audit,
+managed vim-plug download, and switch-over decisions. Real configuration stays
+in the dotfiles repository; the generic fixture above stays independent.
 
-Real validation remains in that owning repository, coordinated with
-[Etch #23](https://github.com/rm-industries/etch/issues/23). Before calling that
-portion complete, record:
-
-- Engine/plugin revisions, OS/architecture, Python version and tool versions.
-- Reviewed migration and switch-over steps, including existing file ownership.
-- Fresh clone/bootstrap and plan output; successful first apply and diagnostic output.
-- A second apply showing declarative no-ops and any remaining opaque commands.
-- tmux branch, font destination, Starship fresh-install refresh, and plugin behavior.
-- Actual limitations or failures, including whether a platform was simulated or run.
-
-Keep secrets and personal configuration in the consumer repository; summarize
-outcomes here only after real evidence exists. The automated PR references #23
-without closing it, leaving the real-world evidence requirement visible.
+Etch's [project workflow](https://github.com/rm-industries/etch/actions/workflows/project.yml)
+continues to run the generic profile on Linux and macOS across Python 3.9–3.14.
+This evidence completed [Etch #23](https://github.com/rm-industries/etch/issues/23).
