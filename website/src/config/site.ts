@@ -81,7 +81,7 @@ export const site = defineSiteConfig({
   url: 'https://www.rm-industries.com/etch/',
   repository: 'rm-industries/etch',
   language: 'en',
-  socialImage: '/social-card.svg',
+  socialImage: '/social-card.png',
   navigation: [
     { label: 'Home', href: '/' },
     { label: 'Docs', href: '/docs/' },

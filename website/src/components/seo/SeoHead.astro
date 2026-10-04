@@ -42,9 +42,14 @@ const socialImageUrl = new URL(resolveSiteHref(site.socialImage), new URL(site.u
 <meta property="og:url" content={canonicalUrl} />
 <meta property="og:type" content={type} />
 <meta property="og:image" content={socialImageUrl} />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Etch's stacked-layer logo beside a reviewable plan for Git and Zsh modules." />
 {publishedTime && <meta property="article:published_time" content={publishedTime} />}
 
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={pageTitle} />
 <meta name="twitter:description" content={description} />
 <meta name="twitter:image" content={socialImageUrl} />
+<meta name="twitter:image:alt" content="Etch's stacked-layer logo beside a reviewable plan for Git and Zsh modules." />

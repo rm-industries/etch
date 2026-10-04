@@ -78,6 +78,19 @@ body {
   margin-right: 1rem;
 }
 
+.terminal pre[data-prefix] {
+  display: flex;
+}
+
+.terminal pre[data-prefix]::before {
+  flex: none;
+}
+
+.terminal pre[data-prefix] > code {
+  flex: 1;
+  min-width: 0;
+}
+
 .terminal pre.astro-code {
   padding-left: 1.5rem;
 }

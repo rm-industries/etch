@@ -1,29 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="227 215 800 800" role="img" aria-labelledby="title description">
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="227 215 800 800" role="img" aria-labelledby="title description">
   <title id="title">Etch</title>
   <desc id="description">A stylus marks a stack of three rounded layers beside a four-point spark.</desc>
   <defs>
     <linearGradient id="lavender" x1="328" y1="418" x2="927" y2="758" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#c0c2ff" />
-      <stop offset="1" stop-color="#b5b8ff" />
+      <stop stop-color="#cdd6f4" />
+      <stop offset="1" stop-color="#b4befe" />
     </linearGradient>
     <linearGradient id="blue" x1="362" y1="662" x2="896" y2="869" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#9babfa" />
-      <stop offset="1" stop-color="#8da0ed" />
+      <stop stop-color="#89b4fa" />
+      <stop offset="1" stop-color="#74c7ec" />
     </linearGradient>
     <linearGradient id="coral" x1="360" y1="775" x2="901" y2="982" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#ffabb5" />
-      <stop offset="1" stop-color="#f89da9" />
+      <stop stop-color="#f38ba8" />
+      <stop offset="1" stop-color="#eba0ac" />
     </linearGradient>
     <linearGradient id="stylus" x1="711" y1="245" x2="945" y2="554" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#ffffff" />
-      <stop offset="1" stop-color="#e8e6ff" />
+      <stop stop-color="#cdd6f4" />
+      <stop offset="1" stop-color="#f5e0dc" />
     </linearGradient>
   </defs>
-  <rect x="227" y="215" width="800" height="800" rx="140" fill="#23222f" />
+  <rect x="227" y="215" width="800" height="800" rx="140" fill="#181825" />
   <path d="M361 775 594 899q36 20 71 1l233-121q30 14 29 37-1 17-27 32L665 972q-35 20-70 0L348 846q-27-15-20-40 5-20 33-31Z" fill="url(#coral)" />
   <path d="m361 662 233 123q36 20 70 1l231-119q32 15 32 37-1 20-27 35L664 862q-35 20-69 1L348 738q-27-16-20-42 5-19 33-34Z" fill="url(#blue)" />
   <path d="m354 554 235-121q37-23 76-8l238 136q29 15 24 39-2 20-30 35L666 752q-37 19-73 0L348 625q-28-16-20-43 4-17 26-28Z" fill="url(#lavender)" />
-  <path d="M573 629 774 526" fill="none" stroke="#23222f" stroke-width="37" stroke-linecap="round" />
+  <path d="M573 629 774 526" fill="none" stroke="#181825" stroke-width="37" stroke-linecap="round" />
   <path d="m757 410 68 44-39 50q-14 19-32 30l-48 20 4-65q1-24 17-44l30-35Z" fill="url(#stylus)" />
   <path d="m771 392 99-126q22-28 47-22 27 6 28 36 1 16-11 31l-94 125-69-44Z" fill="url(#stylus)" />
   <path d="M454 298q7-1 9 13 8 48 67 69 15 5 1 12-52 15-68 70-6 19-12 0-16-53-74-69-17-5-1-12 56-17 71-71 3-11 7-12Z" fill="url(#coral)" />
