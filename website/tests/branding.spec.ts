@@ -105,7 +105,13 @@ test('renders a self-contained social card with current logo, loaded Fira fonts,
     [...document.fonts].map((font) => ({ family: font.family, status: font.status })),
   );
   expect(fonts).toHaveLength(3);
-  expect(fonts.every((font) => font.status === 'loaded' && /^Fira (Sans|Code)$/u.test(font.family))).toBe(true);
+  // Browsers may serialize CSS font-family strings with their surrounding quotes.
+  expect(fonts.map((font) => font.status)).toEqual(['loaded', 'loaded', 'loaded']);
+  expect(fonts.map((font) => font.family.replace(/^(['"])(.*)\1$/u, '$2')).sort()).toEqual([
+    'Fira Code',
+    'Fira Sans',
+    'Fira Sans',
+  ]);
   const artworkFits = await page.locator('svg').evaluate((element) =>
     [...element.querySelectorAll('text, image')].every((item) => {
       const bounds = (item as SVGGraphicsElement).getBBox();
