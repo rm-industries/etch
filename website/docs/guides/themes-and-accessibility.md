@@ -81,8 +81,5 @@ navigation, themes, components, or interaction:
 4. inspect light, dark, reduced-motion, and print behavior; and
 5. record unresolved failures as issues rather than checking an unverified item.
 
-The CMS interface is supplied by Sveltia and is outside the template's public
-site audit. Evaluate that interface with the people who will edit the site.
-
 See the [accessibility review checklist](../accessibility-checklist.md) and
 [performance budget](../performance-budget.md) for the enforced baseline.

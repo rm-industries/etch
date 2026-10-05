@@ -17,10 +17,7 @@ their production-relative locations.
 
 The about and custom 404 pages reuse the same public layout with smaller or
 equivalent resource profiles and remain covered by browser and accessibility
-tests. The `/admin/` route is intentionally excluded: it loads the pinned
-third-party Sveltia editor application and is not representative of public
-visitor performance. Reassess that editor separately before deploying it for a
-specific team.
+tests.
 
 ## Category thresholds
 

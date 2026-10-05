@@ -52,8 +52,8 @@ source or dictionary change; do not suppress them without documenting why.
 ### Type checking or Astro diagnostics fail
 
 Run `npm run typecheck` and `npm run astro:check` separately for focused output.
-Check content front matter, import paths, component props, and the shared content
-model before changing compiler settings.
+Check content front matter, import paths, component props, and the native Astro content
+schema before changing compiler settings.
 
 ### A browser test fails
 
@@ -96,20 +96,14 @@ Dependabot proposes npm and GitHub Actions updates. Before merging one:
 1. read the upstream release notes and security advisory;
 2. confirm the supported Node.js range and licenses remain acceptable;
 3. review changes to `package.json` and `package-lock.json` together;
-4. keep Sveltia updates within the exact content-model compatibility range;
-5. run `npm run audit`, `npm run quality`, and any affected manual check; and
-6. review the project checks and all security findings before merging.
+4. run `npm run audit`, `npm run quality`, and any affected manual check; and
+5. review the project checks and all security findings before merging.
 
 CodeQL and dependency findings report through GitHub code scanning and
 Dependabot alerts rather than blocking ordinary pull requests. Actionlint and
 Zizmor block workflow changes with syntax or security defects. `npm run audit`
 remains an explicit release gate and must pass—or use a reviewed, justified,
 time-bounded exception—before publishing a release.
-
-Do not widen `@rm-industries/content-model` peer compatibility inside a
-generated project. Forge publishes tested content-model compatibility first,
-then template dependency automation can adopt it. Existing generated projects
-remain owner-maintained source and do not receive template files automatically.
 
 High-severity audit exceptions are documented narrowly in `audit-ci.jsonc` and
 `docs/performance-budget.md`. Review their expiry and exposure; do not copy an

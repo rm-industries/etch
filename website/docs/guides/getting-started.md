@@ -23,7 +23,7 @@ commit both `package.json` and `package-lock.json` afterward.
 ## Change the site identity
 
 Edit `src/config/site.ts`. The exported `site` object is the single source for
-page metadata, navigation, feeds, the manifest, and CMS branding.
+page metadata, navigation, feeds, the manifest, and social metadata.
 
 ```ts
 export const site = defineSiteConfig({
@@ -49,7 +49,7 @@ Root-hosted and custom-domain sites use only their origin. The
 [GitHub Pages guide](../github-pages.md) explains each form.
 
 Keep `repository` in `owner/repository` form. An empty value is valid while a
-repository does not exist, but configure it before using the deployed CMS.
+repository does not exist, but configure it before publishing repository links.
 
 ## Replace identity assets
 
@@ -89,8 +89,8 @@ npm run quality:core
 npm run dev
 ```
 
-Inspect the homepage, the changed page, `/docs/`, and `/admin/` in the
+Inspect the homepage, the changed page, and `/docs/` in the
 browser. Run the complete `npm run quality` gate before opening a pull request.
 
-Continue with [content and CMS editing](content-and-cms.md), then review
+Continue with [editing documentation](editing-documentation.md), then review
 [themes and accessibility](themes-and-accessibility.md).

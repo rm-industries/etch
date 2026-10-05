@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 
-import { cmsBranding, defineSiteConfig, site, type SiteConfig } from './site.ts';
+import { defineSiteConfig, type SiteConfig } from './site.ts';
 
 const validConfig = {
   name: 'Example site',
@@ -43,8 +43,4 @@ test('rejects control characters in optional text and invalid links', () => {
   expect(() => defineSiteConfig({ ...validConfig, navigation: [{ label: ' ', href: '/' }] })).toThrow(
     /navigation\[0\]\.label must not be empty/,
   );
-});
-
-test('derives CMS branding from the site name', () => {
-  expect(cmsBranding.appTitle).toBe(`${site.name} Content Manager`);
 });

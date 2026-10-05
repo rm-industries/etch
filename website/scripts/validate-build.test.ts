@@ -9,7 +9,6 @@ import { validateBuild } from './validate-build';
 const requiredPaths = [
   '404.html',
   'about/index.html',
-  'admin/index.html',
   'docs/facts-and-providers/index.html',
   'docs/modules-and-profiles/index.html',
   'docs/getting-started/index.html',

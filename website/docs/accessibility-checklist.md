@@ -31,11 +31,6 @@ record below with their own date, environment, results, and linked issues.
 - [x] Desktop and mobile navigation remain operable using only the keyboard.
 - [x] The custom 404 page identifies the error and provides a clear route home.
 
-The content manager startup and no-index policy are tested separately. Its
-editor interface is supplied by the pinned Sveltia dependency and is outside
-this public-site audit; evaluate that third-party UI against the needs of the
-project's editors before deployment.
-
 ## Automated companion checks
 
 Run `npm run test:a11y` after each manual review. The suite applies axe-core's

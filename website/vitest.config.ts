@@ -5,13 +5,7 @@ export default getViteConfig({
   test: {
     include: ['src/**/*.test.ts', 'scripts/**/*.test.ts'],
     coverage: {
-      include: [
-        'src/config/**/*.ts',
-        'src/content.config.ts',
-        'src/integrations/**/*.ts',
-        'src/lib/**/*.ts',
-        'src/themes/site-theme.ts',
-      ],
+      include: ['src/config/**/*.ts', 'src/content.config.ts', 'src/lib/**/*.ts', 'src/themes/site-theme.ts'],
       provider: 'v8',
       reporter: ['text', 'html'],
       thresholds: {

@@ -102,3 +102,11 @@ Pages must use the GitHub Actions build source. The workflow deploys only a push
 to `main`, after quality, browser, artifact and performance checks pass; pull
 requests build and verify without deployment. No live deployment is claimed by
 this bootstrap PR. Check the post-deployment smoke job after merging.
+
+## Editing documentation
+
+Edit repository Markdown under `../docs/guides/`. The native Astro schema in
+`src/content.config.ts` validates titles, descriptions, publication dates, tags,
+and draft status. Drafts appear locally and are omitted from production routes
+and RSS. The website has no CMS or content-model package dependency. See
+[editing documentation](docs/guides/editing-documentation.md) for the workflow.
