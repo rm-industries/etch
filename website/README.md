@@ -60,6 +60,9 @@ through `src/lib/terminal.ts`. Custom terminal CSS only handles wrapping, code
 spacing, and syntax colors; DaisyUI owns the frame. Tailwind utilities handle
 responsive layouts, typography, and the cards' Etch brand borders.
 
+The [visual language guide](docs/visual-language.md) defines the logo's clear
+space, Etch's module-plan motif, and how to regenerate the social artwork.
+
 ## Nested generation provenance
 
 Generated with Forge commit `f4382661fb37cce2da2eaac9959562dff338d746`, including
