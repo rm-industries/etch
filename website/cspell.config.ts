@@ -19,7 +19,6 @@ export default defineConfig({
     'Macchiato',
     'prefersdark',
     'rustup',
-    'Sveltia',
     'Shiki',
     'unreviewed',
     'WCAG',

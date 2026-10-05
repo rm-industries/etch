@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 import { site } from '../src/config/site';
 import { resolvePreviewPath, resolvePreviewUrl } from './preview';
 
-const routes = ['/', '/about/', '/docs/', '/docs/getting-started/', '/admin/', '/404/'];
+const routes = ['/', '/about/', '/docs/', '/docs/getting-started/', '/404/'];
 
 test('serves every baseline page with configured canonical and social metadata', async ({ page }) => {
   for (const route of routes) {
@@ -17,14 +17,6 @@ test('serves every baseline page with configured canonical and social metadata',
     await expect(page.locator('meta[property="og:url"]')).toHaveAttribute('content', canonicalUrl);
     await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image');
   }
-});
-
-test('serves the content manager without allowing search indexing', async ({ page }) => {
-  await page.goto(resolvePreviewPath('/admin/'));
-
-  await expect(page.locator('meta[name="robots"][content="noindex, nofollow"]')).toHaveCount(1);
-  await expect(page).toHaveTitle(/Content Manager/u);
-  await expect(page.locator('body')).not.toBeEmpty();
 });
 
 test('renders generic article tags on listings and detail pages', async ({ page }) => {

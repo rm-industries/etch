@@ -5,7 +5,6 @@ import { fileURLToPath } from 'node:url';
 const requiredOutputPaths = [
   '404.html',
   'about/index.html',
-  'admin/index.html',
   'docs/facts-and-providers/index.html',
   'docs/modules-and-profiles/index.html',
   'docs/getting-started/index.html',

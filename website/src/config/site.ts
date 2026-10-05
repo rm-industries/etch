@@ -89,7 +89,3 @@ export const site = defineSiteConfig({
   ],
   socialLinks: [{ label: 'GitHub', href: 'https://github.com/rm-industries/etch' }],
 });
-
-export const cmsBranding = Object.freeze({
-  appTitle: `${site.name} Content Manager`,
-});

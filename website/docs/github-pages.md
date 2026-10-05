@@ -22,7 +22,7 @@ mobile layout.
 
 Set `url` in `src/config/site.ts` to the complete public address. Forge derives
 Astro's deployment base from this value, so canonical metadata, navigation,
-assets, the RSS feed, the web manifest, and CMS branding use the same path.
+assets, the RSS feed, and the web manifest use the same path.
 
 For a project site, include the repository name:
 
