@@ -68,7 +68,7 @@ class WindowsRegistryAction:
                 "; ".join(details) if details else "declared values already match",
             ),
             payload=desired,
-            resources=("registry:hkcu:64:" + desired.key.casefold(),),
+            resources=("registry:hkcu",),
         )
 
     def apply(self, plan: Plan, context: Context) -> ApplyResult:

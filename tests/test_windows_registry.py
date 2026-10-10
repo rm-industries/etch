@@ -12,6 +12,7 @@ from etchlib.core import core_registry
 from etchlib.plugins.loader import load_plugins
 from etchlib.providers.contracts import Context
 from etchlib.providers.plans import PlanStatus
+from etchlib.scheduling.resources import requirements
 from plugins.windows_registry.access import read, write
 from plugins.windows_registry.action import WindowsRegistryAction
 from plugins.windows_registry.schema import preferences
@@ -64,6 +65,7 @@ class WindowsRegistryTests(unittest.TestCase):
             observation = self.provider.inspect(self.config, self.context)
             plan = self.provider.plan(self.config, observation, self.context)
             self.assertEqual(plan.status, PlanStatus.CHANGE)
+            self.assertEqual(requirements(plan), frozenset({"registry:hkcu"}))
             self.assertIn("flag: REG_SZ 1 -> REG_DWORD 1", plan.description)
             self.assertIn("text: missing key/value", plan.description)
             api.CreateKeyEx.assert_not_called()
