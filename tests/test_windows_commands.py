@@ -5,6 +5,7 @@ import platform
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Optional
 from unittest.mock import patch
 
 from etchlib.core import core_registry
@@ -33,7 +34,7 @@ class WindowsCommandTests(unittest.TestCase):
         with patch(
             "etchlib.providers.commands.windows.shutil.which", return_value=None
         ):
-            with self.assertRaisesRegex(ValueError, "PowerShell 7"):
+            with self.assertRaisesRegex(ValueError, "PowerShell requires"):
                 invocation(options, context, {})
         with self.assertRaisesRegex(ValueError, "sudo"):
             invocation(dict(options, sudo=True), context, {})
@@ -43,6 +44,31 @@ class WindowsCommandTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(ValueError, "batch files"):
                 invocation({"provider": "shell", "argv": ("example.cmd",)}, context, {})
+
+    def test_powershell_fallback_preserves_arguments(self) -> None:
+        root = Path.cwd()
+        context = Context(root, root, "demo", {})
+        for options in (
+            {"provider": "script", "argv": (str(root / "example.ps1"), "a b", "$HOME")},
+            {
+                "provider": "shell",
+                "command": "Write-Output 'hello'",
+                "argv": (
+                    "pwsh",
+                    "-NoProfile",
+                    "-NonInteractive",
+                    "-Command",
+                    "Write-Output 'hello'",
+                ),
+            },
+        ):
+            with patch(
+                "etchlib.providers.commands.windows.shutil.which",
+                side_effect=[None, str(root / "powershell.exe")],
+            ) as discovery:
+                argv = invocation(options, context, {})
+            self.assertEqual(argv[0], str(root / "powershell.exe"))
+            self.assertEqual(discovery.call_args.args[0], "powershell.exe")
 
     def test_windows_string_shell_uses_powershell(self) -> None:
         root = Path.cwd()
@@ -64,7 +90,25 @@ class WindowsCommandTests(unittest.TestCase):
 
     @unittest.skipUnless(platform.system() == "Windows", "native PowerShell execution")
     def test_powershell_arguments_environment_cwd_checks_and_exit_status(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="etch PowerShell ") as temp:
+        self.exercise_powershell(False)
+        self.exercise_powershell(True)
+
+    def exercise_powershell(self, fallback: bool) -> None:
+        import shutil
+
+        original = shutil.which
+
+        def discover(command: str, path: str) -> Optional[str]:
+            if fallback and command == "pwsh":
+                return None
+            return original(command, path=path)
+
+        with (
+            patch(
+                "etchlib.providers.commands.windows.shutil.which", side_effect=discover
+            ),
+            tempfile.TemporaryDirectory(prefix="etch PowerShell ") as temp,
+        ):
             root = Path(temp).resolve()
             context = Context(root, root, "demo", {})
             script = root / "script with spaces.ps1"

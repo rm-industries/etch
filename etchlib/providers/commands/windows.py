@@ -16,6 +16,12 @@ def invocation(
             "sudo is not supported on Windows; run with the required account privileges"
         )
     argv = list(options["argv"])
+    powershell = (
+        options["provider"] == "script" and Path(argv[0]).suffix.lower() == ".ps1"
+    )
+    powershell = powershell or (
+        options["provider"] == "shell" and isinstance(options.get("command"), str)
+    )
     if options["provider"] == "script" and Path(argv[0]).suffix.lower() == ".ps1":
         argv = ["pwsh", "-NoProfile", "-NonInteractive", "-File"] + argv
     search = os.pathsep.join(
@@ -26,9 +32,11 @@ def invocation(
     if ("/" in executable or os.sep in executable) and not os.path.isabs(executable):
         executable = str(context.module_root / executable)
     found = shutil.which(executable, path=search)
+    if found is None and powershell:
+        found = shutil.which("powershell.exe", path=search)
     if found is None:
         raise ValueError(
-            "Windows executable {!r} not found; PowerShell scripts require PowerShell 7 (pwsh) on PATH".format(
+            "Windows executable {!r} not found; PowerShell requires pwsh (7) or powershell.exe (5.1) on PATH".format(
                 argv[0]
             )
         )

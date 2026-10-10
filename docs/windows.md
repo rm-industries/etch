@@ -63,9 +63,9 @@ rather than skip when the required capability is unavailable.
 
 ## PowerShell and command execution
 
-Install PowerShell 7 and expose `pwsh.exe` on PATH. Etch does not fall back to
-Windows PowerShell 5.1, `cmd.exe`, or a POSIX shell. An unavailable interpreter
-fails during planning with installation guidance. Etch respects the machine's
+Etch prefers PowerShell 7 (`pwsh`) on PATH and falls back to Windows
+PowerShell 5.1 (`powershell.exe`) when it is unavailable. It never falls back to
+`cmd.exe` or a POSIX shell. If neither interpreter is available, planning fails with installation guidance. Etch respects the machine's
 execution policy and does not add `ExecutionPolicy Bypass`.
 
 Use a module-owned `.ps1` file with the existing script action:
@@ -102,6 +102,7 @@ remains noninteractive. Timeouts and nonzero exits fail the action. Checks retai
 the existing skip/idempotence behavior. `sudo` is unsupported on Windows: Etch
 never launches an elevation prompt or changes the account automatically.
 
-Windows CI runs a local `.ps1` fixture to verify arguments, quotes, empty values,
+Windows CI runs the same local `.ps1` fixture with PowerShell 7 and the forced
+5.1 fallback to verify arguments, quotes, empty values,
 environment, working directory, checks, string commands and exit-code failures
 without network access. Shared invocation tests also run on macOS/Linux.
