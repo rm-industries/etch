@@ -99,6 +99,7 @@ jobs:
           PYTHON
 
   windows-baseline:
+    name: Windows runtime and provider contract (Python ${{ matrix.python }})
     permissions:
       contents: read
     runs-on: windows-latest
@@ -114,7 +115,17 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python }}
-      - run: python -S -m unittest tests.test_platform_baseline tests.test_windows_filesystem tests.test_windows_commands tests.test_windows_installers tests.test_windows_registry -v
+      - name: Shared core regression tests
+        run: >-
+          python -S -m unittest
+          tests.test_action_graph tests.test_conditions tests.test_versions
+          tests.test_provider_records tests.test_provider_registry tests.test_output -v
+      - name: Native Windows providers and consumer profile
+        run: >-
+          python -S -m unittest
+          tests.test_platform_baseline tests.test_windows_filesystem
+          tests.test_windows_commands tests.test_windows_installers
+          tests.test_windows_registry tests.test_windows_profile -v
       - run: python -S etch --version
 
   template-consumer:
@@ -220,10 +231,10 @@ jobs:
           print(", ".join("{} {} (API {})".format(plugin["name"], plugin["version"], plugin["api"]) for plugin in (homebrew, macos_defaults, vscode, windows_registry)))
           PYTHON
           )
-          notes="Supported: Linux and macOS, Python 3.9–3.14. Configuration schema: ${schema}; plugin API: ${api}.
+          notes="Supported: Linux and macOS, Python 3.9–3.14; Windows 11 x64, Python 3.9 and 3.14 under docs/windows.md. Configuration schema: ${schema}; plugin API: ${api}.
 
           Reference plugins: ${plugins}.
 
-          Known limits: no Windows support, package solving, automatic engine or module updates, or general lifecycle hooks. Full compatibility details are in docs/compatibility.md at this tag."
+          Known limits: Windows support is limited to the contract in docs/windows.md; no package solving, automatic engine or module updates, or general lifecycle hooks. Full compatibility details are in docs/compatibility.md at this tag."
           gh release create "$GITHUB_REF_NAME" "etch-${version}.tar.gz" "etch-${version}.tar.gz.sha256" \
             --verify-tag --fail-on-no-commits --generate-notes --notes "$notes" --title "Etch ${version}"
