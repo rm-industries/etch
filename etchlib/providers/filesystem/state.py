@@ -6,11 +6,14 @@ from pathlib import Path
 
 def kind(path: Path) -> str:
     try:
-        mode = path.lstat().st_mode
+        info = path.lstat()
+        mode = info.st_mode
     except FileNotFoundError:
         return "missing"
     if stat.S_ISLNK(mode):
         return "link"
+    if getattr(info, "st_reparse_tag", 0):
+        return "reparse point"
     return "directory" if stat.S_ISDIR(mode) else "file"
 
 

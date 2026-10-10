@@ -78,6 +78,8 @@ def destination(value: str, repo_root: Path) -> Path:
         raise ConfigError("destination must be a nonempty path without NUL characters")
     try:
         path = Path(value).expanduser()
+        if (path.drive or path.root) and not path.is_absolute():
+            raise ConfigError("destination must use a fully qualified Windows path")
         if not path.is_absolute():
             path = repo_root.resolve() / path
         return path.parent.resolve() / path.name
@@ -168,7 +170,7 @@ class Module:
             not isinstance(value, str)
             or not value
             or "\x00" in value
-            or Path(value).is_absolute()
+            or Path(value).anchor
         ):
             raise ConfigError(
                 "{}: assets must be nonempty module-relative paths".format(self.name)
