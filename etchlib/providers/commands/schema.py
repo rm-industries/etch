@@ -1,5 +1,6 @@
 """Normalize command options without executing them."""
 
+import platform
 from typing import Any
 
 from etchlib.config import Module, compose_defaults
@@ -27,7 +28,11 @@ def normalize(name: str, config: Any, context: Context) -> tuple[dict[str, Any],
             if isinstance(command, str):
                 if not command.strip() or "\x00" in command:
                     raise ValueError("shell command cannot be empty")
-                argv = ("/bin/sh", "-c", command)
+                argv = (
+                    ("pwsh", "-NoProfile", "-NonInteractive", "-Command", command)
+                    if platform.system() == "Windows"
+                    else ("/bin/sh", "-c", command)
+                )
             else:
                 argv = arguments(command, allow_empty=False)
         else:

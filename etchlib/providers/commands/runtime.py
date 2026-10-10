@@ -1,6 +1,7 @@
 """Execution context and presence checks shared by shell and script actions."""
 
 import os
+import platform
 import shutil
 import stat
 import subprocess
@@ -9,6 +10,8 @@ from typing import Any, Mapping
 
 from etchlib.facts.platform import PlatformProbe
 from etchlib.providers.contracts import Context
+
+from .windows import invocation
 
 
 def environment(options: Mapping[str, Any], context: Context) -> dict[str, str]:
@@ -58,14 +61,23 @@ def preflight(options: Mapping[str, Any], context: Context) -> None:
     if options["provider"] == "script":
         path = Path(options["argv"][0])
         path.resolve().relative_to(context.module_root.resolve())
-        if not path.is_file() or not os.access(path, os.X_OK):
+        powershell = platform.system() == "Windows" and path.suffix.lower() == ".ps1"
+        if not path.is_file() or (not powershell and not os.access(path, os.X_OK)):
             raise ValueError(
                 "script must be an executable module-owned file: {}".format(path)
             )
 
+    if platform.system() == "Windows":
+        invocation(options, context, environment(options, context))
+
 
 def run(options: Mapping[str, Any], context: Context) -> None:
-    argv = list(options["argv"])
+    env = environment(options, context)
+    argv = (
+        invocation(options, context, env)
+        if platform.system() == "Windows"
+        else list(options["argv"])
+    )
     if options.get("sudo", False):
         if not context.elevation_allowed:
             raise ValueError("command privilege escalation has not been authorized")
@@ -74,7 +86,7 @@ def run(options: Mapping[str, Any], context: Context) -> None:
         result = subprocess.run(
             argv,
             cwd=context.module_root,
-            env=environment(options, context),
+            env=env,
             stdin=None if options.get("stdin", False) else subprocess.DEVNULL,
             stdout=subprocess.DEVNULL if options.get("quiet", False) else None,
             stderr=subprocess.DEVNULL if options.get("quiet", False) else None,
