@@ -162,10 +162,10 @@ class DiagnosticTests(PlanningFixture):
 
     def test_unsupported_platform_and_runtime(self) -> None:
         self.module()
-        with patch("platform.system", return_value="Windows"):
+        with patch("platform.system", return_value="FreeBSD"):
             status, out, _ = self.invoke("doctor")
         self.assertEqual(status, 1)
-        self.assertIn("use Linux or macOS", out)
+        self.assertIn("use Linux, macOS or Windows", out)
         with patch("sys.version_info", (3, 8)):
             status, out, _ = self.invoke("doctor")
         self.assertEqual(status, 1)

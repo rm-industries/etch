@@ -22,7 +22,7 @@ class LocalProbe:
         try:
             if self.name in ("command", "command_path"):
                 command = config
-                if "/" in config:
+                if "/" in config or os.sep in config:
                     command_path = Path(config).expanduser()
                     if not command_path.is_absolute():
                         command_path = context.module_root / command_path

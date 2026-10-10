@@ -38,7 +38,7 @@ def checked(options: Mapping[str, Any], context: Context) -> bool:
         )
         command = (
             str(context.module_root / value)
-            if "/" in value and not os.path.isabs(value)
+            if ("/" in value or os.sep in value) and not os.path.isabs(value)
             else value
         )
         return shutil.which(command, path=search_path) is not None
