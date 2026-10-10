@@ -31,11 +31,13 @@ safe or compatible with every external tool release.
 The supported runtime matrix is Python 3.9 through 3.14 on Linux and macOS.
 Core startup and execution use the Python standard library; a checkout can
 run with site packages disabled. The `import` command additionally requires
-Git 2.25 or newer and a public HTTPS source. A limited [Windows runtime baseline](windows.md) is qualified separately;
-Windows provider support remains in progress.
-CI runs the full engine suite on each supported interpreter and both OSes;
+Git 2.25 or newer and a public HTTPS source. The [Windows contract](windows.md)
+covers Windows 11 x64 on Python 3.9 and 3.14, including filesystem actions, native commands, PowerShell scripts,
+downloaded PowerShell installers and the optional Registry preferences plugin.
+CI runs the full engine suite on each supported interpreter on Linux and macOS;
 the template consumer smoke also covers the minimum and newest interpreters
-on both OSes.
+on those OSes. The required Windows matrix runs shared core regression tests,
+native provider tests and an isolated end-to-end consumer profile.
 
 For a released schema and application version, the core provider names and
 their documented options are supported contracts: `create`, `link`, `clean`,
@@ -54,8 +56,10 @@ automatically converted by the loader.
 
 ## Current limits
 
-Etch has no complete Windows provider support, package dependency solver, automatic engine or
-module updates, general lifecycle hooks, or automatic Dotbot translation.
+Windows qualification does not cover ARM64, Windows Server, native EXE/MSI
+installers, batch commands, system Registry hives or Git import. Etch has no
+package dependency solver, automatic engine or module updates, general lifecycle
+hooks, or automatic Dotbot translation.
 `import` copies one public Git module and does not apply it or import its
 dependencies. Core `providers` and `plugins` listing commands are deferred;
 `doctor` reports loaded providers and plugin compatibility. External tools,

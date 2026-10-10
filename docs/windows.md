@@ -20,12 +20,14 @@ Home expansion follows Python's Windows `USERPROFILE`/`HOMEDRIVE`/`HOMEPATH`
 behavior rather than assuming the Unix `HOME` variable. Python configuration
 strings must escape backslashes or use forward slashes.
 
-The authoritative Project gate includes a Windows checkout smoke test on
-Python 3.9 and 3.14, exercising configuration, OS conditions, command discovery,
-facts, planning, diagnostics and startup with site packages disabled.
+The authoritative Project gate includes Windows provider and consumer-profile
+integration tests on Python 3.9 and 3.14, exercising configuration, OS conditions,
+command discovery, facts, planning, diagnostics and startup with site packages
+disabled. Shared graph, condition, provider record/registration, version and
+output regression tests also run on Windows. The final required `Quality Gate`
+depends on both Windows matrix entries.
 
-This is runtime qualification, not full Windows provider support. Comprehensive
-integration coverage (#110) remains pending. Do not assume POSIX shell commands,
+This is a bounded Windows contract. Do not assume POSIX shell commands,
 sudo, executable permission bits, Homebrew, Git import, or Unix-only reference
 profiles work on Windows.
 Windows Server and WSL are outside the native baseline; WSL follows Linux rules.
@@ -147,3 +149,33 @@ Use the optional [Windows Registry reference plugin](../plugins/windows_registry
 for typed current-user preferences. It uses native Python `winreg` access,
 shows current and desired values in plans, and leaves undeclared values intact.
 System hives, deletion, elevation and automatic restarts are unsupported.
+
+## Integration qualification
+
+The checked-in `tests/fixtures/windows-profile` is a test consumer, not a live
+workstation setup. `tests.test_windows_profile` copies it into a temporary
+repository, loads the Registry plugin, generates a unique test Registry key,
+and points the installer at the existing local HTTPS fixture with its own CA
+and SHA-256. It does not contact a vendor, install software or edit real user
+preferences. It runs `validate`, `facts`, `plan`, `doctor` and two `apply` calls
+through `python -S etch`, including an OS-guarded Unix module that must be
+skipped. Inspection must not create files, Registry state or network requests.
+The first apply creates directories and file/directory links, runs a local
+PowerShell script and downloaded fixture, and reconciles typed Registry values.
+The second apply must skip matching state and make no further installer request.
+
+Run the profile test on Windows with:
+
+```powershell
+python -S -m unittest tests.test_windows_profile -v
+```
+
+PowerShell and symlink creation privileges are required, along with permission
+to bind a loopback HTTPS server. Hosted runners must provide those capabilities;
+missing capabilities fail tests rather than silently skip them. Local users can
+enable Developer Mode or grant Create symbolic links privilege before running
+filesystem/profile tests. Registry tests use writable current-user disposable
+keys and do not need elevation. PowerShell execution policy is respected; an
+organization policy that prohibits test scripts will fail the execution tests.
+Windows-specific tests skip on macOS/Linux. Native ARM64, Windows Server, WSL
+and consumer template qualification remain outside this Windows test matrix.
