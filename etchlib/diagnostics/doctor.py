@@ -37,9 +37,11 @@ def diagnose(repository: Repository, registry: Registry) -> Diagnosis:
         errors.append(
             "Python 3.9 or newer is required; select a supported interpreter."
         )
-    if platform.system() not in ("Linux", "Darwin"):
+    if platform.system() not in ("Linux", "Darwin", "Windows"):
         errors.append(
-            "Unsupported platform {!r}; use Linux or macOS.".format(platform.system())
+            "Unsupported platform {!r}; use Linux, macOS or Windows.".format(
+                platform.system()
+            )
         )
     store = repository_facts(repository, registry)
     facts = gather(store)

@@ -31,7 +31,8 @@ safe or compatible with every external tool release.
 The supported runtime matrix is Python 3.9 through 3.14 on Linux and macOS.
 Core startup and execution use the Python standard library; a checkout can
 run with site packages disabled. The `import` command additionally requires
-Git 2.25 or newer and a public HTTPS source. Windows is not supported yet.
+Git 2.25 or newer and a public HTTPS source. A limited [Windows runtime baseline](windows.md) is qualified separately;
+Windows provider support remains in progress.
 CI runs the full engine suite on each supported interpreter and both OSes;
 the template consumer smoke also covers the minimum and newest interpreters
 on both OSes.
@@ -53,7 +54,7 @@ automatically converted by the loader.
 
 ## Current limits
 
-Etch has no Windows support, package dependency solver, automatic engine or
+Etch has no complete Windows provider support, package dependency solver, automatic engine or
 module updates, general lifecycle hooks, or automatic Dotbot translation.
 `import` copies one public Git module and does not apply it or import its
 dependencies. Core `providers` and `plugins` listing commands are deferred;

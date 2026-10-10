@@ -43,7 +43,7 @@ class VersionProbe:
         argv = list(config["command"])
         try:
             executable = argv[0]
-            if "/" in executable:
+            if "/" in executable or os.sep in executable:
                 path = Path(executable).expanduser()
                 executable = str(
                     path if path.is_absolute() else context.module_root / path
@@ -57,7 +57,7 @@ class VersionProbe:
             if found is None:
                 candidates = (
                     [Path(executable)]
-                    if "/" in executable
+                    if ("/" in executable or os.sep in executable)
                     else [Path(p) / executable for p in search.split(os.pathsep)]
                 )
                 if any(p.exists() for p in candidates):
