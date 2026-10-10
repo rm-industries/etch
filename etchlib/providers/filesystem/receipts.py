@@ -7,6 +7,8 @@ import tempfile
 from pathlib import Path
 from typing import Optional
 
+from .state import kind
+
 
 def identity(path: Path) -> Optional[dict[str, object]]:
     info = path.lstat()
@@ -24,9 +26,11 @@ def identity(path: Path) -> Optional[dict[str, object]]:
 def receipt_path(repo: Path, path: Path, create: bool = False) -> Path:
     directory = repo / ".etch" / "links"
     for component in (repo / ".etch", directory):
-        if component.is_symlink():
+        if kind(component) in ("link", "reparse point"):
             raise ValueError(
-                "receipt directory cannot be a symlink: {}".format(component)
+                "receipt directory cannot be a symlink or reparse point: {}".format(
+                    component
+                )
             )
         if create:
             component.mkdir(exist_ok=True)

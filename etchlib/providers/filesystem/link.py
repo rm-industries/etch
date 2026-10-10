@@ -1,6 +1,7 @@
 """Module-owned source links with explicit parent creation and relinking."""
 
 import os
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -157,9 +158,42 @@ class LinkProvider:
                 continue
             if link.create:
                 link.destination.parent.mkdir(parents=True, exist_ok=True)
-            if kind(link.destination) == "link":
-                link.destination.unlink()
-            link.destination.symlink_to(link.source)
+            # Create first so missing Windows privileges cannot destroy an old link.
+            with tempfile.TemporaryDirectory(dir=link.destination.parent) as temporary:
+                staged = Path(temporary) / "link"
+                try:
+                    staged.symlink_to(
+                        link.source, target_is_directory=link.source.is_dir()
+                    )
+                    if os.name == "nt" and kind(link.destination) == "link":
+                        # Windows cannot replace an existing directory symlink.
+                        backup = link.destination.parent / (
+                            Path(temporary).name + ".previous"
+                        )
+                        link.destination.rename(backup)
+                        try:
+                            os.replace(staged, link.destination)
+                        except OSError:
+                            try:
+                                backup.rename(link.destination)
+                            except OSError as recovery:
+                                raise ValueError(
+                                    "could not restore previous link; preserved at {}".format(
+                                        backup
+                                    )
+                                ) from recovery
+                            raise
+                        backup.unlink()
+                    else:
+                        os.replace(staged, link.destination)
+                except OSError as exc:
+                    if getattr(exc, "winerror", None) == 1314:
+                        raise ValueError(
+                            "Windows symlinks require Developer Mode or the Create "
+                            "symbolic links privilege; enable Developer Mode or run "
+                            "with an authorized elevated account"
+                        ) from exc
+                    raise
             record(context.repo_root, link.destination, context.module_name)
             changed.append(link.destination)
         return ApplyResult(
