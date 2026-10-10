@@ -64,6 +64,27 @@ Path('download-path').write_text(__file__)
         self.assertEqual(plan.claims[0].path, target)
         self.assertEqual(self.plan().claims, ())
 
+    def test_home_paths_reach_downloaded_script_as_literal_arguments(self) -> None:
+        home = self.root / "home with spaces $literal"
+        self.server.body = b"""import os, sys
+from pathlib import Path
+assert sys.argv[1] == os.environ['BIN_DIR']
+assert sys.argv[1] == os.environ['EXPECTED_HOME'] + '/bin'
+assert sys.argv[2] == '$HOME/bin; literal'
+Path('installed').write_text('ready')
+"""
+        with patch("pathlib.Path.home", return_value=home):
+            self.assertTrue(
+                self.apply(
+                    self.plan(
+                        expand_home=True,
+                        args=["~/bin", "$HOME/bin; literal"],
+                        env={"BIN_DIR": "~/bin", "EXPECTED_HOME": str(home)},
+                    )
+                ).changed
+            )
+        self.assertFalse(home.exists())
+
     def test_failure_cleans_up_and_does_not_retry(self) -> None:
         self.server.body = b"from pathlib import Path\nPath('download-path').write_text(__file__)\nraise SystemExit(7)\n"
         with self.assertRaisesRegex(ValueError, "status 7"):
