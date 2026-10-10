@@ -86,7 +86,8 @@ class PlatformBaselineTests(unittest.TestCase):
             (root / "bin" / "tool.exe").touch()
             context = Context(root, root, "demo", {})
             with patch.dict(os.environ, PATHEXT=".EXE", PATH=str(root / "bin")):
-                for command in ("tool", r"bin\tool", "bin/tool"):
+                # Python 3.9 needs an explicit suffix for commands with a directory.
+                for command in ("tool", r"bin\tool.exe", "bin/tool.exe"):
                     self.assertTrue(
                         LocalProbe("command").gather(command, context).value
                     )

@@ -12,7 +12,9 @@ is defined but native Windows ARM64 is not yet qualified in CI.
 
 Paths use the host Python path rules. Module-relative executable paths accept
 Windows backslashes or forward slashes; executable discovery uses Python's
-`shutil.which`, including Windows `PATHEXT`. Use native executable probes;
+`shutil.which`, including Windows `PATHEXT` for bare command names. Explicit
+paths must include the executable suffix (for example `bin/tool.exe`) to work
+on every supported Python version. Use native executable probes;
 PowerShell invocation and batch-file execution are outside this baseline.
 Home expansion follows Python's Windows `USERPROFILE`/`HOMEDRIVE`/`HOMEPATH`
 behavior rather than assuming the Unix `HOME` variable. Python configuration
