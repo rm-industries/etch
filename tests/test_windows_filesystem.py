@@ -77,8 +77,11 @@ class WindowsFilesystemTests(unittest.TestCase):
             plan = plan_action(
                 link, {str(target): {"path": "source", "relink": True}}, context
             )
-            error = OSError("privilege missing")
-            error.__dict__["winerror"] = 1314
+
+            class MissingSymlinkPrivilege(OSError):
+                winerror = 1314
+
+            error = MissingSymlinkPrivilege("privilege missing")
             with patch.object(Path, "symlink_to", side_effect=error):
                 with self.assertRaisesRegex(ValueError, "Developer Mode"):
                     link.provider.apply(plan, context)
