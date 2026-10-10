@@ -22,6 +22,9 @@ def invocation(
     powershell = powershell or (
         options["provider"] == "shell" and isinstance(options.get("command"), str)
     )
+    powershell = powershell or (
+        options["provider"] == "installer" and argv[0] == "pwsh"
+    )
     if options["provider"] == "script" and Path(argv[0]).suffix.lower() == ".ps1":
         argv = ["pwsh", "-NoProfile", "-NonInteractive", "-File"] + argv
     search = os.pathsep.join(

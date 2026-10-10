@@ -24,8 +24,7 @@ The authoritative Project gate includes a Windows checkout smoke test on
 Python 3.9 and 3.14, exercising configuration, OS conditions, command discovery,
 facts, planning, diagnostics and startup with site packages disabled.
 
-This is runtime qualification, not full Windows provider support. Installers (#108),
-Registry preferences (#109), and comprehensive integration coverage (#110)
+This is runtime qualification, not full Windows provider support. Registry preferences (#109), and comprehensive integration coverage (#110)
 remain pending. Do not assume POSIX shell commands, sudo, executable permission
 bits, Homebrew, Git import, or Unix-only reference profiles work on Windows.
 Windows Server and WSL are outside the native baseline; WSL follows Linux rules.
@@ -106,3 +105,37 @@ Windows CI runs the same local `.ps1` fixture with PowerShell 7 and the forced
 5.1 fallback to verify arguments, quotes, empty values,
 environment, working directory, checks, string commands and exit-code failures
 without network access. Shared invocation tests also run on macOS/Linux.
+
+## Downloaded installers
+
+Windows `installer` actions download a PowerShell script to a temporary `.ps1`
+file, close it, verify any configured SHA-256, and execute it with `-File`.
+The default interpreter is `pwsh`, with the same 5.1 fallback as script actions.
+Set `'shell': 'powershell.exe'` to explicitly select the built-in interpreter.
+Other Windows installer forms, including native EXE/MSI and batch installers,
+are rejected; no file type is guessed from the URL.
+
+```python
+{
+  'installer': {
+    'url': 'https://example.com/install.ps1',
+    'sha256': 'replace-with-the-published-sha256-digest',
+    'args': ['argument with spaces'],
+    'check': {'file_exists': 'installed.txt'},
+  },
+  'when': {'os': 'windows'},
+}
+```
+
+Replace the placeholder digest with 64 hexadecimal characters from a trusted
+source. Installer arguments and environment follow the command contract above.
+Planning resolves interpreter availability without downloading or executing.
+TLS verification stays enabled by default; module-owned custom CA files and
+explicit verification overrides retain their existing semantics. No execution
+policy bypass or automatic elevation is added.
+
+Temporary artifacts are removed after success, nonzero exit, hash failure, or
+timeout. Script-created files and other installer side effects are not rolled
+back. Checks skip already satisfied installers before interpreter resolution or
+network access. Windows CI uses a local HTTPS server and fake installer scripts
+for both PowerShell versions; it never downloads a live vendor installer.
