@@ -13,7 +13,12 @@ from pathlib import Path
 from typing import Any
 from unittest import TestCase, skipUnless
 
+from etchlib.config import load_repository
 from etchlib.config_validate import validate_repository
+from etchlib.core import core_registry
+from etchlib.providers.contracts import Context
+from etchlib.providers.lifecycle import plan_action
+from etchlib.providers.plans import PlanStatus
 from tests.installer_fixtures import FIXTURES, InstallerFixture
 
 
@@ -36,6 +41,17 @@ class WindowsProfileSchemaTests(TestCase):
                 FIXTURES / "installer-ca.pem", root / "modules/workstation/ca.pem"
             )
             validate_repository(root)
+            module = next(
+                module
+                for module in load_repository(root).modules
+                if module.name == "workstation"
+            )
+            plan = plan_action(
+                core_registry().action("link"),
+                module.config["actions"][1]["link"],
+                Context(root, module.root, module.name, {}),
+            )
+            self.assertEqual(plan.status, PlanStatus.CHANGE)
             self.assertFalse((root / "managed").exists())
 
 
