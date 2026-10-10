@@ -24,9 +24,10 @@ The authoritative Project gate includes a Windows checkout smoke test on
 Python 3.9 and 3.14, exercising configuration, OS conditions, command discovery,
 facts, planning, diagnostics and startup with site packages disabled.
 
-This is runtime qualification, not full Windows provider support. Registry preferences (#109), and comprehensive integration coverage (#110)
-remain pending. Do not assume POSIX shell commands, sudo, executable permission
-bits, Homebrew, Git import, or Unix-only reference profiles work on Windows.
+This is runtime qualification, not full Windows provider support. Comprehensive
+integration coverage (#110) remains pending. Do not assume POSIX shell commands,
+sudo, executable permission bits, Homebrew, Git import, or Unix-only reference
+profiles work on Windows.
 Windows Server and WSL are outside the native baseline; WSL follows Linux rules.
 
 ## Filesystem contract
@@ -139,3 +140,10 @@ timeout. Script-created files and other installer side effects are not rolled
 back. Checks skip already satisfied installers before interpreter resolution or
 network access. Windows CI uses a local HTTPS server and fake installer scripts
 for both PowerShell versions; it never downloads a live vendor installer.
+
+## Registry preferences
+
+Use the optional [Windows Registry reference plugin](../plugins/windows_registry/README.md)
+for typed current-user preferences. It uses native Python `winreg` access,
+shows current and desired values in plans, and leaves undeclared values intact.
+System hives, deletion, elevation and automatic restarts are unsupported.

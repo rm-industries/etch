@@ -114,7 +114,7 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python }}
-      - run: python -S -m unittest tests.test_platform_baseline tests.test_windows_filesystem tests.test_windows_commands tests.test_windows_installers -v
+      - run: python -S -m unittest tests.test_platform_baseline tests.test_windows_filesystem tests.test_windows_commands tests.test_windows_installers tests.test_windows_registry -v
       - run: python -S etch --version
 
   template-consumer:
@@ -215,8 +215,9 @@ jobs:
           from plugins.homebrew.etch_plugin import PLUGIN as homebrew
           from plugins.macos_defaults.etch_plugin import PLUGIN as macos_defaults
           from plugins.vscode.etch_plugin import PLUGIN as vscode
+          from plugins.windows_registry.etch_plugin import PLUGIN as windows_registry
 
-          print(", ".join("{} {} (API {})".format(plugin["name"], plugin["version"], plugin["api"]) for plugin in (homebrew, macos_defaults, vscode)))
+          print(", ".join("{} {} (API {})".format(plugin["name"], plugin["version"], plugin["api"]) for plugin in (homebrew, macos_defaults, vscode, windows_registry)))
           PYTHON
           )
           notes="Supported: Linux and macOS, Python 3.9–3.14. Configuration schema: ${schema}; plugin API: ${api}.
