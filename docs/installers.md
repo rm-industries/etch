@@ -2,9 +2,7 @@
 
 The core `installer` provider downloads an upstream script to a private temporary
 directory, validates the complete response and optional SHA-256 digest, then runs
-the local copy. It never pipes a network response into a shell. As with the other
-providers, CLI apply integration is still upcoming; the provider lifecycle is
-available through the registry.
+the local copy. It never pipes a network response into a shell. Use `etch plan` to review an installer and `etch apply` to run it.
 
 ```python
 {
@@ -47,7 +45,7 @@ files are removed on download, checksum and execution failures as well as succes
 upstream side effects are not rolled back.
 
 Installer defaults may set common execution options, `shell`, `tls` and
-`download_timeout`. URL, arguments and checksum must be explicit on the action.
+`download_timeout` and `expand_home`. URL, arguments and checksum must be explicit on the action.
 Nested dictionaries are replaced, not merged, when an action overrides defaults.
 
 ## TLS and integrity
@@ -84,3 +82,33 @@ verification, custom trust, verification disablement without global changes,
 redirects, response validation, checksums, size limits, both timeouts, cleanup,
 idempotence and separate Etch ownership of shell configuration. No public installer
 is downloaded or run by the test suite.
+
+## Current-user home paths
+
+Arguments and environment values are literal by default. Set `expand_home` to
+`True` to expand a leading `~` in installer `args` and configured `env` values:
+
+```python
+{
+  'installer': {
+    'url': 'https://upstream.example.invalid/install.sh',
+    'expand_home': True,
+    'args': ['-b', '~/.local/bin'],
+    'env': {'BIN_DIR': '~/.local/bin'},
+    'check': {'file_exists': '~/.local/bin/example-tool'},
+  },
+}
+```
+
+Replace this illustrative URL, flags and check with the upstream interface.
+Only `~` or a leading `~/` expands; Windows also accepts a leading `~\`.
+The home comes from Python's native current-user home lookup, including Windows
+`USERPROFILE`/`HOMEDRIVE`/`HOMEPATH`. Expansion happens during normalization,
+before execution and elevation, using the account running Etch. Spaces and
+shell punctuation in the home remain part of one argument. `$HOME`, `${HOME}`,
+`%USERPROFILE%`, `~otheruser`, embedded tildes and shell expressions stay literal.
+No general variable interpolation or shell evaluation is added. The option does
+not expand URLs, interpreter names or inherited environment variables, and it
+does not create directories. Existing check predicates keep their own path
+expansion behavior. Consumers may set the boolean in installer defaults and
+override it per action with `False`.

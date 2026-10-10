@@ -2,6 +2,7 @@
 
 import platform
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from etchlib.config import compose_defaults
@@ -26,14 +27,16 @@ def normalize(config: Any, context: Context) -> Installer:
         "installer",
         context.defaults.get("installer", {}),
         config,
-        COMMON + ("shell", "tls", "download_timeout"),
+        COMMON + ("shell", "tls", "download_timeout", "expand_home"),
     )
     if (
         set(values)
         - set(COMMON)
-        - {"url", "shell", "args", "tls", "sha256", "download_timeout"}
+        - {"url", "shell", "args", "tls", "sha256", "download_timeout", "expand_home"}
     ):
         raise ValueError("unknown installer options")
+    if type(values.get("expand_home", False)) is not bool:
+        raise ValueError("expand_home must be boolean")
     validate_options(values)
     transfer = normalize_transfer(
         {
@@ -51,4 +54,21 @@ def normalize(config: Any, context: Context) -> Installer:
             "Windows installers support PowerShell scripts only; shell must be pwsh or powershell.exe"
         )
     args = arguments(values.get("args", []), allow_empty=True)
+    if values.get("expand_home", False):
+        home = str(Path.home())
+
+        def expand(value: str) -> str:
+            if (
+                value == "~"
+                or value.startswith("~/")
+                or (platform.system() == "Windows" and value.startswith("~\\"))
+            ):
+                return home + value[1:]
+            return value
+
+        args = tuple(expand(value) for value in args)
+        if "env" in values:
+            values["env"] = {
+                name: expand(value) for name, value in values["env"].items()
+            }
     return Installer(transfer, shell, args, values)
