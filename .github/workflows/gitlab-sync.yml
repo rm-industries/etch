@@ -1,0 +1,57 @@
+---
+name: Sync GitLab
+
+on: # yamllint disable-line rule:truthy
+  push:
+    branches: [main]
+    tags: ['*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gitlab-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    # Enable syncing by configuring this repository's GitLab destination.
+    if: vars.GITLAB_REPOSITORY_URL != '' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Push main and tags
+        shell: bash
+        env:
+          GITLAB_REPOSITORY_URL: ${{ vars.GITLAB_REPOSITORY_URL }}
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$GITLAB_REPOSITORY_URL" =~ ^https://[a-zA-Z0-9.-]+/[a-zA-Z0-9_./-]+\.git$ ]]; then
+            echo "Set GITLAB_REPOSITORY_URL to a credential-free HTTPS Git repository URL." >&2
+            exit 1
+          fi
+          if [[ -z "$GITLAB_TOKEN" ]]; then
+            echo "Set the GITLAB_TOKEN repository secret." >&2
+            exit 1
+          fi
+          askpass=$(mktemp "$RUNNER_TEMP/gitlab-askpass.XXXXXX")
+          trap 'rm -f -- "$askpass"' EXIT
+          cat > "$askpass" <<'ASKPASS'
+          #!/bin/sh
+          case "$1" in
+            *Username*) printf '%s\n' oauth2 ;;
+            *Password*) printf '%s\n' "$GITLAB_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASKPASS
+          chmod 700 "$askpass"
+          GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 \
+            git -c credential.helper= push --atomic "$GITLAB_REPOSITORY_URL" \
+            HEAD:refs/heads/main 'refs/tags/*:refs/tags/*'

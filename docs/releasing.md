@@ -49,3 +49,25 @@ reviewed PR and run its CI. Consumers choose when to adopt the new pin. Record
 the exact release tag, schema version, plugin API version, reference-plugin
 versions, supported runtime matrix, and known limitations in the release
 notes. The real-world evidence required by issue #23 is complete.
+
+## Optional GitLab sync
+
+`.github/workflows/gitlab-sync.yml` copies `main` and tags to a configured GitLab
+repository using the same workflow as the Etch template. In this GitHub
+repository's Settings → Secrets and variables → Actions, configure:
+
+- Repository variable `GITLAB_REPOSITORY_URL`: a credential-free HTTPS Git URL
+  ending in `.git`, pointing to the core Etch destination.
+- Repository secret `GITLAB_TOKEN`: a GitLab token with `write_repository` scope
+  and permission to push to the destination's protected branches.
+
+Create the GitLab destination first, preferably empty. Without the destination
+variable, the sync job is skipped. After the workflow lands on `main`, pushes to
+`main` or tags sync automatically; manual dispatch from `main` is also supported.
+Feature branches, issues, pull requests and GitHub release assets are not copied.
+The engine's source history and tags are copied; no submodule checkout is needed.
+
+GitHub remains the source of truth while sync is enabled. Pushes are atomic and
+never force updates or delete destination refs; divergent GitLab changes fail
+rather than being overwritten. Credentials use a temporary askpass script rather
+than the remote URL. A successful push can trigger any CI configured on GitLab.
