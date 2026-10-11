@@ -49,3 +49,42 @@ reviewed PR and run its CI. Consumers choose when to adopt the new pin. Record
 the exact release tag, schema version, plugin API version, reference-plugin
 versions, supported runtime matrix, and known limitations in the release
 notes. The real-world evidence required by issue #23 is complete.
+
+## Optional GitLab sync
+
+`.github/workflows/gitlab-sync.yml` copies `main` and tags to a configured GitLab
+repository using the same workflow as the Etch template. In this GitHub
+repository's Settings → Secrets and variables → Actions, configure:
+
+- Repository variable `GITLAB_REPOSITORY_URL`: a credential-free HTTPS Git URL
+  ending in `.git`, pointing to the core Etch destination.
+- Repository secret `GITLAB_TOKEN`: a GitLab token with `write_repository` scope
+  and permission to push to the destination's protected branches.
+
+Create the GitLab destination first, preferably empty. Without the destination
+variable, the sync job is skipped. After the workflow lands on `main`, pushes to
+`main` or tags sync automatically; manual dispatch from `main` is also supported.
+Feature branches, issues, pull requests and GitHub release assets are not copied.
+The engine's source history and tags are copied; no submodule checkout is needed.
+
+GitHub remains the source of truth while sync is enabled. Pushes are atomic and
+never force updates or delete destination refs; divergent GitLab changes fail
+rather than being overwritten. Credentials use a temporary askpass script rather
+than the remote URL. A successful push can trigger any CI configured on GitLab.
+
+## GitLab verification
+
+The root `.gitlab-ci.yml` runs the Linux portion of Project CI: pinned Ruff
+format/lint and mypy, pytest and standard-library unittest on Python 3.9–3.14,
+startup and isolated-home diagnostics, the same pinned template-consumer smoke
+matrix, and reproducible source-archive checks. The final gate runs only after
+all verification jobs pass. Branch, merge-request and tag pipelines are enabled;
+duplicate push pipelines for open merge requests are suppressed.
+
+Use Linux Docker/Kubernetes runners with network access for tool installation
+and the public pinned template checkout. Full Python images provide Bash and Git;
+no runtime dependency is added to Etch. Mirror pushes can start these checks as
+soon as this file reaches GitLab. GitHub retains native macOS/Windows qualification,
+website CI/Pages, security automation and release publishing. Those platform and
+hosting jobs are not reproduced by this initial Linux GitLab pipeline, and GitLab
+does not publish duplicate releases.

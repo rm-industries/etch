@@ -1,0 +1,87 @@
+---
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS && $CI_PIPELINE_SOURCE == "push"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH || $CI_COMMIT_TAG'
+
+stages: [verify, gate]
+
+variables:
+  GIT_DEPTH: '0'
+
+default:
+  image: python:3.14
+  interruptible: true
+
+python-format:
+  stage: verify
+  timeout: 10 minutes
+  script:
+    - python -m pip install -c requirements/constraints.txt ruff
+    - ruff format --check .
+    - python -S etch format --check --repo examples/minimal
+    - python -S etch format --check --repo examples/developer
+
+python-lint:
+  stage: verify
+  timeout: 10 minutes
+  script:
+    - python -m pip install -c requirements/constraints.txt ruff
+    - ruff check .
+
+python-typecheck:
+  stage: verify
+  timeout: 10 minutes
+  script:
+    - python -m pip install -c requirements/constraints.txt mypy
+    - python -m mypy etchlib plugins tests etch
+
+python-test:
+  stage: verify
+  image: python:${PYTHON_VERSION}
+  timeout: 15 minutes
+  parallel:
+    matrix:
+      - PYTHON_VERSION: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
+  script:
+    - python -m pip install -c requirements/constraints.txt pytest
+    - python -m pytest
+    - python -S -m unittest discover -v
+    - python -S etch --version
+    - |
+      python -S - <<'PYTHON'
+      import os, subprocess, sys, tempfile
+      with tempfile.TemporaryDirectory() as home:
+          subprocess.run(
+              [sys.executable, "-S", "etch", "doctor", "--repo", "examples/minimal", "--profile", "developer"],
+              env=dict(os.environ, HOME=home), check=True,
+          )
+      PYTHON
+
+template-consumer:
+  stage: verify
+  image: python:${PYTHON_VERSION}
+  timeout: 10 minutes
+  parallel:
+    matrix:
+      - PYTHON_VERSION: ['3.9', '3.14']
+        SELECTION: [profile, git]
+  script:
+    - git clone --no-checkout https://github.com/rm-industries/etch-template.git consumer
+    - git -C consumer checkout --detach 354d6e06bcf3f4c57269f60686f7520d31d90acb
+    - bash tests/template_consumer_smoke.sh "$CI_PROJECT_DIR" "$CI_PROJECT_DIR/consumer" "$SELECTION"
+
+release-candidate:
+  stage: verify
+  image: python:3.9
+  timeout: 10 minutes
+  script:
+    - bash tests/release_source_smoke.sh
+
+project-gate:
+  stage: gate
+  timeout: 5 minutes
+  script:
+    - echo 'All GitLab project checks passed.'
