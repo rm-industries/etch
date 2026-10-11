@@ -71,3 +71,20 @@ GitHub remains the source of truth while sync is enabled. Pushes are atomic and
 never force updates or delete destination refs; divergent GitLab changes fail
 rather than being overwritten. Credentials use a temporary askpass script rather
 than the remote URL. A successful push can trigger any CI configured on GitLab.
+
+## GitLab verification
+
+The root `.gitlab-ci.yml` runs the Linux portion of Project CI: pinned Ruff
+format/lint and mypy, pytest and standard-library unittest on Python 3.9–3.14,
+startup and isolated-home diagnostics, the same pinned template-consumer smoke
+matrix, and reproducible source-archive checks. The final gate runs only after
+all verification jobs pass. Branch, merge-request and tag pipelines are enabled;
+duplicate push pipelines for open merge requests are suppressed.
+
+Use Linux Docker/Kubernetes runners with network access for tool installation
+and the public pinned template checkout. Full Python images provide Bash and Git;
+no runtime dependency is added to Etch. Mirror pushes can start these checks as
+soon as this file reaches GitLab. GitHub retains native macOS/Windows qualification,
+website CI/Pages, security automation and release publishing. Those platform and
+hosting jobs are not reproduced by this initial Linux GitLab pipeline, and GitLab
+does not publish duplicate releases.
