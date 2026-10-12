@@ -20,7 +20,12 @@ updates:
       - dependencies
       - github-actions
     groups:
+      security-updates:
+        applies-to: security-updates
+        patterns:
+          - '*'
       github-actions:
+        applies-to: version-updates
         patterns:
           - '*'
 
@@ -45,12 +50,18 @@ updates:
       - dependencies
       - npm
     groups:
+      security-updates:
+        applies-to: security-updates
+        patterns:
+          - '*'
       production-dependencies:
+        applies-to: version-updates
         dependency-type: production
         update-types:
           - minor
           - patch
       development-dependencies:
+        applies-to: version-updates
         dependency-type: development
         update-types:
           - minor
