@@ -123,7 +123,7 @@ class PlanningCliTests(PlanningFixture):
         )
         status, output, error = self.cli()
         self.assertEqual(status, 1)
-        self.assertEqual(output, "")
+        self.assertEqual(output, "Preparing plan...\nChecking demo...\n")
         self.assertIn("conflict", error)
         self.assertFalse((self.root / "target").exists())
 

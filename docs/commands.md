@@ -22,8 +22,16 @@ Large local workflows belong in script files rather than long command strings.
 
 Both providers support description, quiet, stdin, sudo, env, check and timeout.
 These options may be provider defaults with entry-level replacement semantics.
-Timeout defaults to 300 positive finite seconds. quiet/stdin/sudo default to False;
-quiet discards stdout and stderr, while stdin True inherits interactive input.
+Timeout defaults to 300 positive finite seconds. quiet/stdin/sudo default to False.
+Successful command output is captured by default in a temporary disk file.
+Failures and timeouts include the last 16 KiB of combined stdout/stderr in the
+error; temporary output is removed afterward. `etch apply --verbose` streams
+child output instead. `quiet: True` suppresses streaming even in verbose mode,
+but retains captured failure diagnostics. `stdin: True` and `sudo: True` keep
+live input/output so interactive prompts remain visible. Verbose parallel child
+output may interleave; default captured failure output stays attached to its
+action. Third-party plugins control their own output; bundled Homebrew and VS
+Code providers already capture their tool output for inspection and errors.
 Without stdin True, commands read from the null device.
 
 Execution uses the module root as cwd and inherits the user environment, followed
@@ -66,3 +74,11 @@ CLI plan/apply and resource scheduling remain separate issues.
 
 Option normalization, runtime context/checks, and provider lifecycle are separated
 under `etchlib/providers/commands/`.
+
+
+Plan and apply print a flushed startup line and one `Checking <module>...` line
+before module inspection, including potentially slow facts/provider probes.
+Apply also reports `Applying <module>...` before changing that module. Repeated
+staged planning does not repeat inspection progress lines. These messages are
+plain lines in terminals and CI, with no spinner or extra dependencies. A long
+single probe can still take time after its module line appears.

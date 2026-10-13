@@ -17,7 +17,11 @@ from etchlib.providers.registry import Registration
 
 
 def context_snapshot(
-    repository: Repository, key: NodeId, store: FactStore, allow_sudo: bool
+    repository: Repository,
+    key: NodeId,
+    store: FactStore,
+    allow_sudo: bool,
+    verbose: bool = False,
 ) -> Context:
     module = next(module for module in repository.modules if module.name == key.module)
     facts = {}
@@ -26,7 +30,7 @@ def context_snapshot(
         if observation is not None and observation.state is not FactState.STALE:
             facts[ref] = observation
     return replace(
-        provider_context(repository, module, store, allow_sudo),
+        provider_context(repository, module, store, allow_sudo, verbose),
         facts=MappingProxyType(facts),
     )
 

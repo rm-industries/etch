@@ -28,12 +28,16 @@ def apply_repository(
     allow_sudo: bool = False,
     jobs: Optional[int] = None,
     on_start: Optional[Callable[[str], None]] = None,
+    on_inspect: Optional[Callable[[str], None]] = None,
+    verbose: bool = False,
 ) -> ExecutionReport:
     settings = options(repository.defaults.get("execution", {}), jobs)
     if settings.jobs > 1:
         from etchlib.scheduling.engine import Scheduler
 
-        return Scheduler(repository, registry, settings, allow_sudo, on_start).run()
+        return Scheduler(
+            repository, registry, settings, allow_sudo, on_start, on_inspect, verbose
+        ).run()
     store = repository_facts(repository, registry)
     modules = {module.name: module for module in repository.modules}
     results: dict[NodeId, ActionResult] = {}
@@ -52,6 +56,7 @@ def apply_repository(
                 store=store,
                 previous=report,
                 completed=tuple(results),
+                on_inspect=on_inspect,
             )
             validate_progress(report, tuple(results), allow_sudo)
             warnings.update(dict.fromkeys(report.graph.warnings))
@@ -77,7 +82,7 @@ def apply_repository(
                 on_start(current.module)
                 announced.add(current.module)
             module = modules[current.module]
-            context = provider_context(repository, module, store, allow_sudo)
+            context = provider_context(repository, module, store, allow_sudo, verbose)
             outcome = apply_action(report.providers[current], plan, context)
             refresh = tuple(
                 dict.fromkeys(

@@ -140,6 +140,9 @@ class CommandTests(unittest.TestCase):
             run.return_value.returncode = 0
             self.apply(plan)
             self.assertEqual(run.call_args.args[0], ["sudo", "-E", "--", "true"])
+            self.assertIsNone(run.call_args.kwargs["stdout"])
+            self.assertIsNone(run.call_args.kwargs["stderr"])
+            self.assertIsNone(run.call_args.kwargs["stdin"])
 
     def test_default_execution_is_unprivileged_noninteractive(self) -> None:
         plan = self.plan({"command": ["true"], "quiet": True})

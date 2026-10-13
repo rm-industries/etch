@@ -3,8 +3,11 @@ import io
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
+from unittest.mock import patch
 
 from etchlib.cli import main
+from etchlib.providers.filesystem.create import CreateProvider
 from tests.planning_fixtures import PlanningFixture
 
 
@@ -21,13 +24,66 @@ class ApplyCliTests(PlanningFixture):
                 self.module("a", actions=[{"create": ["a-" + jobs]}])
                 self.module("b", actions=[{"create": ["b-" + jobs]}])
                 output = Output()
-                with contextlib.redirect_stdout(output):
+                inspect = CreateProvider.inspect
+
+                def checking(
+                    provider: CreateProvider,
+                    config: Any,
+                    context: Any,
+                    output: Output = output,
+                    inspect: Any = inspect,
+                ) -> Any:
+                    self.assertIn("Checking a...", output.getvalue())
+                    return inspect(provider, config, context)
+
+                with (
+                    contextlib.redirect_stdout(output),
+                    patch.object(CreateProvider, "inspect", checking),
+                ):
                     status = main(["apply", "--repo", str(self.root), "--jobs", jobs])
                 self.assertEqual(status, 0, output.getvalue())
                 lines = output.getvalue().splitlines()
-                self.assertEqual(lines[:2], ["Applying a...", "Applying b..."])
+                self.assertEqual(
+                    lines[:3], ["Preparing apply...", "Checking a...", "Checking b..."]
+                )
+                self.assertIn("Applying a...", lines)
+                self.assertIn("Applying b...", lines)
                 self.assertIn("Apply complete:", lines[-1])
-                self.assertEqual(output.flushes, 2)
+                self.assertEqual(lines.count("Checking a..."), 1)
+                self.assertEqual(lines.count("Checking b..."), 1)
+                self.assertEqual(output.flushes, 5)
+
+    def test_verbose_reaches_serial_and_parallel_commands(self) -> None:
+        self.module(
+            "a",
+            actions=[
+                {"shell": {"command": [sys.executable, "-c", "print('vendor banner')"]}}
+            ],
+        )
+        engine = Path(__file__).resolve().parents[1] / "etch"
+        for jobs in ("1", "2"):
+            for verbose in (False, True):
+                with self.subTest(jobs=jobs, verbose=verbose):
+                    result = subprocess.run(
+                        [
+                            sys.executable,
+                            "-S",
+                            str(engine),
+                            "apply",
+                            "--repo",
+                            str(self.root),
+                            "--jobs",
+                            jobs,
+                        ]
+                        + (["--verbose"] if verbose else []),
+                        capture_output=True,
+                        text=True,
+                        timeout=15,
+                    )
+                    self.assertEqual(
+                        result.returncode, 0, result.stdout + result.stderr
+                    )
+                    self.assertEqual("vendor banner" in result.stdout, verbose)
 
     def run_cli(self, *args: str) -> tuple[int, str]:
         output = io.StringIO()

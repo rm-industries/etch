@@ -81,6 +81,11 @@ payloads. Keep mutable state call-local: one provider instance can serve multipl
 worker threads, and inspection can overlap unrelated application. Avoid changing
 process cwd, PATH or environment; pass subprocess arguments/cwd/env explicitly.
 
+`Context.verbose` is a runtime hint supplied by `apply --verbose`, defaulting to
+`False`. Core shell/script/installer actions use it for live child output;
+external providers may honor it while retaining their own inspection/parsing
+requirements. Existing context constructors remain valid.
+
 ## Defaults, assets and ownership
 
 Defaults are opt-in. Normalize with `compose_defaults`, listing the exact keys

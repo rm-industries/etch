@@ -120,7 +120,7 @@ jobs:
           python -S -m unittest
           tests.test_action_graph tests.test_conditions tests.test_versions
           tests.test_provider_records tests.test_provider_registry tests.test_output
-          tests.test_installer_home -v
+          tests.test_installer_home tests.test_command_output -v
       - name: Native Windows providers and consumer profile
         run: >-
           python -S -m unittest
