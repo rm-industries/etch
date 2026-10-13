@@ -3,7 +3,7 @@
 from copy import deepcopy
 from dataclasses import replace
 from types import MappingProxyType
-from typing import Collection, Optional, cast
+from typing import Callable, Collection, Optional, cast
 
 from etchlib.conditions.evaluator import Evaluator
 from etchlib.conditions.module import Selection
@@ -34,6 +34,7 @@ def plan_repository(
     previous: Optional[Report] = None,
     completed: Collection[NodeId] = (),
     frozen: Collection[NodeId] = (),
+    on_inspect: Optional[Callable[[str], None]] = None,
 ) -> Report:
     if (completed or frozen) and previous is None:
         raise ValueError("completed actions require their previous snapshot")
@@ -41,6 +42,8 @@ def plan_repository(
     store = store if store is not None else repository_facts(repository, registry)
     selections, plans, inspections, providers = {}, {}, {}, {}
     for module in repository.modules:
+        if on_inspect is not None:
+            on_inspect(module.name)
         actions = module.config.get("actions", [])
         for config in [module.config] + actions:
             if "when" in config:

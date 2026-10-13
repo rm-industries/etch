@@ -15,6 +15,7 @@ def provider_context(
     module: Module,
     store: FactStore,
     elevation_allowed: bool = False,
+    verbose: bool = False,
 ) -> Context:
     return Context(
         repository.root,
@@ -23,4 +24,5 @@ def provider_context(
         Observations(store),
         MappingProxyType(deepcopy(repository.defaults.get("defaults", {}))),
         elevation_allowed,
+        verbose,
     )

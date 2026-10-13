@@ -5,12 +5,14 @@ import platform
 import shutil
 import stat
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import Any, Mapping
 
 from etchlib.facts.platform import PlatformProbe
 from etchlib.providers.contracts import Context
 
+from .output import diagnostic
 from .windows import invocation
 
 
@@ -82,18 +84,28 @@ def run(options: Mapping[str, Any], context: Context) -> None:
         if not context.elevation_allowed:
             raise ValueError("command privilege escalation has not been authorized")
         argv = ["sudo", "-E", "--"] + argv
-    try:
-        result = subprocess.run(
-            argv,
-            cwd=context.module_root,
-            env=env,
-            stdin=None if options.get("stdin", False) else subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL if options.get("quiet", False) else None,
-            stderr=subprocess.DEVNULL if options.get("quiet", False) else None,
-            timeout=options.get("timeout", 300),
-            shell=False,
-        )
-    except subprocess.TimeoutExpired as exc:
-        raise ValueError("command timed out") from exc
-    if result.returncode:
-        raise ValueError("command exited with status {}".format(result.returncode))
+    live = (
+        (context.verbose and not options.get("quiet", False))
+        or options.get("stdin", False)
+        or options.get("sudo", False)
+    )
+    with tempfile.TemporaryFile() as output:
+        try:
+            result = subprocess.run(
+                argv,
+                cwd=context.module_root,
+                env=env,
+                stdin=None if options.get("stdin", False) else subprocess.DEVNULL,
+                stdout=None if live else output,
+                stderr=None if live else subprocess.STDOUT,
+                timeout=options.get("timeout", 300),
+                shell=False,
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise ValueError(diagnostic("command timed out", output)) from exc
+        if result.returncode:
+            raise ValueError(
+                diagnostic(
+                    "command exited with status {}".format(result.returncode), output
+                )
+            )

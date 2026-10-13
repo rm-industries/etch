@@ -98,8 +98,9 @@ Batch `.cmd`/`.bat` files are rejected to avoid implicit command-shell expansion
 POSIX string commands continue to use `/bin/sh -c` on macOS/Linux.
 
 Every child runs from the module directory with inherited environment plus the
-configured values and existing `ETCH_*` context. Output is inherited unless
-`quiet` is enabled. Input is disabled unless `stdin` is enabled; PowerShell
+configured values and existing `ETCH_*` context. Output is captured by default, with a bounded diagnostic tail on failure.
+Use `apply --verbose` for live output; `quiet` suppresses verbose streaming.
+Interactive input or elevation requests keep live output for prompts. Input is disabled unless `stdin` is enabled; PowerShell
 remains noninteractive. Timeouts and nonzero exits fail the action. Checks retain
 the existing skip/idempotence behavior. `sudo` is unsupported on Windows: Etch
 never launches an elevation prompt or changes the account automatically.

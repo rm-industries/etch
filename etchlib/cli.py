@@ -42,6 +42,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     apply = commands.add_parser("apply", help="apply a validated staged action graph")
     apply.add_argument(
+        "--verbose", "-v", action="store_true", help="stream command output"
+    )
+    apply.add_argument(
         "--jobs", "-j", type=int, help="maximum concurrent actions (1–64)"
     )
     apply.add_argument(
@@ -122,6 +125,15 @@ def main(argv: Optional[List[str]] = None) -> int:
                 )
             )
             return 0
+        inspected: set[str] = set()
+
+        def progress(module: str) -> None:
+            if module not in inspected:
+                write_output("Checking {}...".format(module), flush=True)
+                inspected.add(module)
+
+        if args.command in ("plan", "apply"):
+            write_output("Preparing {}...".format(args.command), flush=True)
         repository = load_repository(args.repo, args.profile, args.modules)
         loaded = load_plugins(
             repository.root, repository.defaults.get("plugins", []), core_registry()
@@ -146,6 +158,8 @@ def main(argv: Optional[List[str]] = None) -> int:
                 loaded.registry,
                 allow_sudo=args.allow_sudo,
                 jobs=args.jobs,
+                on_inspect=progress,
+                verbose=args.verbose,
                 on_start=lambda module: write_output(
                     "Applying {}...".format(module), flush=True
                 ),
@@ -153,7 +167,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             write_output(render_apply(applied))
             return 0 if applied.succeeded else 1
         if args.command == "plan":
-            report = plan_repository(repository, loaded.registry)
+            report = plan_repository(repository, loaded.registry, on_inspect=progress)
             write_output(render_plan(repository, report, loaded.plugins, args.verbose))
             return 0
     except (ValueError, ProviderError, OSError) as exc:

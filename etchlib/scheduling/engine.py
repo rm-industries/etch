@@ -29,10 +29,13 @@ class Scheduler:
         settings: Options,
         allow_sudo: bool,
         on_start: Optional[Callable[[str], None]] = None,
+        on_inspect: Optional[Callable[[str], None]] = None,
+        verbose: bool = False,
     ) -> None:
         self.repository, self.registry = repository, registry
         self.settings, self.allow_sudo = settings, allow_sudo
         self.on_start = on_start
+        self.on_inspect, self.verbose = on_inspect, verbose
         self.announced: set[str] = set()
         self.store = repository_facts(repository, registry)
         self.resources = Resources(settings.capacities)
@@ -56,6 +59,7 @@ class Scheduler:
             previous=self.report,
             completed=tuple(self.results),
             frozen=frozen,
+            on_inspect=self.on_inspect,
         )
         validate_progress(self.report, tuple(self.results), self.allow_sudo)
         validate_started(self.report, self.started)
@@ -89,7 +93,7 @@ class Scheduler:
                 self.results[key] = ActionResult(key, Status.SKIPPED, plan.description)
                 continue
             context = context_snapshot(
-                self.repository, key, self.store, self.allow_sudo
+                self.repository, key, self.store, self.allow_sudo, self.verbose
             )
             if self.on_start is not None and key.module not in self.announced:
                 self.on_start(key.module)
