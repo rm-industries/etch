@@ -15,8 +15,6 @@ include:
       - changes:
           - website/**/*
           - docs/guides/**/*
-          - .github/actions/setup-project/**/*
-          - .github/workflows/website.yml
           - .gitlab/ci/website.yml
           - .gitlab-ci.yml
 

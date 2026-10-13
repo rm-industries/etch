@@ -91,7 +91,7 @@ validation as described below, but does not publish duplicate releases.
 ## Website validation on GitLab
 
 The scoped `.gitlab/ci/website.yml` include validates changes to `website/`,
-imported `docs/guides/`, and website CI/setup configuration. It mirrors formatting,
+imported `docs/guides/`, and GitLab website CI configuration. It mirrors formatting,
 spelling, code/CSS/Markdown lint, unused-code checks, types and unit coverage.
 One production build supplies artifact validation, Chromium/Firefox/WebKit
 browser and accessibility tests, and Lighthouse. Python jobs start independently;
