@@ -9,7 +9,15 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
-  reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
+  reporter: process.env.GITLAB_CI
+    ? [
+        ['list'],
+        ['junit', { outputFile: 'test-results/browser.xml', includeProjectInTestName: true }],
+        ['html', { open: 'never' }],
+      ]
+    : process.env.CI
+      ? [['github'], ['html', { open: 'never' }]]
+      : 'list',
   use: {
     baseURL: previewOrigin,
     screenshot: 'only-on-failure',

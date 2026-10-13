@@ -6,7 +6,17 @@ workflow:
       when: never
     - if: '$CI_COMMIT_BRANCH || $CI_COMMIT_TAG'
 
-stages: [verify, gate]
+# Website and Python checks have independent DAGs; GitHub owns publication.
+stages: [validate, build, verify, gate, deploy, smoke]
+
+include:
+  - local: .gitlab/ci/website.yml
+    rules:
+      - changes:
+          - website/**/*
+          - docs/guides/**/*
+          - .gitlab/ci/website.yml
+          - .gitlab-ci.yml
 
 variables:
   GIT_DEPTH: '0'
@@ -15,8 +25,15 @@ default:
   image: python:3.14
   interruptible: true
 
+# Job rules must explicitly admit merge-request pipelines too.
+.validation:
+  rules:
+    - when: on_success
+
 python-format:
+  extends: .validation
   stage: verify
+  needs: []
   timeout: 10 minutes
   script:
     - python -m pip install -c requirements/constraints.txt ruff
@@ -25,21 +42,27 @@ python-format:
     - python -S etch format --check --repo examples/developer
 
 python-lint:
+  extends: .validation
   stage: verify
+  needs: []
   timeout: 10 minutes
   script:
     - python -m pip install -c requirements/constraints.txt ruff
     - ruff check .
 
 python-typecheck:
+  extends: .validation
   stage: verify
+  needs: []
   timeout: 10 minutes
   script:
     - python -m pip install -c requirements/constraints.txt mypy
     - python -m mypy etchlib plugins tests etch
 
 python-test:
+  extends: .validation
   stage: verify
+  needs: []
   image: python:${PYTHON_VERSION}
   timeout: 15 minutes
   parallel:
@@ -61,7 +84,9 @@ python-test:
       PYTHON
 
 template-consumer:
+  extends: .validation
   stage: verify
+  needs: []
   image: python:${PYTHON_VERSION}
   timeout: 10 minutes
   parallel:
@@ -74,14 +99,24 @@ template-consumer:
     - bash tests/template_consumer_smoke.sh "$CI_PROJECT_DIR" "$CI_PROJECT_DIR/consumer" "$SELECTION"
 
 release-candidate:
+  extends: .validation
   stage: verify
+  needs: []
   image: python:3.9
   timeout: 10 minutes
   script:
     - bash tests/release_source_smoke.sh
 
 project-gate:
+  extends: .validation
   stage: gate
+  needs:
+    - python-format
+    - python-lint
+    - python-typecheck
+    - python-test
+    - template-consumer
+    - release-candidate
   timeout: 5 minutes
   script:
     - echo 'All GitLab project checks passed.'
