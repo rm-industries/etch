@@ -410,6 +410,7 @@ jobs:
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
 
   smoke-deployed:
+    timeout-minutes: 10
     name: Verify deployed website
     needs:
       - deploy
@@ -431,7 +432,9 @@ jobs:
       - name: Verify deployed routes, assets, and mobile layout
         env:
           DEPLOYMENT_URL: ${{ needs.deploy.outputs.page-url }}
-        run: npm run test:smoke
+        run: |
+          test -n "$DEPLOYMENT_URL"
+          npm run test:smoke
       - name: Upload deployed smoke failure evidence
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

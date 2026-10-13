@@ -1,0 +1,270 @@
+# GitHub is primary. Configure Pages/site URL before replacing the deployment never rules.
+website-format:
+  extends: .validation
+  image: node:26
+  stage: validate
+  script:
+    - npm run format
+  needs: []
+  before_script:
+    - cd 'website'
+    - npm ci
+website-spellcheck:
+  extends: .validation
+  image: node:26
+  stage: validate
+  script:
+    - npm run spellcheck
+  needs: []
+  before_script:
+    - cd 'website'
+    - npm ci
+website-lint-code:
+  extends: .validation
+  image: node:26
+  stage: validate
+  script:
+    - mkdir -p test-results
+    - |-
+      status=0
+      npm run lint:code --silent -- --format gitlab > test-results/code-quality.json || status=$?
+      node --input-type=module -e 'import { readFileSync, writeFileSync } from "node:fs"; const file = "test-results/code-quality.json"; const report = JSON.parse(readFileSync(file, "utf8")); for (const finding of report) finding.location.path = "website/" + finding.location.path; writeFileSync(file, JSON.stringify(report));'
+      exit "$status"
+  needs: []
+  before_script:
+    - cd 'website'
+    - npm ci
+  artifacts:
+    paths:
+      - website/test-results/code-quality.json
+    when: always
+    expire_in: 7 days
+    reports:
+      codequality: website/test-results/code-quality.json
+website-lint-styles:
+  extends: .validation
+  image: node:26
+  stage: validate
+  script:
+    - npm run lint:css
+  needs: []
+  before_script:
+    - cd 'website'
+    - npm ci
+website-lint-markdown:
+  extends: .validation
+  image: node:26
+  stage: validate
+  script:
+    - npm run lint:markdown
+  needs: []
+  before_script:
+    - cd 'website'
+    - npm ci
+website-audit-unused:
+  extends: .validation
+  image: node:26
+  stage: validate
+  script:
+    - npm run audit:unused
+  needs: []
+  before_script:
+    - cd 'website'
+    - npm ci
+website-typecheck:
+  extends: .validation
+  image: node:26
+  stage: validate
+  script:
+    - npm run typecheck
+  needs: []
+  before_script:
+    - cd 'website'
+    - npm ci
+website-unit-tests:
+  extends: .validation
+  image: node:26
+  stage: validate
+  script:
+    - npm run test:coverage
+  needs: []
+  artifacts:
+    paths:
+      - website/coverage
+      - website/test-results/unit.xml
+    when: always
+    expire_in: 7 days
+    reports:
+      junit: website/test-results/unit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: website/coverage/cobertura-coverage.xml
+  before_script:
+    - cd 'website'
+    - npm ci
+website-build:
+  extends: .validation
+  image: node:26
+  stage: build
+  script:
+    - npm run build
+  needs:
+    - job: website-format
+      artifacts: false
+    - job: website-spellcheck
+      artifacts: false
+    - job: website-lint-code
+      artifacts: false
+    - job: website-lint-styles
+      artifacts: false
+    - job: website-lint-markdown
+      artifacts: false
+    - job: website-audit-unused
+      artifacts: false
+    - job: website-typecheck
+      artifacts: false
+    - job: website-unit-tests
+      artifacts: false
+  artifacts:
+    paths:
+      - website/dist
+    when: on_success
+    expire_in: 7 days
+  before_script:
+    - cd 'website'
+    - npm ci
+website-validate-build:
+  extends: .validation
+  image: node:26
+  stage: verify
+  script:
+    - npm run validate:build
+  needs:
+    - job: website-build
+      artifacts: true
+  before_script:
+    - cd 'website'
+    - npm ci
+website-browser-tests:
+  extends: .validation
+  image: node:26
+  stage: verify
+  script:
+    - npx playwright install --with-deps chromium firefox webkit
+    - npm run test:e2e
+  needs:
+    - job: website-build
+      artifacts: true
+  artifacts:
+    paths:
+      - website/playwright-report
+      - website/test-results
+    when: always
+    expire_in: 7 days
+    reports:
+      junit: website/test-results/browser.xml
+  before_script:
+    - cd 'website'
+    - npm ci
+website-lighthouse:
+  extends: .validation
+  image: node:26
+  stage: verify
+  script:
+    - npx playwright install --with-deps chromium
+    # Container images use the browser installed by Playwright.
+    - |
+      export CHROME_PATH="$(node --input-type=module -e 'import { chromium } from "@playwright/test"; process.stdout.write(chromium.executablePath());')"
+    - npm run lighthouse:ci
+  needs:
+    - job: website-build
+      artifacts: true
+  artifacts:
+    paths:
+      - website/.lighthouseci
+    when: always
+    expire_in: 7 days
+  before_script:
+    - cd 'website'
+    - npm ci
+  # Node containers run Chrome as root.
+  variables:
+    LHCI_COLLECT__SETTINGS__CHROME_FLAGS: --no-sandbox --disable-dev-shm-usage --disable-gpu
+website-deploy:
+  image: node:26
+  stage: deploy
+  script:
+    - test -f 'website/dist/index.html'
+  before_script: []
+  rules:
+    - when: never
+  pages:
+    publish: website/dist
+  environment:
+    name: gitlab-pages
+    url: $CI_PAGES_URL
+  needs:
+    - job: website-format
+      artifacts: false
+    - job: website-spellcheck
+      artifacts: false
+    - job: website-lint-code
+      artifacts: false
+    - job: website-lint-styles
+      artifacts: false
+    - job: website-lint-markdown
+      artifacts: false
+    - job: website-audit-unused
+      artifacts: false
+    - job: website-typecheck
+      artifacts: false
+    - job: website-unit-tests
+      artifacts: false
+    - job: website-build
+      artifacts: true
+    - job: website-validate-build
+      artifacts: false
+    - job: website-browser-tests
+      artifacts: false
+    - job: website-lighthouse
+      artifacts: false
+  artifacts:
+    paths:
+      - website/dist
+    when: on_success
+    expire_in: 7 days
+website-smoke-deployed:
+  image: node:26
+  stage: smoke
+  script:
+    - test -n "$CI_PAGES_URL"
+    - npx playwright install --with-deps chromium
+    - DEPLOYMENT_URL="$CI_PAGES_URL" npm run test:smoke
+  timeout: 10m
+  rules:
+    - when: never
+  needs:
+    - job: website-deploy
+      artifacts: false
+  artifacts:
+    paths:
+      - website/playwright-report
+      - website/test-results
+    when: always
+    expire_in: 7 days
+    reports:
+      junit: website/test-results/smoke.xml
+  before_script:
+    - cd 'website'
+    - npm ci
+website-dependency-audit:
+  extends: .validation
+  image: node:26
+  stage: validate
+  needs: []
+  before_script:
+    - cd website
+    - npm ci
+  script:
+    - npm run audit
+  allow_failure: true

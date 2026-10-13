@@ -85,6 +85,56 @@ Use Linux Docker/Kubernetes runners with network access for tool installation
 and the public pinned template checkout. Full Python images provide Bash and Git;
 no runtime dependency is added to Etch. Mirror pushes can start these checks as
 soon as this file reaches GitLab. GitHub retains native macOS/Windows qualification,
-website CI/Pages, security automation and release publishing. Those platform and
-hosting jobs are not reproduced by this initial Linux GitLab pipeline, and GitLab
-does not publish duplicate releases.
+Pages, security automation and release publishing. GitLab adds Linux website
+validation as described below, but does not publish duplicate releases.
+
+## Website validation on GitLab
+
+The scoped `.gitlab/ci/website.yml` include validates changes to `website/`,
+imported `docs/guides/`, and website CI/setup configuration. It mirrors formatting,
+spelling, code/CSS/Markdown lint, unused-code checks, types and unit coverage.
+One production build supplies artifact validation, Chromium/Firefox/WebKit
+browser and accessibility tests, and Lighthouse. Python jobs start independently;
+the Project gate depends only on the Python project checks.
+
+GitLab retains JUnit unit/browser reports, Cobertura coverage, repository-relative
+Code Quality findings, browser evidence and Lighthouse reports for seven days.
+Node 26 container jobs install locked dependencies with `npm ci`; Linux runners
+need network access and permission to install Playwright browser dependencies.
+Lighthouse uses Playwright's Chromium with container-specific sandbox flags.
+
+Branch, merge-request and tag pipelines retain the existing project policy.
+Scheduled pipelines with a branch also run project validation; website include
+change rules may admit website checks on tags or schedules without a push diff.
+Duplicate branch push pipelines with an open merge request are suppressed.
+These events validate only: GitLab never publishes Pages or source releases.
+GitHub retains macOS/Windows qualification and authoritative publication.
+
+The website dependency audit and GitHub dependency review remain advisory.
+An advisory failure does not become a deployment prerequisite; formatting,
+source/output validation, unit tests, browsers and Lighthouse remain blocking.
+GitHub owns CodeQL, dependency review, Dependabot, actionlint and zizmor.
+Those GitHub scanners do not validate native GitLab syntax or provide equivalent
+GitLab source-security scanning. Before relying on the mirror, use the destination
+server's CI Lint to validate expanded includes, rules and dependencies, and run
+MR, default-branch, docs-only and CI-only changes on a real Linux runner.
+No workflow contract test suite is introduced.
+
+### Switching website deployment ownership
+
+GitHub remains primary. GitLab Pages and deployed smoke jobs are included but
+have `when: never` rules. To switch deliberately:
+
+1. Configure GitLab Pages, its canonical site/base URL and environment protections.
+   The nested `pages.publish` configuration requires GitLab 17.9 or newer.
+2. Disable GitHub's website deploy, deployed smoke and Pages artifact upload step.
+   Keep both providers' validation jobs enabled.
+3. Replace both GitLab never rules with a rule requiring a default-branch push:
+   `$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH`.
+4. Verify that every blocking website check gates publication, that the existing
+   build artifact is published, and that smoke tests use a nonempty actual Pages
+   URL with a ten-minute timeout. Merge requests and tags must not deploy Pages.
+
+Changing a Pages job's environment name does not configure approval protection.
+Review hosting settings separately. This procedure does not transfer source-release
+publication, which remains on GitHub.
