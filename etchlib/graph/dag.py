@@ -1,6 +1,6 @@
 """Dependency storage and validated evidence for condition reevaluation."""
 
-from typing import cast
+from typing import Optional, cast
 
 from etchlib.conditions.results import Outcome
 from etchlib.providers.observations import FactRef
@@ -16,10 +16,12 @@ class ActionGraph:
         self._parents: dict[NodeId, dict[NodeId, None]] = {}
         self._children: dict[NodeId, dict[NodeId, None]] = {}
         self.warnings: list[str] = []
+        self._order: Optional[tuple[NodeId, ...]] = None
 
     def add(self, node: Node) -> None:
         if node.id in self._nodes:
             raise GraphError("duplicate graph node {}".format(node.id))
+        self._order = None
         self._nodes[node.id] = node
         self._parents[node.id] = {}
         self._children[node.id] = {}
@@ -32,11 +34,14 @@ class ActionGraph:
     def connect(self, before: NodeId, after: NodeId) -> None:
         self.node(before)
         self.node(after)
+        self._order = None
         self._parents[after][before] = None
         self._children[before][after] = None
 
     def order(self) -> tuple[NodeId, ...]:
-        return ordered(self._nodes, self._parents, self._children)
+        if self._order is None:
+            self._order = ordered(self._nodes, self._parents, self._children)
+        return self._order
 
     def ancestors(self, key: NodeId) -> set[NodeId]:
         self.node(key)

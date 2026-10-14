@@ -27,6 +27,7 @@ def validate_refresh(repository: Repository, store: FactStore) -> None:
 def validate_progress(
     report: Report, completed: Collection[NodeId], allow_sudo: bool
 ) -> None:
+    finished = set(completed)
     preceding: set[NodeId] = set()
     for key in completed:
         unfinished = {
@@ -43,7 +44,7 @@ def validate_progress(
         preceding.add(key)
     for key, plan in report.plans.items():
         requirements(plan)
-        if key not in completed and plan.elevated and not allow_sudo:
+        if key not in finished and plan.elevated and not allow_sudo:
             raise ProviderError(
                 "{}: privilege escalation requires --allow-sudo".format(key)
             )

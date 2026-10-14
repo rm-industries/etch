@@ -45,6 +45,8 @@ def frozen_actions(
     running: Collection[NodeId],
     completed: Collection[NodeId],
 ) -> set[NodeId]:
+    running = set(running)
+    completed = set(completed)
     frozen = set(running)
     writes = {ref for key in running for ref in refreshed(repository, report, key)}
     resources = {name for key in running for name in requirements(report.plans[key])}

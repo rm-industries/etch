@@ -40,6 +40,8 @@ def plan_repository(
     if (completed or frozen) and previous is None:
         raise ValueError("completed actions require their previous snapshot")
     retained = set(completed) | set(frozen)
+    retained_modules = {key.module for key in retained}
+    frozen_modules = {key.module for key in frozen}
     store = store if store is not None else repository_facts(repository, registry)
     selections, plans, inspections, providers = {}, {}, {}, {}
     inspection_cache: dict[tuple[str, ...], Any] = {}
@@ -56,8 +58,7 @@ def plan_repository(
         evaluator = Evaluator(store, context)
         module_gate = (
             previous.selections[module.name].module
-            if previous is not None
-            and any(key.module == module.name for key in retained)
+            if previous is not None and module.name in retained_modules
             else gate(module.config, evaluator)
         )
         results = []
@@ -127,7 +128,7 @@ def plan_repository(
     for name, selection in selections.items():
         module_gate = (
             selection.module
-            if any(key.module == name for key in frozen)
+            if name in frozen_modules
             else prove(selection.module, NodeId(name, "start"), graph, completed)
         )
         proven = tuple(
