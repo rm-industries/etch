@@ -27,7 +27,7 @@ a vendored Etch checkout. Declare it in the consumer's `defaults.conf`:
 
 The monorepo path is `plugins/vscode`, following the reference-bundle placement
 [decision](../../docs/decisions/0001-foundation.md). The entrypoint metadata identifies
-`etch-vscode` version `0.1.0`, plugin API 1. `etch plan --verbose` shows that origin;
+`etch-vscode` version `0.2.0`, plugin API 1. `etch plan --verbose` shows that origin;
 core registration does not load or register this bundle.
 
 ## Configure extensions and observations

@@ -24,7 +24,7 @@ class VSCodeActionTests(VSCodeFixture):
         )
         status, output, error = self.cli("--verbose")
         self.assertEqual(status, 0, error)
-        self.assertIn("plugin etch-vscode 0.1.0", output)
+        self.assertIn("plugin etch-vscode 0.2.0", output)
         self.assertIn("application:vscode", output)
         self.assertFalse(self.entry.origin.core)
         self.assertTrue(all(call[0] == "--list-extensions" for call in self.calls()))
