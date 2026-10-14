@@ -123,3 +123,9 @@ Tests load a copied bundle through Etch's real source loader and use an executab
 fake CLI. No test requires an installed VS Code, network access, or real extensions.
 Ruff and strict mypy include this bundle, and CI runs its tests on the same Python
 3.9–3.14 Linux/macOS matrix as core.
+
+Inventory inspection is shared across actions within one planning snapshot for
+matching CLI targets (and VS Code profiles). Apply always reads current inventory
+without this cache. Executable plans retain their intent across unrelated actions;
+conditions and changed fact inputs still receive reevaluation. No inventory is
+persisted between snapshots or invocations.

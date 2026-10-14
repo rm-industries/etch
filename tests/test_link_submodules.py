@@ -101,6 +101,13 @@ class LinkSubmoduleTests(SubmoduleFixture):
             self.plan()
         self.assertEqual(self.target.read_text(), "preserve")
 
+    def test_submodule_missing_after_planning_is_refused_at_execution(self) -> None:
+        plan = self.plan()
+        git(self.context.repo_root, "submodule", "deinit", "-f", "--all")
+        with self.assertRaisesRegex(ValueError, "pinned revision"):
+            self.action.provider.apply(plan, self.context)
+        self.assertFalse(self.target.is_symlink())
+
     def test_wrong_revision_is_reported(self) -> None:
         plugin = self.root / "plugin"
         git(

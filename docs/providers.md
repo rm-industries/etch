@@ -63,7 +63,11 @@ metadata remains valid. Etch can retain that plan between executed actions while
 still reevaluating its condition and declared fact inputs. Changed fact inputs
 force reinspection. Satisfied (`SKIP`) and opaque plans are never reused this way.
 The default is false; providers must not opt in merely because inspection is slow.
-Homebrew opts in because apply rechecks requested packages and executable identity.
+Homebrew and VS Code opt in because apply rechecks requested inventory and
+executable identity. Link and create opt in because apply preflights current paths,
+source containment, submodule state and conflicts before mutation. Destructive
+cleanup continues to receive fresh discovery. Links whose configured source path
+resolves through an alias also retain fresh inspection so retargeting is observed.
 This is a provider contract, not module configuration or a persistent cache.
 
 `gather_fact` validates and returns VALUE, UNAVAILABLE, STALE or ERROR observations.
@@ -102,3 +106,13 @@ also tracked as inputs. Worker contexts contain detached observations gathered
 before dispatch. Request needed facts during inspection or through plan metadata;
 do not expect lazy gathering from a worker. Default serial execution remains
 available for providers that have not been made safe for concurrency.
+
+During planning, `Context.inspection_cache` is shared only within that snapshot.
+Providers may use namespaced keys for immutable observations whose meaning is
+independent of the module working directory. Homebrew inventory keys include the
+resolved executable, package type and timeout; VS Code also includes its profile.
+Execution and ordinary fact contexts have no inspection cache. A fresh snapshot
+gets an empty cache, so executed actions cannot leave a later snapshot using old
+inventory. Do not cache failures, mutable payloads or module-relative observations
+under shared keys. Configuration and environment are assumed stable during a
+snapshot, as required by the provider contract.

@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 from types import MappingProxyType
+from typing import Any, Optional
 
 from etchlib.config import Module, Repository
 from etchlib.facts.store import FactStore
@@ -16,6 +17,7 @@ def provider_context(
     store: FactStore,
     elevation_allowed: bool = False,
     verbose: bool = False,
+    inspection_cache: Optional[dict[tuple[str, ...], Any]] = None,
 ) -> Context:
     return Context(
         repository.root,
@@ -26,4 +28,5 @@ def provider_context(
         elevation_allowed,
         verbose,
         store.timings,
+        inspection_cache,
     )

@@ -57,6 +57,7 @@ class VSCodeAction:
             payload=state,
             resources=("application:vscode",),
             network=bool(state.missing),
+            reusable=True,
         )
 
     def apply(self, plan: Plan, context: Context) -> ApplyResult:

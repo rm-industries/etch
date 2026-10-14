@@ -3,7 +3,7 @@
 from copy import deepcopy
 from dataclasses import replace
 from types import MappingProxyType
-from typing import Callable, Collection, Optional, cast
+from typing import Any, Callable, Collection, Optional, cast
 
 from etchlib.conditions.evaluator import Evaluator
 from etchlib.conditions.module import Selection
@@ -42,6 +42,7 @@ def plan_repository(
     retained = set(completed) | set(frozen)
     store = store if store is not None else repository_facts(repository, registry)
     selections, plans, inspections, providers = {}, {}, {}, {}
+    inspection_cache: dict[tuple[str, ...], Any] = {}
     for module in repository.modules:
         if on_inspect is not None:
             on_inspect(module.name)
@@ -49,7 +50,9 @@ def plan_repository(
         for config in [module.config] + actions:
             if "when" in config:
                 validate(config["when"])
-        context = provider_context(repository, module, store)
+        context = provider_context(
+            repository, module, store, inspection_cache=inspection_cache
+        )
         evaluator = Evaluator(store, context)
         module_gate = (
             previous.selections[module.name].module

@@ -24,7 +24,7 @@ class BrewEfficiencyTests(BrewFixture):
                 )
                 self.assertTrue(report.succeeded, report.error)
                 self.assertEqual(
-                    len([c for c in self.calls() if c["args"][0] == "list"]), 6
+                    len([c for c in self.calls() if c["args"][0] == "list"]), 5
                 )
                 self.assertEqual(self.current()["formula"], ["git", "tmux"])
 
@@ -41,4 +41,20 @@ class BrewEfficiencyTests(BrewFixture):
         self.assertEqual(
             [r.status for r in report.actions], [Status.CHANGED, Status.UNCHANGED]
         )
+        self.assertEqual(len([c for c in self.calls() if c["args"][0] == "install"]), 1)
+
+    def test_modules_share_inventory_only_within_one_snapshot(self) -> None:
+        self.state(formula=["git"], cask=[])
+        for name in ("a", "b", "c"):
+            self.module(
+                name,
+                actions=[{"brew": {"command": str(self.brew), "formulae": ["git"]}}],
+            )
+        repository = load_repository(self.root)
+        first = apply_repository(repository, self.registry)
+        self.assertTrue(first.succeeded, first.error)
+        self.assertEqual(len(self.calls()), 1)
+        self.state(formula=[], cask=[])
+        second = apply_repository(repository, self.registry)
+        self.assertTrue(second.succeeded, second.error)
         self.assertEqual(len([c for c in self.calls() if c["args"][0] == "install"]), 1)

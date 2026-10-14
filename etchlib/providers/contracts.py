@@ -20,6 +20,7 @@ class Context:
     elevation_allowed: bool = False
     verbose: bool = False
     timings: Optional[TimingSink] = None
+    inspection_cache: Optional[dict[tuple[str, ...], Any]] = None
 
 
 class ActionProvider(Protocol):
