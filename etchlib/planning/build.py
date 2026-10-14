@@ -18,6 +18,7 @@ from etchlib.ownership.claims import validate_claims
 from etchlib.providers.errors import ProviderError
 from etchlib.providers.lifecycle import inspect_action
 from etchlib.providers.observations import FactState
+from etchlib.providers.plans import PlanStatus
 from etchlib.providers.registry import Registry
 
 from .conditions import gate, prove
@@ -77,6 +78,20 @@ def plan_repository(
             key = NodeId(module.name, "action", index)
             name = next(iter(set(action) - {"when", "requires", "after", "refresh"}))
             entry = registry.action(name)
+            prior = previous.plans.get(key) if previous is not None else None
+            if (
+                prior is not None
+                and prior.reusable
+                and not prior.opaque
+                and prior.status is not PlanStatus.SKIP
+                and previous is not None
+                and previous.providers[key] == entry
+                and all(store.get(ref) == previous.facts[ref] for ref in prior.facts)
+            ):
+                inspections[key] = previous.inspections[key]
+                plans[key] = prior
+                providers[key] = entry
+                continue
             observations = cast(Observations, context.facts)
             observations.requested.clear()
             try:

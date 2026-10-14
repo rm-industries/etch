@@ -76,6 +76,7 @@ class BrewAction:
             payload=state,
             resources=("package-manager:brew",),
             network=bool(changes),
+            reusable=True,
         )
 
     def apply(self, plan: Plan, context: Context) -> ApplyResult:

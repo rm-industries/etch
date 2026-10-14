@@ -45,6 +45,8 @@ class Plan:
     elevated: bool = False
     network: bool = False
     opaque: bool = False
+    # Opt in only when apply reconciles current state and scheduling metadata is stable.
+    reusable: bool = False
 
     def __post_init__(self) -> None:
         if not isinstance(self.status, PlanStatus):
@@ -68,7 +70,7 @@ class Plan:
                 )
             if item_type is str and any(not v.strip() for v in values):
                 raise ValueError("{} cannot contain empty names".format(field))
-        for field in ("elevated", "network", "opaque"):
+        for field in ("elevated", "network", "opaque", "reusable"):
             if type(getattr(self, field)) is not bool:
                 raise ValueError("{} must be a boolean".format(field))
 

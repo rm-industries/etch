@@ -35,8 +35,12 @@ Successful application invalidates declared facts even when the provider returns
 A `SKIP` plan is not applied and does not invalidate facts. A failed provider or
 invalid return value does not trigger refresh.
 
-Pending conditions and provider plans are rebuilt between actions. A deferred
-condition may become true or false. Newly active work receives provider payload,
+Pending conditions are reevaluated after executed actions. Providers normally
+receive fresh inspection, but may explicitly declare executable plans reusable
+when apply reconciles current state and scheduling metadata stays valid. Those
+plans are retained while their declared fact inputs remain unchanged; satisfied
+and opaque plans are still re-inspected. Skips do not trigger a new snapshot.
+A deferred condition may become true or false. Newly active work receives provider payload,
 path, dependency/cycle, ownership, refresh and privilege validation before it can
 run. An unavailable fact with no remaining eligible producer is a failure, even
 if an installer reported success. No action stays silently deferred forever.

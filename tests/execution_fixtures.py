@@ -64,6 +64,8 @@ class Establish:
             elevated=config.get("sudo", False),
             resources=tuple(config.get("resources", [])),
             facts=tuple(FactRef(*ref) for ref in config.get("facts", [])),
+            reusable=config.get("reusable", False),
+            opaque=config.get("opaque", False),
         )
 
     def apply(self, plan: Plan, context: Context) -> ApplyResult:

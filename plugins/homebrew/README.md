@@ -69,6 +69,12 @@ Official `homebrew/core/` formula and `homebrew/cask/` cask prefixes normalize t
 short names. External tap prefixes are retained: `vendor/tap/git` does not satisfy
 a request for core `git`. Formula and cask namespaces remain separate.
 
+Executable Homebrew plans retain their package intent between other actions;
+Etch still reevaluates conditions and refreshed fact inputs. Apply checks the
+current executable and inventory before installing, so overlapping requests can
+return unchanged instead of installing twice. Initially satisfied actions remain
+subject to reinspection.
+
 Planning installs only missing packages. Application rechecks each type immediately
 before installing, batches sorted missing formulae into one `brew install --formula`
 call, then does the same for casks. It verifies the requested inventory after each

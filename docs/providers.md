@@ -57,6 +57,15 @@ the engine validates dependency, ownership, resource and privilege constraints
 before invoking `apply`. The apply contract returns an `ApplyResult`;
 [staged application](applying.md) describes dispatch, refresh and failure behavior.
 
+Providers may set `Plan.reusable=True` for stable executable intent when `apply`
+reconciles current external state and all scheduling, ownership and privilege
+metadata remains valid. Etch can retain that plan between executed actions while
+still reevaluating its condition and declared fact inputs. Changed fact inputs
+force reinspection. Satisfied (`SKIP`) and opaque plans are never reused this way.
+The default is false; providers must not opt in merely because inspection is slow.
+Homebrew opts in because apply rechecks requested packages and executable identity.
+This is a provider contract, not module configuration or a persistent cache.
+
 `gather_fact` validates and returns VALUE, UNAVAILABLE, STALE or ERROR observations.
 UNAVAILABLE and ERROR require explanations and cannot contain values. VALUE may
 legitimately contain `None`; STALE may retain an earlier observation. Fact references
