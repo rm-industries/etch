@@ -3,7 +3,7 @@
 from copy import deepcopy
 from dataclasses import replace
 from types import MappingProxyType
-from typing import Callable, Collection, Optional, cast
+from typing import Any, Callable, Collection, Optional, cast
 
 from etchlib.conditions.evaluator import Evaluator
 from etchlib.conditions.module import Selection
@@ -18,6 +18,7 @@ from etchlib.ownership.claims import validate_claims
 from etchlib.providers.errors import ProviderError
 from etchlib.providers.lifecycle import inspect_action
 from etchlib.providers.observations import FactState
+from etchlib.providers.plans import PlanStatus
 from etchlib.providers.registry import Registry
 
 from .conditions import gate, prove
@@ -39,8 +40,11 @@ def plan_repository(
     if (completed or frozen) and previous is None:
         raise ValueError("completed actions require their previous snapshot")
     retained = set(completed) | set(frozen)
+    retained_modules = {key.module for key in retained}
+    frozen_modules = {key.module for key in frozen}
     store = store if store is not None else repository_facts(repository, registry)
     selections, plans, inspections, providers = {}, {}, {}, {}
+    inspection_cache: dict[tuple[str, ...], Any] = {}
     for module in repository.modules:
         if on_inspect is not None:
             on_inspect(module.name)
@@ -48,12 +52,13 @@ def plan_repository(
         for config in [module.config] + actions:
             if "when" in config:
                 validate(config["when"])
-        context = provider_context(repository, module, store)
+        context = provider_context(
+            repository, module, store, inspection_cache=inspection_cache
+        )
         evaluator = Evaluator(store, context)
         module_gate = (
             previous.selections[module.name].module
-            if previous is not None
-            and any(key.module == module.name for key in retained)
+            if previous is not None and module.name in retained_modules
             else gate(module.config, evaluator)
         )
         results = []
@@ -77,6 +82,20 @@ def plan_repository(
             key = NodeId(module.name, "action", index)
             name = next(iter(set(action) - {"when", "requires", "after", "refresh"}))
             entry = registry.action(name)
+            prior = previous.plans.get(key) if previous is not None else None
+            if (
+                prior is not None
+                and prior.reusable
+                and not prior.opaque
+                and prior.status is not PlanStatus.SKIP
+                and previous is not None
+                and previous.providers[key] == entry
+                and all(store.get(ref) == previous.facts[ref] for ref in prior.facts)
+            ):
+                inspections[key] = previous.inspections[key]
+                plans[key] = prior
+                providers[key] = entry
+                continue
             observations = cast(Observations, context.facts)
             observations.requested.clear()
             try:
@@ -109,7 +128,7 @@ def plan_repository(
     for name, selection in selections.items():
         module_gate = (
             selection.module
-            if any(key.module == name for key in frozen)
+            if name in frozen_modules
             else prove(selection.module, NodeId(name, "start"), graph, completed)
         )
         proven = tuple(

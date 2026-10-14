@@ -14,6 +14,7 @@ from etchlib.diagnostics.doctor import diagnose
 from etchlib.diagnostics.facts import gather, render_facts
 from etchlib.diagnostics.render import render_doctor
 from etchlib.diagnostics.submodules import submodule_errors
+from etchlib.diagnostics.timing import Timings
 from etchlib.execution.render import render_apply
 from etchlib.execution.runner import apply_repository
 from etchlib.facts.repository import repository_facts
@@ -54,6 +55,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         action="store_true",
         help="authorize declared elevation requests",
     )
+    for command in (plan, apply):
+        command.add_argument(
+            "--timings",
+            action="store_true",
+            help="report provider call counts and durations without command output",
+        )
     facts = commands.add_parser(
         "facts", help="gather built-in and selected module facts"
     )
@@ -106,6 +113,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.command is None:
         parser.print_help()
         return 0
+    timings = Timings() if getattr(args, "timings", False) else None
     try:
         if args.command == "submodules":
             write_output(
@@ -189,6 +197,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                 jobs=args.jobs,
                 on_inspect=progress,
                 verbose=args.verbose,
+                timings=timings.record if timings else None,
                 on_start=lambda module: write_output(
                     "Applying {}...".format(module), flush=True
                 ),
@@ -196,10 +205,20 @@ def main(argv: Optional[List[str]] = None) -> int:
             write_output(render_apply(applied))
             return 0 if applied.succeeded else 1
         if args.command == "plan":
-            report = plan_repository(repository, loaded.registry, on_inspect=progress)
+            report = plan_repository(
+                repository,
+                loaded.registry,
+                on_inspect=progress,
+                store=repository_facts(
+                    repository, loaded.registry, timings.record if timings else None
+                ),
+            )
             write_output(render_plan(repository, report, loaded.plugins, args.verbose))
             return 0
     except (ValueError, ProviderError, OSError) as exc:
         write_output("Etch: Error: {}".format(exc), sys.stderr)
         return 1
+    finally:
+        if timings is not None:
+            write_output(timings.render(), sys.stderr)
     return 0

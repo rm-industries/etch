@@ -37,9 +37,13 @@ class BrewAction:
                 )
             )
         current_formulae = (
-            installed(executable, target, "formula", context) if formulae else ()
+            set(installed(executable, target, "formula", context))
+            if formulae
+            else set()
         )
-        current_casks = installed(executable, target, "cask", context) if casks else ()
+        current_casks = (
+            set(installed(executable, target, "cask", context)) if casks else set()
+        )
         missing_formulae = tuple(
             name for name in formulae if name not in current_formulae
         )
@@ -76,6 +80,7 @@ class BrewAction:
             payload=state,
             resources=("package-manager:brew",),
             network=bool(changes),
+            reusable=True,
         )
 
     def apply(self, plan: Plan, context: Context) -> ApplyResult:
@@ -87,7 +92,7 @@ class BrewAction:
         for kind, desired in (("formula", state.formulae), ("cask", state.casks)):
             if not desired:
                 continue
-            current = installed(executable, state.target, kind, context)
+            current = set(installed(executable, state.target, kind, context))
             missing = tuple(name for name in desired if name not in current)
             if not missing:
                 continue

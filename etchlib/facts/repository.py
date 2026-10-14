@@ -1,11 +1,12 @@
 """Translate repository fact declarations into scoped storage."""
 
-from typing import Any
+from typing import Any, Optional
 
 from etchlib.conditions.evaluator import Evaluator
 from etchlib.conditions.results import ConditionError, Outcome
 from etchlib.conditions.schema import validate
 from etchlib.config import Repository, fact_provider
+from etchlib.diagnostics.timing import TimingSink
 from etchlib.providers.contracts import Context
 from etchlib.providers.errors import ProviderError
 from etchlib.providers.observations import FactRef
@@ -41,13 +42,17 @@ def _select(declaration: Any, store: FactStore, context: Context) -> tuple[str, 
     return fact_provider(declaration)
 
 
-def repository_facts(repository: Repository, registry: Registry) -> FactStore:
-    store = FactStore(registry)
-    global_context = Context(repository.root, repository.root, "", {})
+def repository_facts(
+    repository: Repository, registry: Registry, timings: Optional[TimingSink] = None
+) -> FactStore:
+    store = FactStore(registry, timings)
+    global_context = Context(repository.root, repository.root, "", {}, timings=timings)
     for name in BUILTINS:
         store.declare(FactRef(None, name), name, {}, global_context)
     for module in repository.modules:
-        context = Context(repository.root, module.root, module.name, {})
+        context = Context(
+            repository.root, module.root, module.name, {}, timings=timings
+        )
         for name, declaration in module.config.get("facts", {}).items():
             try:
                 provider, config = _select(declaration, store, context)

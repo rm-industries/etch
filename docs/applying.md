@@ -35,8 +35,12 @@ Successful application invalidates declared facts even when the provider returns
 A `SKIP` plan is not applied and does not invalidate facts. A failed provider or
 invalid return value does not trigger refresh.
 
-Pending conditions and provider plans are rebuilt between actions. A deferred
-condition may become true or false. Newly active work receives provider payload,
+Pending conditions are reevaluated after executed actions. Providers normally
+receive fresh inspection, but may explicitly declare executable plans reusable
+when apply reconciles current state and scheduling metadata stays valid. Those
+plans are retained while their declared fact inputs remain unchanged; satisfied
+and opaque plans are still re-inspected. Skips do not trigger a new snapshot.
+A deferred condition may become true or false. Newly active work receives provider payload,
 path, dependency/cycle, ownership, refresh and privilege validation before it can
 run. An unavailable fact with no remaining eligible producer is a failure, even
 if an installer reported success. No action stays silently deferred forever.
@@ -95,3 +99,19 @@ The Python API `apply_repository(repository, registry, allow_sudo=False, jobs=No
 an `ExecutionReport` with ordered action results, observed fact states, warnings
 and an optional error. Repository/fact registration errors can raise before a run
 starts. Rendering is separate from execution.
+
+## Measure provider work
+
+Use `etch plan --timings` or `etch apply --timings` to append a timing report to
+stderr without enabling verbose command output. Each module/provider/phase row
+shows call count, cumulative duration and longest call, sorted by cumulative time.
+Validation, inspection, planning, fact gathering and execution are measured;
+execution time includes installations, downloads and external commands.
+
+The header shows invocation elapsed time. Parallel provider durations overlap
+and must not be added to estimate elapsed time. The report omits arguments,
+configuration values and captured output; normal failure diagnostics still apply.
+Timing collection is disabled by default and requires no extra dependencies.
+Compare a fresh apply with a second apply on a disposable runner to distinguish
+installation-heavy runs from repeated checks. Provider timings do not separately
+measure each child command or all engine overhead.

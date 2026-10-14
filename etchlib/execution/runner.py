@@ -7,6 +7,7 @@ from typing import Callable, Optional
 from etchlib.conditions.render import describe_condition
 from etchlib.conditions.results import Outcome
 from etchlib.config import Repository
+from etchlib.diagnostics.timing import TimingSink
 from etchlib.facts.repository import repository_facts
 from etchlib.graph.model import NodeId
 from etchlib.planning.build import plan_repository
@@ -31,15 +32,23 @@ def apply_repository(
     on_start: Optional[Callable[[str], None]] = None,
     on_inspect: Optional[Callable[[str], None]] = None,
     verbose: bool = False,
+    timings: Optional[TimingSink] = None,
 ) -> ExecutionReport:
     settings = options(repository.defaults.get("execution", {}), jobs)
     if settings.jobs > 1:
         from etchlib.scheduling.engine import Scheduler
 
         return Scheduler(
-            repository, registry, settings, allow_sudo, on_start, on_inspect, verbose
+            repository,
+            registry,
+            settings,
+            allow_sudo,
+            on_start,
+            on_inspect,
+            verbose,
+            timings,
         ).run()
-    store = repository_facts(repository, registry)
+    store = repository_facts(repository, registry, timings)
     modules = {module.name: module for module in repository.modules}
     results: dict[NodeId, ActionResult] = {}
     report: Optional[Report] = None

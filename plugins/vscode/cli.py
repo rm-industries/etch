@@ -5,7 +5,7 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Optional
+from typing import Optional, cast
 
 from etchlib.providers.contracts import Context
 
@@ -64,7 +64,14 @@ def run(
 
 
 def installed(executable: str, target: Target, context: Context) -> tuple[str, ...]:
+    key = ("vscode.inventory", executable, target.profile, str(target.timeout))
+    cache = context.inspection_cache
+    if cache is not None and key in cache:
+        return cast(tuple[str, ...], cache[key])
     output = run(executable, target, ("--list-extensions",), context)
-    return tuple(
+    values = tuple(
         sorted({identifier(line) for line in output.splitlines() if line.strip()})
     )
+    if cache is not None:
+        cache[key] = values
+    return values

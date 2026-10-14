@@ -69,6 +69,12 @@ Official `homebrew/core/` formula and `homebrew/cask/` cask prefixes normalize t
 short names. External tap prefixes are retained: `vendor/tap/git` does not satisfy
 a request for core `git`. Formula and cask namespaces remain separate.
 
+Executable Homebrew plans retain their package intent between other actions;
+Etch still reevaluates conditions and refreshed fact inputs. Apply checks the
+current executable and inventory before installing, so overlapping requests can
+return unchanged instead of installing twice. Initially satisfied actions remain
+subject to reinspection.
+
 Planning installs only missing packages. Application rechecks each type immediately
 before installing, batches sorted missing formulae into one `brew install --formula`
 call, then does the same for casks. It verifies the requested inventory after each
@@ -130,3 +136,9 @@ upgrade-suppression environment, failed installs, command/version refresh, depen
 second-run skips, and resource serialization while unrelated work progresses.
 No tests invoke real Homebrew, install packages, or access the network. Ruff, strict
 mypy, and the Python 3.9–3.14 Linux/macOS matrix include this bundle.
+
+Inventory inspection is shared across actions within one planning snapshot for
+matching CLI targets (and VS Code profiles). Apply always reads current inventory
+without this cache. Executable plans retain their intent across unrelated actions;
+conditions and changed fact inputs still receive reevaluation. No inventory is
+persisted between snapshots or invocations.

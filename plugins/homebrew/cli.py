@@ -5,7 +5,7 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Optional
+from typing import Optional, cast
 
 from etchlib.providers.contracts import Context
 
@@ -77,9 +77,16 @@ def run(
 def installed(
     executable: str, target: Target, kind: str, context: Context
 ) -> tuple[str, ...]:
+    key = ("homebrew.inventory", executable, str(target.timeout), kind)
+    cache = context.inspection_cache
+    if cache is not None and key in cache:
+        return cast(tuple[str, ...], cache[key])
     output = run(
         executable, target, ("list", "--" + kind, "--full-name", "-1"), context
     )
-    return tuple(
+    values = tuple(
         sorted({identifier(line, kind) for line in output.splitlines() if line.strip()})
     )
+    if cache is not None:
+        cache[key] = values
+    return values

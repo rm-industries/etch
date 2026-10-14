@@ -138,6 +138,17 @@ class LinkProvider:
         )
 
     def plan(self, config: Any, observation: Inspection, context: Context) -> Plan:
+        # Source aliases can retarget after another action; keep their inspection fresh.
+        stable_sources = True
+        for link, value in zip(observation.data, config.values()):
+            relative = value if isinstance(value, str) else value["path"]
+            root = (
+                context.repo_root
+                if link.source_scope == "repo"
+                else context.module_root
+            )
+            if root / relative != link.source:
+                stable_sources = False
         claims = []
         for link in observation.data:
             claims.append(PathClaim(link.destination))
@@ -160,6 +171,7 @@ class LinkProvider:
             description,
             payload=observation.data,
             claims=tuple(claims),
+            reusable=stable_sources,
         )
 
     def apply(self, plan: Plan, context: Context) -> ApplyResult:

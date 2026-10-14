@@ -5,6 +5,7 @@ from dataclasses import dataclass, replace
 from types import MappingProxyType
 from typing import Any, Dict, Optional
 
+from etchlib.diagnostics.timing import TimingSink
 from etchlib.providers.contracts import Context
 from etchlib.providers.errors import ProviderError
 from etchlib.providers.lifecycle import gather_fact
@@ -20,8 +21,11 @@ class Declaration:
 
 
 class FactStore:
-    def __init__(self, registry: Registry) -> None:
+    def __init__(
+        self, registry: Registry, timings: Optional[TimingSink] = None
+    ) -> None:
         self.registry = registry
+        self.timings = timings
         self._declarations: Dict[FactRef, Declaration] = {}
         self._cache: Dict[FactRef, FactResult] = {}
 

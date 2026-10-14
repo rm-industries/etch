@@ -36,6 +36,7 @@ class CreateProvider:
             else PlanStatus.CHANGE,
             "Create directories: " + ", ".join(map(str, observation.data)),
             payload=observation.data,
+            reusable=True,
             claims=tuple(
                 PathClaim(path, ClaimKind.SHARED_DIRECTORY) for path in observation.data
             ),

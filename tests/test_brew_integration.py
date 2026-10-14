@@ -145,7 +145,7 @@ while not (root / 'started').exists():
         )
         report = apply_repository(load_repository(self.root), self.registry, jobs=2)
         self.assertTrue(report.succeeded, report.error)
-        self.assertEqual(report.actions[1].status, Status.SKIPPED)
+        self.assertEqual(report.actions[1].status, Status.UNCHANGED)
         self.assertEqual(
             len([call for call in self.calls() if call["args"][0] == "install"]), 1
         )
