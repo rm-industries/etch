@@ -24,6 +24,7 @@ class Link:
     create: bool
     relink: bool
     target_match: str
+    source_scope: str = "module"
 
 
 def entries(config: Any, context: Context) -> tuple[Link, ...]:
@@ -38,9 +39,10 @@ def entries(config: Any, context: Context) -> tuple[Link, ...]:
             "create",
             "relink",
             "target_match",
+            "source_scope",
         }:
             raise ValueError(
-                "link entries accept path, create, relink and target_match"
+                "link entries accept path, create, relink, target_match and source_scope"
             )
         options = compose_defaults(
             "link",
@@ -53,7 +55,15 @@ def entries(config: Any, context: Context) -> tuple[Link, ...]:
                 raise ValueError("link {} must be boolean".format(key))
         if options.get("target_match", "resolved") not in ("resolved", "direct"):
             raise ValueError("link target_match must be 'resolved' or 'direct'")
-        source = module.asset(options.get("path"))
+        scope = options.get("source_scope", "module")
+        if scope not in ("module", "repo"):
+            raise ValueError("link source_scope must be 'module' or 'repo'")
+        owner = (
+            Module("consumer repository", context.repo_root, {})
+            if scope == "repo"
+            else module
+        )
+        source = owner.asset(options.get("path"))
         result.append(
             Link(
                 destination(target, context.repo_root),
@@ -61,6 +71,7 @@ def entries(config: Any, context: Context) -> tuple[Link, ...]:
                 options.get("create", False),
                 options.get("relink", False),
                 options.get("target_match", "resolved"),
+                scope,
             )
         )
     if len({link.destination for link in result}) != len(result):
@@ -134,11 +145,19 @@ class LinkProvider:
                 claims.append(
                     PathClaim(link.destination.parent, ClaimKind.SHARED_DIRECTORY)
                 )
+        description = describe_links(
+            (link.destination for link in observation.data), "Link"
+        )
+        for link in observation.data:
+            if link.source_scope == "repo":
+                description += "\nSource for {}: {}".format(
+                    link.destination, link.source
+                )
         return Plan(
             PlanStatus.SKIP
             if observation.state is InspectionState.SATISFIED
             else PlanStatus.CHANGE,
-            describe_links((link.destination for link in observation.data), "Link"),
+            description,
             payload=observation.data,
             claims=tuple(claims),
         )
@@ -150,7 +169,12 @@ class LinkProvider:
                 != link.destination
             ):
                 raise ValueError("destination parent changed since planning")
-            link.source.resolve().relative_to(context.module_root.resolve())
+            root = (
+                context.repo_root
+                if link.source_scope == "repo"
+                else context.module_root
+            )
+            link.source.resolve().relative_to(root.resolve())
             needed(link)
         changed = []
         for link in plan.payload:
