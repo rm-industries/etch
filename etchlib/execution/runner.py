@@ -1,5 +1,6 @@
 """Fail-fast serial execution, with fresh validation between successful actions."""
 
+from collections import deque
 from types import MappingProxyType
 from typing import Callable, Optional
 
@@ -46,28 +47,33 @@ def apply_repository(
     warnings: dict[str, None] = {}
     current: Optional[NodeId] = None
     announced: set[str] = set()
+    needs_snapshot = True
+    pending: deque[NodeId] = deque()
     try:
         validate_refresh(repository, store)
         while True:
             current = None
-            report = plan_repository(
-                repository,
-                registry,
-                store=store,
-                previous=report,
-                completed=tuple(results),
-                on_inspect=on_inspect,
-            )
-            validate_progress(report, tuple(results), allow_sudo)
-            warnings.update(dict.fromkeys(report.graph.warnings))
-            pending = [
-                key
-                for key in report.graph.order()
-                if key.kind == "action" and key not in results
-            ]
+            if needs_snapshot:
+                report = plan_repository(
+                    repository,
+                    registry,
+                    store=store,
+                    previous=report,
+                    completed=tuple(results),
+                    on_inspect=on_inspect,
+                )
+                validate_progress(report, tuple(results), allow_sudo)
+                warnings.update(dict.fromkeys(report.graph.warnings))
+                pending = deque(
+                    key
+                    for key in report.graph.order()
+                    if key.kind == "action" and key not in results
+                )
+                needs_snapshot = False
+            assert report is not None
             if not pending:
                 break
-            current = pending[0]
+            current = pending.popleft()
             if report.graph.node(current).outcome is not Outcome.TRUE:
                 raise ValueError(
                     "{}: blocked by an unresolved condition".format(current)
@@ -84,6 +90,8 @@ def apply_repository(
             module = modules[current.module]
             context = provider_context(repository, module, store, allow_sudo, verbose)
             outcome = apply_action(report.providers[current], plan, context)
+            # Executed providers may change external state even without fact refresh.
+            needs_snapshot = True
             refresh = tuple(
                 dict.fromkeys(
                     [
