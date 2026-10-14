@@ -25,6 +25,7 @@ from etchlib.planning.render import render_plan
 from etchlib.plugins.loader import load_plugins
 from etchlib.providers.errors import ProviderError
 from etchlib.providers.observations import FactState
+from etchlib.repository_update import update as update_repository
 from etchlib.submodules import update as update_submodules
 
 
@@ -99,6 +100,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         "validate", help="validate module and profile configuration"
     )
     validator.add_argument("--repo", type=Path, default=Path.cwd())
+    updater = commands.add_parser(
+        "update", help="pull the consumer checkout and synchronize pinned submodules"
+    )
+    updater.add_argument("--repo", type=Path, default=Path.cwd())
     submodules = commands.add_parser(
         "submodules", help="initialize pinned consumer submodules"
     )
@@ -115,6 +120,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 0
     timings = Timings() if getattr(args, "timings", False) else None
     try:
+        if args.command == "update":
+            write_output(
+                "Updating consumer checkout in {}...".format(args.repo.resolve()),
+                flush=True,
+            )
+            return update_repository(args.repo)
         if args.command == "submodules":
             write_output(
                 "Updating pinned submodules in {}...".format(args.repo.resolve()),

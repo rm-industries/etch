@@ -136,6 +136,11 @@ with `-S`. Git is needed to retrieve submodules, but neither Git nor network acc
 is required to start Etch after the sources are present. Bare `./install` currently
 shows CLI help; use an explicit command to inspect or apply configuration.
 
+With an initialized engine, use `etch update` through your consumer launcher to
+pull its configured upstream and synchronize recorded submodule pins. Use
+`etch submodules update` to synchronize pins without pulling. Both support
+`--repo /path/to/consumer`; see [update behavior and Git conflicts](docs/submodules.md#pull-the-consumer-and-synchronize-its-pins).
+
 The minimal example does not itself vendor Etch. To try the launcher, first place
 Etch source in that example's `vendor/etch` directory. The bootstrap tests construct
 both vendored and recursive-clone consumer fixtures in temporary directories.
