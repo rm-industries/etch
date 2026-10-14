@@ -84,11 +84,19 @@ privilege requests still go through normal validation before dispatch.
 
 ## Failures and provider requirements
 
-On the first observed failure, no new actions are dispatched. Already running
-mutations are drained and their outcomes are retained, including selective refresh
-for successful returns. Failed dependents remain blocked. No automatic retry,
-rollback, or cancellation of a running provider is attempted. For strict serial
-failure behavior, use one job.
+An action failure blocks remaining work in its module and transitive dependents
+through `requires` and `after`, including action-level/provider relationships.
+Independent pending work continues, and in-flight results are retained. Sharing a
+resource does not create a dependency: its reservation is released on failure.
+This policy applies with one job as well as multiple jobs.
+
+After failure, cached observations are invalidated and eligible pending work is
+reinspected. A failed producer does not authorize activation of its blocked consumers.
+Configuration, ownership, graph, privilege errors and interruption still stop new
+dispatch and drain in-flight work. No rollback or cancellation of running providers
+is attempted. The final report includes every failure and remains unsuccessful even
+when independent work finishes. Provider-specific retries retain the action's
+resource reservations while waiting and retrying; they do not increase concurrency.
 
 A registered provider instance may receive concurrent calls when multiple jobs are
 enabled. Keep state local to each call, avoid process-wide environment/cwd changes,

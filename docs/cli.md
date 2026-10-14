@@ -96,7 +96,8 @@ Do not treat an arbitrary nonzero status as a successfully applied configuration
 Plan statuses describe proposed work; apply statuses describe actual outcomes.
 `CHANGED` and `UNCHANGED` are successful application outcomes, `SKIPPED` means
 no execution was needed or allowed by the condition, and `FAILED` / `BLOCKED`
-require attention. A parallel failure stops new dispatch but lets in-flight work
-finish. Neither failure nor interruption rolls back earlier effects.
+require attention. An action failure blocks its module and dependent chains through `requires`
+and `after`; independent modules continue. Safety errors and interruption stop new
+dispatch while in-flight work finishes. Neither failure nor interruption rolls back earlier effects.
 Read [planning](planning.md), [applying](applying.md) and [diagnostics](diagnostics.md)
 for the corresponding behavior and troubleshooting.

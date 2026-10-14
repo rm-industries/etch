@@ -1,6 +1,7 @@
 """Bounded argv-only calls to an explicitly located VS Code executable."""
 
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -12,6 +13,12 @@ from etchlib.providers.contracts import Context
 from .schema import Target, identifier
 
 OUTPUT_LIMIT = 1024 * 1024
+
+
+class InstallError(ValueError):
+    def __init__(self, message: str, transient: bool) -> None:
+        super().__init__(message)
+        self.transient = transient
 
 
 def locate(target: Target, context: Context) -> Optional[str]:
@@ -50,11 +57,22 @@ def run(
         if len(out) > OUTPUT_LIMIT or len(err) > OUTPUT_LIMIT:
             raise ValueError("VS Code output exceeds 1 MiB per stream")
         if completed.returncode:
-            detail = err.decode("utf-8", errors="replace").strip()[:400]
-            raise ValueError(
+            err_text = err.decode("utf-8", errors="replace")
+            out_text = out.decode("utf-8", errors="replace")
+            detail = (err_text.strip() or out_text.strip())[:400]
+            text = err_text + "\n" + out_text
+            transient = bool(
+                re.search(r"\bServer returned (?:429|502|503|504)\b", text)
+            ) and not re.search(
+                r"permission denied|EACCES|extension.*not found|invalid extension",
+                text,
+                re.IGNORECASE,
+            )
+            raise InstallError(
                 "VS Code {} exited with status {}: {}".format(
                     args[0], completed.returncode, detail
-                )
+                ),
+                transient,
             )
         return out.decode("utf-8")
     except subprocess.TimeoutExpired as exc:

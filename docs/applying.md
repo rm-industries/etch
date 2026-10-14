@@ -90,16 +90,29 @@ Every selected action receives one terminal status:
 - `UNCHANGED`: application succeeded and reported no changes.
 - `SKIPPED`: its condition was false or inspection produced a `SKIP` plan.
 - `FAILED`: application failed or returned an invalid result.
-- `BLOCKED`: it was not run because the invocation stopped after a failure.
+- `BLOCKED`: a failed dependency chain or a run-level safety error prevented execution.
 
-The first observed validation or application failure stops new dispatch, including
-independent pending work. Already running actions are allowed to finish and their
-results are collected; they are not safely cancelable. Dependents never run after
-a failed prerequisite. Results
-preserve completed changes and identify blocked actions. A validation failure
-between actions is reported at run level; no provider is falsely marked as having
-run. There is no automatic retry or rollback. A provider can partially mutate the
-system before failing, so inspect the diagnostic before trying again.
+An action execution failure stops remaining actions in that module and blocks
+transitive dependents through either `requires` or `after`, including action-level
+and provider-derived dependencies. Blocked results identify the originating failed
+action. This conservative policy treats ordering as an operational dependency on
+success during apply, even though `after` remains optional during selection.
+Independent modules continue in both serial and parallel runs. Sharing a resource
+alone does not propagate failure; reservations are released when an action finishes.
+Already running independent work is allowed to finish and its results are retained.
+
+Configuration, graph, privilege and ownership errors still stop new dispatch, as
+does interruption. A validation failure between actions is reported at run level;
+no provider is falsely marked as having run. There is no rollback or generic retry.
+A failed provider may partially mutate the system, so all cached observations are
+invalidated and eligible pending work is reinspected before continuation. This is
+not a successful refresh: the failed chain remains blocked. Retry behavior belongs
+to individual providers, such as [opt-in VS Code retries](../plugins/vscode/README.md).
+
+The summary retains every action failure and completed change. Fix the reported
+problem and rerun apply; idempotent providers inspect real state and skip satisfied
+work. Dependencies must be declared: Etch cannot infer relationships hidden in
+scripts or external side effects.
 
 The CLI returns zero only for a fully successful run, including legitimate skips.
 Configuration, validation, application and interrupted-run failures return nonzero.

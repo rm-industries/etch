@@ -42,7 +42,8 @@ Use [`plan`](docs/planning.md) for provider validation and inspection. It report
 known changes, skips and deferred conditions without applying actions or downloading
 installers. Requested version facts may run inspection commands.
 Use [`apply`](docs/applying.md) with the same module/profile selection when ready
-to make changes. It stops on the first failure and reports remaining work as blocked.
+to make changes. An action failure blocks its module and dependent chains; independent modules continue.
+The final status remains unsuccessful until all eligible work succeeds.
 
 Configuration uses Python literal dictionaries with `schema_version: 1`, read
 through `ast.literal_eval()`. Configuration is data; plugins and scripts are code.

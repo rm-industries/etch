@@ -49,6 +49,8 @@ class VSCodeRuntimeTests(VSCodeFixture):
             "re",
             "shutil",
             "subprocess",
+            "sys",
+            "time",
             "tempfile",
             "typing",
             "etchlib",

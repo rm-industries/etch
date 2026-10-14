@@ -64,6 +64,8 @@ producer can refresh it. See [conditions](conditions.md) and [facts](facts.md).
 
 `requires: ['base']` requires that selected, active module to finish first.
 `after: ['optional']` orders after it when selected/active and warns when absent.
+During apply, failure in either relationship conservatively blocks the dependent
+module and its transitive dependents, including action-level relationships.
 Neither adds the other module to selection. Action-level dependencies add ordering
 at that action. Cycles are errors. Actions within a module retain declaration order.
 

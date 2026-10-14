@@ -100,7 +100,7 @@ class BrewIntegrationTests(BrewFixture):
         )
         observed = report.facts[FactRef("demo", "version")]
         assert observed is not None
-        self.assertEqual(observed.state, FactState.UNAVAILABLE)
+        self.assertEqual(observed.state, FactState.STALE)
 
     def test_parallel_modules_serialize_brew_and_allow_unrelated_progress(self) -> None:
         self.state(formula=[], cask=[], gate=True)

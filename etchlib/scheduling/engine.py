@@ -8,6 +8,12 @@ from etchlib.conditions.render import describe_condition
 from etchlib.conditions.results import Outcome
 from etchlib.config import Repository
 from etchlib.diagnostics.timing import TimingSink
+from etchlib.execution.failures import (
+    blocked_actions,
+    blocked_result,
+    failed_snapshot,
+    failure_summary,
+)
 from etchlib.execution.results import ActionResult, ExecutionReport, Status
 from etchlib.execution.validation import validate_progress, validate_refresh
 from etchlib.facts.repository import repository_facts
@@ -42,6 +48,7 @@ class Scheduler:
         self.store = repository_facts(repository, registry, timings)
         self.resources = Resources(settings.capacities)
         self.results: dict[NodeId, ActionResult] = {}
+        self.blocked: dict[NodeId, NodeId] = {}
         self.started: dict[NodeId, set[NodeId]] = {}
         self.running: dict[NodeId, Future[ActionResult]] = {}
         self.report: Optional[Report] = None
@@ -50,7 +57,12 @@ class Scheduler:
 
     def snapshot(self) -> set[NodeId]:
         frozen = (
-            frozen_actions(self.repository, self.report, self.running, self.results)
+            frozen_actions(
+                self.repository,
+                self.report,
+                self.running,
+                set(self.results) | set(self.blocked),
+            )
             if self.report
             else set()
         )
@@ -60,11 +72,12 @@ class Scheduler:
             store=self.store,
             previous=self.report,
             completed=tuple(self.results),
-            frozen=frozen,
+            frozen=frozen | set(self.blocked),
             on_inspect=self.on_inspect,
         )
         validate_progress(self.report, tuple(self.results), self.allow_sudo)
         validate_started(self.report, self.started)
+        self.blocked.update(blocked_actions(self.repository, self.report, self.results))
         self.warnings.update(dict.fromkeys(self.report.graph.warnings))
         return frozen
 
@@ -74,7 +87,12 @@ class Scheduler:
         for key in self.report.graph.order():
             if len(self.running) >= self.settings.jobs:
                 break
-            if key.kind != "action" or key in self.started or key in frozen:
+            if (
+                key.kind != "action"
+                or key in self.started
+                or key in frozen
+                or key in self.blocked
+            ):
                 continue
             if self.report.graph.node(key).outcome is not Outcome.TRUE:
                 continue
@@ -122,8 +140,13 @@ class Scheduler:
             self.results[key] = result
             self.resources.release(requirements(self.report.plans[key]))
             del self.running[key]
+            if result.interrupted:
+                self.error = result.description
             if result.status is Status.FAILED:
-                self.error = self.error or result.description
+                self.blocked.update(
+                    blocked_actions(self.repository, self.report, self.results)
+                )
+                self.report = failed_snapshot(self.store, self.report)
             else:
                 for ref in result.refreshed:
                     self.store.invalidate(ref)
@@ -144,10 +167,15 @@ class Scheduler:
                         pending = [
                             key
                             for key in self.report.graph.order()
-                            if key.kind == "action" and key not in self.results
+                            if key.kind == "action"
+                            and key not in self.results
+                            and key not in self.blocked
                         ]
                         if pending and frozen != frozen_actions(
-                            self.repository, self.report, self.running, self.results
+                            self.repository,
+                            self.report,
+                            self.running,
+                            set(self.results) | set(self.blocked),
                         ):
                             # A gate resolved false and removed a predecessor.
                             # Reinspect newly unblocked work before dispatch.
@@ -163,7 +191,7 @@ class Scheduler:
             except KeyboardInterrupt:
                 self.error = "Interrupted; waiting for in-flight actions to finish"
             # Running mutations cannot be safely canceled or rolled back. No new
-            # actions are admitted after failure, but every running result is kept.
+            # actions are admitted after a safety error or interruption; running results are kept.
             while self.running:
                 self.collect()
         ordered = {
@@ -172,11 +200,13 @@ class Scheduler:
         for module in self.repository.modules:
             for index, _ in enumerate(module.config.get("actions", [])):
                 key = NodeId(module.name, "action", index)
+                if key in self.blocked and key not in ordered:
+                    ordered[key] = blocked_result(key, self.blocked[key])
                 if key not in ordered:
                     ordered[key] = ActionResult(
                         key,
                         Status.BLOCKED if self.error else Status.SKIPPED,
-                        "Not run after failure (fail-fast policy)"
+                        "Not run: apply stopped after a safety error or interruption"
                         if self.error
                         else "Not run: "
                         + describe_condition(
@@ -195,5 +225,5 @@ class Scheduler:
                 {ref: self.store.peek(ref) for ref in self.store.references()}
             ),
             tuple(self.warnings),
-            self.error,
+            self.error or failure_summary(ordered),
         )

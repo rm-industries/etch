@@ -25,6 +25,16 @@ def main() -> int:
         print(state.get("output", "\n".join(state.get("extensions", []))))
     elif args[0] == "--install-extension":
         extension = args[1]
+        failures = state.get("transient_failures", 0)
+        if failures and state.get("transient_extension", extension) == extension:
+            state["transient_failures"] = failures - 1
+            if state.get("install_on_failure"):
+                state.setdefault("extensions", []).append(extension)
+            state_path.write_text(json.dumps(state))
+            print(
+                state.get("transient_message", "Server returned 503"), file=sys.stderr
+            )
+            return 8
         if state.get("fail_extension") == extension:
             print("controlled extension failure", file=sys.stderr)
             return 8

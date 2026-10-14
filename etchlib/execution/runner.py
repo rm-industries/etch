@@ -1,4 +1,4 @@
-"""Fail-fast serial execution, with fresh validation between successful actions."""
+"""Serial execution continues independent modules after isolated action failures."""
 
 from collections import deque
 from types import MappingProxyType
@@ -19,6 +19,7 @@ from etchlib.providers.plans import PlanStatus
 from etchlib.providers.registry import Registry
 from etchlib.scheduling.resources import options
 
+from .failures import blocked_actions, blocked_result, failed_snapshot, failure_summary
 from .results import ActionResult, ExecutionReport, Status
 from .validation import validate_progress, validate_refresh
 
@@ -58,6 +59,7 @@ def apply_repository(
     announced: set[str] = set()
     needs_snapshot = True
     pending: deque[NodeId] = deque()
+    blocked: dict[NodeId, NodeId] = {}
     try:
         validate_refresh(repository, store)
         while True:
@@ -69,14 +71,18 @@ def apply_repository(
                     store=store,
                     previous=report,
                     completed=tuple(results),
+                    frozen=tuple(blocked),
                     on_inspect=on_inspect,
                 )
                 validate_progress(report, tuple(results), allow_sudo)
+                blocked.update(blocked_actions(repository, report, results))
                 warnings.update(dict.fromkeys(report.graph.warnings))
                 pending = deque(
                     key
                     for key in report.graph.order()
-                    if key.kind == "action" and key not in results
+                    if key.kind == "action"
+                    and key not in results
+                    and key not in blocked
                 )
                 needs_snapshot = False
             assert report is not None
@@ -98,7 +104,14 @@ def apply_repository(
                 announced.add(current.module)
             module = modules[current.module]
             context = provider_context(repository, module, store, allow_sudo, verbose)
-            outcome = apply_action(report.providers[current], plan, context)
+            try:
+                outcome = apply_action(report.providers[current], plan, context)
+            except (ValueError, OSError) as exc:
+                results[current] = ActionResult(current, Status.FAILED, str(exc))
+                blocked.update(blocked_actions(repository, report, results))
+                report = failed_snapshot(store, report)
+                needs_snapshot = True
+                continue
             # Executed providers may change external state even without fact refresh.
             needs_snapshot = True
             refresh = tuple(
@@ -135,11 +148,13 @@ def apply_repository(
     for module in repository.modules:
         for index, _ in enumerate(module.config.get("actions", [])):
             key = NodeId(module.name, "action", index)
+            if key in blocked and key not in results:
+                results[key] = blocked_result(key, blocked[key])
             if key not in results:
                 results[key] = ActionResult(
                     key,
                     Status.BLOCKED if error else Status.SKIPPED,
-                    "Not run after failure (fail-fast policy)"
+                    "Not run: apply stopped after a safety error or interruption"
                     if error
                     else "Not run: "
                     + describe_condition(
@@ -156,5 +171,5 @@ def apply_repository(
         tuple(results.values()),
         MappingProxyType({ref: store.peek(ref) for ref in store.references()}),
         tuple(warnings),
-        error,
+        error or failure_summary(results),
     )

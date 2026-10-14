@@ -22,6 +22,7 @@ class ActionResult:
     status: Status
     description: str
     refreshed: tuple[FactRef, ...] = ()
+    interrupted: bool = False
 
 
 @dataclass(frozen=True)
