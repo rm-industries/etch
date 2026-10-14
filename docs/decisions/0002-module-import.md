@@ -1,5 +1,9 @@
 # 0002 — Copy-only module imports
 
+> Historical design record for contributors. For current consumer syntax and
+> behavior, use the [configuration reference](../configuration.md) and
+> [user documentation index](../README.md). This record is not published on the website.
+
 Status: accepted in #24; implemented in #25. See [import usage](../importing.md).
 
 Tracks [#24](https://github.com/rm-industries/etch/issues/24), implements the design

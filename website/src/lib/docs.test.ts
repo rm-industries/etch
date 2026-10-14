@@ -15,11 +15,11 @@ beforeEach(() => {
   getCollection.mockReset();
 });
 
-test('filters drafts and sorts published docs newest first', async () => {
+test('filters drafts and follows the documented reading order', async () => {
   const entries = [
-    article('older', '2025-01-01'),
-    article('draft', '2026-01-01', true),
-    article('newer', '2025-06-01'),
+    article('modules-and-profiles', '2025-01-01'),
+    article('facts', '2026-01-01', true),
+    article('getting-started', '2025-06-01'),
   ];
   getCollection.mockImplementation(async (_name, filter: (entry: Doc) => boolean) => entries.filter(filter));
 
@@ -28,16 +28,22 @@ test('filters drafts and sorts published docs newest first', async () => {
 });
 
 test('can include drafts', async () => {
-  const entries = [article('published', '2025-01-01'), article('draft', '2026-01-01', true)];
+  const entries = [article('getting-started', '2025-01-01'), article('facts', '2026-01-01', true)];
   getCollection.mockImplementation(async (_name, filter: (entry: Doc) => boolean) => entries.filter(filter));
 
-  await expect(getDocs({ includeDrafts: true })).resolves.toEqual([entries[1], entries[0]]);
+  await expect(getDocs({ includeDrafts: true })).resolves.toEqual([entries[0], entries[1]]);
 });
 
 test('returns previous and next neighbors without wrapping', () => {
   const entries = [article('newest', '2026-01-01'), article('middle', '2025-01-01'), article('oldest', '2024-01-01')];
 
-  expect(getDocNeighbors('middle', entries)).toEqual({ previous: entries[2], next: entries[0] });
-  expect(getDocNeighbors('newest', entries)).toEqual({ previous: entries[1], next: undefined });
+  expect(getDocNeighbors('middle', entries)).toEqual({ previous: entries[0], next: entries[2] });
+  expect(getDocNeighbors('newest', entries)).toEqual({ previous: undefined, next: entries[1] });
   expect(getDocNeighbors('missing', entries)).toEqual({});
+});
+
+test('excludes unlisted records even if an old collection cache contains them', async () => {
+  const entries = [article('getting-started', '2025-01-01'), article('development', '2026-01-01')];
+  getCollection.mockImplementation(async (_name, filter: (entry: Doc) => boolean) => entries.filter(filter));
+  await expect(getDocs({ includeDrafts: true })).resolves.toEqual([entries[0]]);
 });

@@ -1,5 +1,9 @@
 # 0001 — Foundation and initial contracts
 
+> Historical design record for contributors. For current consumer syntax and
+> behavior, use the [configuration reference](../configuration.md) and
+> [user documentation index](../README.md). This record is not published on the website.
+
 Status: accepted. The initial contracts below are implemented; linked decisions
 refine their boundaries.
 

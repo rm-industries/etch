@@ -23,15 +23,23 @@ Browser checks require Playwright browsers. Install them from this directory wit
 formatting, linting, spelling, unused-code checks, types, unit coverage, production
 build and artifact validation. Deployment smoke checks run after Pages deployment.
 
-Public Markdown guides live in the repository’s `docs/guides/` directory. Only
-that directory is published as the `docs` collection at `/etch/docs/`; the other
-files in root `docs/` remain repository documentation. Fenced code blocks use
-shared terminal styling and Catppuccin syntax colors in both themes.
+Public user documentation is explicitly listed in `src/config/documentation.ts`.
+The collection includes introductory `../docs/guides/`, curated root references,
+and bundled-provider README files. Maintainer records, design decisions and
+investigation artifacts are not published automatically. Each document has a
+stable route at `/etch/docs/<id>/`; list order follows the learning path rather
+than publication dates. Dates remain metadata for feeds and SEO, not page labels.
 
-The landing/about pages live in `src/pages/`,
-and shared identity/navigation in `src/config/site.ts`. Introductory pages link to
-the maintained repository documentation. The complete user guide and migration
-material remain tracked in Etch #29.
+Markdown reference links are resolved against their repository sources. Published
+references become internal website links using the deployment base; contributor
+or example-source links go to GitHub. Initial source headings are omitted from
+rendered bodies because the page layout already provides the document title.
+Fenced blocks retain the shared terminal and Catppuccin styling. The native Astro
+Markdown processor is an explicit dependency so its plugins use the current API.
+
+Use [editing documentation](docs/guides/editing-documentation.md) for the publication
+contract. Landing/about pages remain in `src/pages/`, with shared identity/navigation
+in `src/config/site.ts`.
 
 ## Website presentation
 

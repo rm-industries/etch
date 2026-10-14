@@ -3,8 +3,10 @@ import Card from '../../components/ui/Card.astro';
 import Container from '../../components/ui/Container.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getDocs } from '../../lib/docs';
+import { getDocumentationEntry } from '../../config/documentation';
 
 const docs = await getDocs({ includeDrafts: import.meta.env.DEV });
+const sections = [...new Set(docs.map((doc) => getDocumentationEntry(doc.id)!.section))];
 ---
 
 <BaseLayout title="Docs" description="Guides to configuring, inspecting, and applying your environment with Etch.">
@@ -15,20 +17,22 @@ const docs = await getDocs({ includeDrafts: import.meta.env.DEV });
       <p class="text-base leading-relaxed md:text-lg">Start with a consumer repository, compose your modules, and review changes before applying them.</p>
     </header>
 
-    <div class="grid gap-6 md:grid-cols-2">
-      {
-        docs.map((article) => (
-          <Card href={`/docs/${article.id}/`} size="lg">
-            <time datetime={article.data.publishedAt.toISOString()}>{article.data.publishedAt.toLocaleDateString('en', { dateStyle: 'long', timeZone: 'UTC' })}</time>
-            <h2 class="card-title">{article.data.title}</h2>
-            <p>{article.data.description}</p>
-            <div class="card-actions" aria-label="Doc tags">
-              {article.data.tags.map((tag) => <span class="badge badge-outline">{tag}</span>)}
-            </div>
-            {article.data.draft && <div class="badge badge-warning">Draft preview</div>}
-          </Card>
-        ))
-      }
-    </div>
+    {sections.map((section) => (
+      <section class="space-y-5" aria-label={section}>
+        <h2 class="text-2xl font-semibold">{section}</h2>
+        <div class="grid gap-6 md:grid-cols-2">
+          {docs.filter((doc) => getDocumentationEntry(doc.id)!.section === section).map((doc) => (
+            <Card href={`/docs/${doc.id}/`} size="lg">
+              <h3 class="card-title">{doc.data.title}</h3>
+              <p>{doc.data.description}</p>
+              <div class="card-actions" aria-label="Doc tags">
+                {doc.data.tags.map((tag) => <span class="badge badge-outline">{tag}</span>)}
+              </div>
+              {doc.data.draft && <div class="badge badge-warning">Draft preview</div>}
+            </Card>
+          ))}
+        </div>
+      </section>
+    ))}
   </Container>
 </BaseLayout>

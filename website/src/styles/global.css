@@ -61,6 +61,16 @@ body {
   --tw-prose-td-borders: var(--color-base-300);
 }
 
+.prose table {
+  display: block;
+  overflow-x: auto;
+}
+
+.prose th,
+.prose td {
+  min-width: 10rem;
+}
+
 .prose a {
   text-decoration: underline;
   text-decoration-thickness: 0.125rem;

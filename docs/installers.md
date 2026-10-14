@@ -1,21 +1,30 @@
+---
+title: "Upstream installers"
+description: "Download and execute checked upstream installers with TLS, checksums and presence checks."
+publishedAt: 2026-10-14
+tags: [Etch, Reference]
+draft: false
+---
+
 # Upstream installers
 
 The core `installer` provider downloads an upstream script to a private temporary
 directory, validates the complete response and optional SHA-256 digest, then runs
-the local copy. It never pipes a network response into a shell. Use `etch plan` to review an installer and `etch apply` to run it.
+the local copy. It never pipes a network response into a shell. Use `etch plan` to review an
+installer and `etch apply` to run it.
 
 ```python
 {
-    "installer": {
-        "url": "https://upstream.example.invalid/releases/v1/install.sh",
-        "shell": "/bin/sh",
-        "args": ["--yes", "--no-modify-path"],
-        "env": {"PROFILE": "/dev/null"},
-        "check": {"command": "example-tool"},
-        "download_timeout": 30,
-        "timeout": 300,
-    },
-    "refresh": ["version"],
+  "installer": {
+    "url": "https://upstream.example.invalid/releases/v1/install.sh",
+    "shell": "/bin/sh",
+    "args": ["--yes", "--no-modify-path"],
+    "env": {"PROFILE": "/dev/null"},
+    "check": {"command": "example-tool"},
+    "download_timeout": 30,
+    "timeout": 300,
+  },
+  "refresh": ["version"],
 }
 ```
 
@@ -39,7 +48,7 @@ version reconciliation is inferred.
 passes the temporary filename and each `args` item separately, without shell
 interpolation. The module directory is the working directory. `env`, Etch's context
 variables, `description`, `quiet`, `stdin` and `sudo` follow the shell/script contract.
-Privilege requests are visible in the plan and require an authorized context before
+Privilege requests are visible in the plan and require `etch apply --allow-sudo` before
 any download. Downloads themselves use the current process's privileges. Temporary
 files are removed on download, checksum and execution failures as well as success;
 upstream side effects are not rolled back.
@@ -77,12 +86,6 @@ Checksums do not make upstream script behavior declarative.
   must be positive finite seconds. Execution failure stops the action; there is no
   retry and no automatic rollback of changes made by the script.
 
-Tests use a local HTTPS upstream and a public test-only certificate. They cover
-verification, custom trust, verification disablement without global changes,
-redirects, response validation, checksums, size limits, both timeouts, cleanup,
-idempotence and separate Etch ownership of shell configuration. No public installer
-is downloaded or run by the test suite.
-
 ## Current-user home paths
 
 Arguments and environment values are literal by default. Set `expand_home` to
@@ -106,7 +109,7 @@ The home comes from Python's native current-user home lookup, including Windows
 `USERPROFILE`/`HOMEDRIVE`/`HOMEPATH`. Expansion happens during normalization,
 before execution and elevation, using the account running Etch. Spaces and
 shell punctuation in the home remain part of one argument. `$HOME`, `${HOME}`,
-`%USERPROFILE%`, `~otheruser`, embedded tildes and shell expressions stay literal.
+`%USERPROFILE%`, `~another-user`, embedded tildes and shell expressions stay literal.
 No general variable interpolation or shell evaluation is added. The option does
 not expand URLs, interpreter names or inherited environment variables, and it
 does not create directories. Existing check predicates keep their own path

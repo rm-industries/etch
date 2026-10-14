@@ -1,3 +1,11 @@
+---
+title: "Resource-aware scheduling"
+description: "Choose parallelism while respecting dependencies, shared resources and interactive work."
+publishedAt: 2026-10-14
+tags: [Etch, Reference]
+draft: false
+---
+
 # Resource-aware scheduling
 
 `etch apply --jobs 4` permits up to four independent actions at once. The default
@@ -6,20 +14,20 @@ default in `defaults.conf`:
 
 ```python
 {
-    "schema_version": 1,
-    "execution": {
-        "jobs": 4,
-        "resources": {
-            "package-manager:brew": 1,
-            "application:vscode": 1,
-            "network": 2,
-        },
+  "schema_version": 1,
+  "execution": {
+    "jobs": 4,
+    "resources": {
+      "package-manager:brew": 1,
+      "application:vscode": 1,
+      "network": 2,
     },
+  },
 }
 ```
 
 `jobs` is an integer from 1 to 64; the CLI overrides the configured job count.
-Resource capacities are positive integers. Unconfigured resources have capacity
+Resource capacities are positive integers. Unspecified resources have capacity
 one, including package-manager resources. A resource name starts with a lowercase
 letter and contains lowercase letters, digits, dots, underscores or hyphens. It
 may have one colon followed by a nonempty suffix starting with a letter or digit,
@@ -88,7 +96,3 @@ and declare resources for unsafe shared operations. Planning calls are serialize
 on the coordinator but may overlap independent application calls. Provider-owned
 resources and fact metadata must accurately describe those interactions. Locks
 coordinate only this Etch invocation, not other Etch or package-manager processes.
-
-The implementation separates resource validation/reservations, observation guards,
-worker calls, and coordination under `etchlib/scheduling/`. Execution results keep
-the same records and CLI statuses as serial application.

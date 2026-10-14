@@ -26,9 +26,9 @@ Start with a simple link such as a tmux configuration. Put your `tmux.conf` in `
 
 ```python
 {
-    "schema_version": 1,
-    "name": "tmux",
-    "actions": [{"link": {"~/.tmux.conf": "files/tmux.conf"}}],
+  "schema_version": 1,
+  "name": "tmux",
+  "actions": [{"link": {"~/.tmux.conf": "files/tmux.conf"}}],
 }
 ```
 
@@ -50,6 +50,6 @@ installer flags without checking the upstream release's interface.
 
 Etch imports can help share an existing module, but `import` copies only that module. It does not translate Dotbot YAML,
 install missing dependencies, copy profiles, or update an existing destination. Migrate and inspect modules one by one,
-then run `doctor`, `plan`, and `apply` against a selected profile. Consult the [user guide](/etch/docs/user-guide/) for
+then run `doctor`, `plan`, and `apply` against a selected profile. Consult the [user guide](user-guide.md) for
 the CLI workflow and the [installer reference](https://github.com/rm-industries/etch/blob/main/docs/installers.md) for
 network and integrity rules.

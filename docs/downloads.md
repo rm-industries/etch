@@ -1,12 +1,20 @@
+---
+title: "Upstream asset downloads"
+description: "Place upstream files without execution, with ownership and integrity checks."
+publishedAt: 2026-10-14
+tags: [Etch, Reference]
+draft: false
+---
+
 # Upstream asset downloads
 
 Use `download` to place an upstream file without executing it. For example:
 
 ```python
 {'download': {
-    'url': 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim',
-    'destination': '~/.local/share/vim/site/autoload/plug.vim',
-    'check': {'file_exists': '~/.local/share/vim/site/autoload/plug.vim'},
+  'url': 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim',
+  'destination': '~/.local/share/vim/site/autoload/plug.vim',
+  'check': {'file_exists': '~/.local/share/vim/site/autoload/plug.vim'},
 }}
 ```
 
@@ -31,6 +39,6 @@ previously downloaded by the same module. It records the downloaded content in
 destination unmanaged, so Etch will refuse to replace it. A matching `check`
 skips a managed file on subsequent applies. Without a `check`, an unchanged URL
 also skips the managed file. Changing the URL, or failing a configured `check`,
-redownloads an owned file; an unpinned live URL is never refreshed silently on
+downloads an owned file again; an unpinned live URL is never refreshed silently on
 each apply. Remove or move an unrelated destination yourself before letting
 Etch take ownership of it.

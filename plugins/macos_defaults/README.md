@@ -1,3 +1,11 @@
+---
+title: "macOS preferences reference plugin"
+description: "Manage declared current-user macOS preferences while preserving unrelated keys."
+publishedAt: 2026-10-14
+tags: [Etch, Reference]
+draft: false
+---
+
 # macOS preferences reference plugin
 
 This standard-library-only plugin reconciles selected keys in a current user's

@@ -1,3 +1,11 @@
+---
+title: "Planning changes"
+description: "Inspect changes, deferred conditions and conflicts before executing actions."
+publishedAt: 2026-10-14
+tags: [Etch, Reference]
+draft: false
+---
+
 # Planning changes
 
 Run from a consumer repository, or supply its root:
@@ -38,8 +46,8 @@ that only inspect the system. Their configured commands are executable code.
 
 Declared plugins are trusted Python, including import-time code and inspection
 methods; planning does not sandbox them. A provider must honor the read-only
-inspection contract. No elevation is granted by planning. A plan may report that
-an action will need elevation when application is implemented.
+inspection contract. No elevation is granted by planning. A plan can report requested elevation; only apply with `--allow-sudo`
+authorizes a declared request.
 
 The report prints requested fact values, so avoid sharing output containing private
 environment facts. Provider payloads and command environment dictionaries are not
@@ -67,11 +75,5 @@ performs those checks during `apply`. The existing graph rules withhold dependen
 inactive/deferred gates; declaring a dependency on an unresolved action does not
 by itself prove an earlier producer.
 
-## Internal API
-
-`etchlib.planning.build.plan_repository(repository, registry)` returns a `Report`
-containing selections, the graph, observations, provider plans, facts and validated
-claims. Providers receive a lazy read-only fact mapping: accessing a declared fact
-requests its cached, detached observation. A plan's `facts` metadata also requests
-those observations. The text renderer operates on the completed report and does
-not perform further inspection.
+Use `--timings` to measure provider checks without executing actions. It can be
+combined with `--verbose`; see [CLI output options](cli.md#output-performance-and-privilege).

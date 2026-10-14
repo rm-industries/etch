@@ -1,3 +1,11 @@
+---
+title: "Submodule-backed assets"
+description: "Initialize pinned assets and update a consumer from an exposed launcher."
+publishedAt: 2026-10-14
+tags: [Etch, Reference]
+draft: false
+---
+
 # Submodule-backed assets
 
 Keep submodule pins in your own dotfiles repository and place each linked tree

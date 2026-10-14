@@ -34,6 +34,7 @@ test('resolves every internal page link', async ({ page, request }) => {
 
   const pending = [resolvePreviewPath('/')];
   const visited = new Set<string>();
+  const checked = new Set<string>();
 
   while (pending.length > 0) {
     const path = pending.shift();
@@ -51,8 +52,11 @@ test('resolves every internal page link', async ({ page, request }) => {
       if (url.origin !== new URL(resolvePreviewUrl('/')).origin) continue;
 
       const linkedPath = url.pathname;
-      const response = await request.get(linkedPath);
-      expect(response.status(), `${path} links to ${linkedPath}`).toBeLessThan(400);
+      if (!checked.has(linkedPath)) {
+        const response = await request.get(linkedPath);
+        expect(response.status(), `${path} links to ${linkedPath}`).toBeLessThan(400);
+        checked.add(linkedPath);
+      }
 
       if (!visited.has(linkedPath)) pending.push(linkedPath);
     }

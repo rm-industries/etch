@@ -7,7 +7,7 @@ describe('documentation examples', () => {
     const guide = await readFile(new URL('../docs/guides/editing-documentation.md', import.meta.url), 'utf8');
     const articleExample = /```md\n([\s\S]*?)\n```/u.exec(guide)?.[1];
 
-    expect(articleExample).toContain('title: My first article');
+    expect(articleExample).toContain('title: Configure a tool');
     expect(articleExample).not.toMatch(/^# /mu);
   });
 });

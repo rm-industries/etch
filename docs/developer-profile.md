@@ -1,68 +1,51 @@
-# Developer profile verification
+---
+title: Developer profile example
+description: Review and adapt a composed profile without copying personal configuration or engine test fixtures.
+publishedAt: 2026-10-14
+tags: [Etch, Example]
+draft: false
+---
 
-[The generic example](../examples/developer/) exercises git, zsh, vim, tmux,
-fonts, Starship, VS Code and Homebrew together. It remains separate from personal
-configuration, which belongs to its owning repository.
+# Developer profile example
 
-## Repeatable evidence
+The [generic developer example](../examples/developer/) shows how modules for Git,
+Zsh, Vim, tmux, fonts, Starship, VS Code and Homebrew can compose one profile.
+It is an example to review and adapt, not a complete personal workstation setup.
 
-`tests/test_developer_profile.py` loads the checked-in example rather than
-recreating its configuration in Python. A fresh consumer contains only the
-vendored standard-library engine, explicit plugin bundles, and fixture tools.
-`tests/developer_fixtures.py` reuses the existing HTTPS upstream and fake
-Homebrew/VS Code CLIs. Only the Starship installer transport is replaced in the
-baseline example; additional scenarios alter the relevant condition or fault.
-All home changes are confined to a temporary directory.
+## Start with your own consumer
 
-| Scenario | Evidence |
-| --- | --- |
-| Fresh consumer | Vendored CLI starts under base Python `-S` with fixture-only PATH and no PYTHONPATH |
-| Reviewable plan | No home mutations, package installations or installer requests before apply; plugin origins and DEFERRED state visible |
-| Full apply | Generic config links, platform font directory, missing formulas/extensions, and Starship installer/configuration |
-| Refresh | Starship version is initially UNAVAILABLE, installer refresh activates its link, then facts reports VALUE |
-| Version branches | tmux 3.4 selects modern configuration; 2.9a selects legacy configuration |
-| OS branches | Linux creates `.local/share/fonts`; macOS creates `Library/Fonts`; the opposite branch remains inactive |
-| Second apply | No additional download/package/extension install; declarative actions skip, only the opaque zsh command reports CHANGED |
-| Plugin API mismatch | Rejected before any home mutation or installer request |
-| Cycle | Rejected before any home mutation or installer request |
-| New conflict after refresh | Deferred Starship destination collides with the completed git claim; execution stops and preserves the git link |
-| Package lock | Independent modules share `package-manager:brew`; a gated fake install detects concurrent entry while unrelated work releases it |
+Use the [template](https://github.com/rm-industries/etch-template) for a minimal
+consumer. Add only the modules you need and review their sources, destinations
+and external commands. The generic example keeps personal identity and secrets
+out of shared configuration.
 
-These tests run under both existing pytest and dependency-free unittest jobs on
-Linux and macOS, Python 3.9 through 3.14. The OS-branch test additionally simulates
-both platform identities on every runner. Fake CLI and HTTPS evidence proves
-Etch's orchestration, not real package-manager/upstream behavior or font loading.
-Fonts deliberately exercise only destination selection without a licensed font
-payload. Existing bootstrap tests separately verify engine acquisition and
-isolated imports; this suite begins with an already vendored engine.
+## Review the example
 
-## Template consumer smoke
+From the engine checkout:
 
-The [Etch template](https://github.com/rm-industries/etch-template) is also
-checked as a real consumer in `.github/workflows/project.yml`. The
-workflow pins a reviewed template revision, substitutes the candidate engine
-checkout for its submodule contents, and runs the template launcher on Linux
-and macOS with Python 3.9 and 3.14. Both the developer profile and standalone
-Git module run with an isolated home. The check verifies that bare `./etch`
-only previews, `plan` and `doctor` succeed, the first apply creates the expected
-Git link, and the second apply leaves declarative state unchanged. This catches
-integration drift between the template and the engine without moving the
-template's committed submodule pin.
+```sh
+python3 -S etch validate --repo examples/developer
+python3 -S etch plan --repo examples/developer --profile developer
+python3 -S etch doctor --repo examples/developer --profile developer
+```
 
-The template contains generic Git configuration only. It does not replace the
-eight-module fixture above or prove a personal dotfiles migration.
+These commands can run version probes and declared plugin inspection. Do not
+apply the example to your actual home without adapting it; package and upstream
+installer actions can modify more than linked files. Font examples demonstrate
+platform destinations rather than supplying licensed font assets.
 
-## Real-world dogfood evidence
+## Patterns to reuse
 
-The [personal migration issue](https://github.com/rahul0705/dotfiles/issues/81)
-records the completed dotfiles migration and the user's confirmation that its
-`dev` checkout works locally. Its
-[developer-migration run](https://github.com/rahul0705/dotfiles/actions/runs/36505610544)
-passed on Ubuntu and macOS with Python 3.9 and 3.14, including a first apply
-and an idempotent second apply. The issue also records the Vim plugin audit,
-managed vim-plug download, and switch-over decisions. Real configuration stays
-in the dotfiles repository; the generic fixture above stays independent.
+- Keep each capability in one module and assets inside that module.
+- Use a profile to select work, not CI-specific module lists.
+- Declare OS conditions for platform-specific actions.
+- Use presence checks for opaque installers/scripts that should skip repeat work.
+- Declare facts and refresh after producers when configuration depends on new state.
+- Manage shell initialization separately from upstream installers that may edit it.
+- Review defaults and explicitly load only the plugins your modules use.
 
-Etch's [project workflow](https://github.com/rm-industries/etch/actions/workflows/project.yml)
-continues to run the generic profile on Linux and macOS across Python 3.9–3.14.
-This evidence completed [Etch #23](https://github.com/rm-industries/etch/issues/23).
+For your consumer CI, use an isolated home on disposable runners to plan and
+apply the selected profile. Install runner prerequisites your modules require.
+CI should establish that your setup works; the engine's implementation tests
+belong in the Etch project. See [the user guide](guides/user-guide.md),
+[applying](applying.md), and the template README for the ordinary workflow.

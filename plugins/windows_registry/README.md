@@ -1,3 +1,11 @@
+---
+title: "Windows Registry preferences reference plugin"
+description: "Manage typed current-user Windows Registry values without replacing unrelated preferences."
+publishedAt: 2026-10-14
+tags: [Etch, Reference]
+draft: false
+---
+
 # Windows Registry preferences reference plugin
 
 This standard-library-only plugin reconciles named values under
@@ -57,7 +65,7 @@ replacement, and both data and Registry type must match. Plans display current
 and desired data: do not use this preference plugin to store secrets.
 
 `apply` rereads current state, creates a missing key when needed, and writes
-only values that still differ. Unrelated values and subkeys remain intact.
+only values that still differ. Unrelated values and nested keys remain intact.
 A second apply is a no-op. Permission failures name the affected key and ask
 you to check its permissions; Etch does not elevate or change permissions.
 Multiple writes are not a transaction: an error may leave earlier values
@@ -67,5 +75,3 @@ Without the Windows module guard, inspection on macOS/Linux reports a clear
 platform error. Some preferences require an application restart, Explorer
 restart, sign-out or reboot. Check the setting's documentation and perform that
 step yourself; Etch never implicitly restarts anything or broadcasts changes.
-Windows CI tests a unique disposable key under `HKCU\Software`, preserving an
-unrelated value and removing only that test key afterward.

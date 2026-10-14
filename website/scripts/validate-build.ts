@@ -2,12 +2,12 @@ import { readdir, readFile, stat } from 'node:fs/promises';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { documentation } from '../src/config/documentation.ts';
+
 const requiredOutputPaths = [
   '404.html',
   'about/index.html',
-  'docs/facts-and-providers/index.html',
-  'docs/modules-and-profiles/index.html',
-  'docs/getting-started/index.html',
+  ...documentation.map(({ id }) => `docs/${id}/index.html`),
   'docs/index.html',
   'index.html',
   'robots.txt',

@@ -4,6 +4,17 @@ export default defineConfig({
   // Ignore only installed dependencies and generated tool output.
   ignorePaths: ['node_modules', 'dist', 'coverage', 'playwright-report', 'test-results', '.lighthouseci'],
   words: [
+    'gitlinks',
+    'Vundle',
+    'worktrees',
+    'USERPROFILE',
+    'shutil',
+    'PATHEXT',
+    'cfprefsd',
+    'knollsoft',
+    'bitness',
+    'autostash',
+    'satteri',
     'autorun',
     'Catppuccin',
     'contentinfo',

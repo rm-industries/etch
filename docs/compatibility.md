@@ -1,7 +1,15 @@
+---
+title: "Compatibility policy"
+description: "Runtime platforms, schema and plugin versions, supported behavior and current limits."
+publishedAt: 2026-10-14
+tags: [Etch, Reference]
+draft: false
+---
+
 # Compatibility policy
 
-Etch releases use SemVer tags (`vMAJOR.MINOR.PATCH`). The engine's
-`etchlib.__version__` is the same version without `v`; a `-dev` checkout is not
+Etch releases use SemVer tags (`vMAJOR.MINOR.PATCH`). `etch --version` reports the engine
+version without `v`; a `-dev` checkout is not
 a release. Before 1.0, a minor release may change a contract. Patch releases
 fix defects without intentionally changing supported configuration or provider
 interfaces. From 1.0 onward, breaking supported contracts require a major
@@ -22,7 +30,8 @@ Each external plugin has its own `PLUGIN.version` and `PLUGIN.api` metadata.
 The bundled Homebrew and VS Code examples currently declare plugin version
 `0.1.0` and API 1. Their version is not derived from the Etch application
 version. Consumers must pin and update an engine and each plugin deliberately;
-Etch does not fetch, update, or solve plugin dependencies. A plugin's API
+Etch does not solve plugin dependencies. Explicit consumer/submodule update
+commands synchronize recorded pins; they do not choose newer plugin releases. A plugin's API
 declaration says which engine interface it expects, not that its behavior is
 safe or compatible with every external tool release.
 
@@ -34,10 +43,8 @@ run with site packages disabled. The `import` command additionally requires
 Git 2.25 or newer and a public HTTPS source. The [Windows contract](windows.md)
 covers Windows 11 x64 on Python 3.9 and 3.14, including filesystem actions, native commands, PowerShell scripts,
 downloaded PowerShell installers and the optional Registry preferences plugin.
-CI runs the full engine suite on each supported interpreter on Linux and macOS;
-the template consumer smoke also covers the minimum and newest interpreters
-on those OSes. The required Windows matrix runs shared core regression tests,
-native provider tests and an isolated end-to-end consumer profile.
+The runtime is qualified on Linux/macOS and the bounded Windows contract.
+A consumer launcher or reference profile can have additional OS requirements.
 
 For a released schema and application version, the core provider names and
 their documented options are supported contracts: `create`, `link`, `clean`,
@@ -61,9 +68,9 @@ installers, batch commands, system Registry hives or Git import. Etch has no
 package dependency solver, automatic engine or module updates, general lifecycle
 hooks, or automatic Dotbot translation.
 `import` copies one public Git module and does not apply it or import its
-dependencies. Core `providers` and `plugins` listing commands are deferred;
-`doctor` reports loaded providers and plugin compatibility. External tools,
+dependencies. `doctor` reports loaded providers and plugin compatibility. External tools,
 network endpoints, and user-owned configuration remain the consumer's
 responsibility.
 
-See the [release procedure](releasing.md) for qualification and artifacts.
+Use [diagnostics](diagnostics.md) to inspect the loaded engine/plugin versions
+and [updates](submodules.md) to synchronize the consumer's selected revisions.

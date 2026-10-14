@@ -14,6 +14,9 @@ non-mutating, provider-aware plans, including conditions, facts, dependency orde
 and destination ownership checks. Staged `apply` refreshes declared facts and
 revalidates newly active work. Use `--jobs` for [resource-aware concurrency](docs/scheduling.md).
 Further integrations are tracked in the [roadmap](https://github.com/rm-industries/etch/issues/2).
+Start with the [user documentation](docs/README.md) for commands, configuration,
+actions, and maintenance.
+
 See the [compatibility policy](docs/compatibility.md) and
 [release procedure](docs/releasing.md) before pinning a source release.
 
@@ -158,8 +161,8 @@ current dependency graph, and destination claims. See [facts and doctor](docs/di
 for selection, exit statuses, and inspection limits.
 
 The [generic developer profile](examples/developer/) demonstrates all eight target
-modules in an isolated consumer. See its [verification evidence](docs/developer-profile.md)
-for automated scenarios and the outstanding real-world migration.
+modules in an isolated consumer. See its [configuration walkthrough](docs/developer-profile.md)
+for selecting modules and adapting the example to your own setup.
 
 Use [`etch import`](docs/importing.md) to copy a public Git module into the fixed
 `modules/<name>/` consumer layout without executing it. Imports retain resolved-commit

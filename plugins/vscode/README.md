@@ -1,3 +1,11 @@
+---
+title: "VS Code reference plugin"
+description: "Install missing Marketplace extensions for a selected VS Code CLI and profile."
+publishedAt: 2026-10-14
+tags: [Etch, Reference]
+draft: false
+---
+
 # VS Code reference plugin
 
 This bundle supplies the `vscode` action and `vscode.command`, `vscode.version`,
@@ -92,7 +100,7 @@ Reapplying observes that state and installs only what is still missing.
 
 All actions reserve `application:vscode`, including alternate commands/profiles.
 This conservative application-wide resource serializes VS Code changes across
-modules. The implementation keeps no mutable provider state and does not change
+modules. The provider does not change
 the process cwd or environment.
 
 ## Facts and refresh
@@ -116,13 +124,6 @@ trigger refresh; a subsequent invocation gathers fresh state.
 Planning runs inspection probes only and never installs extensions. Subprocesses use
 argv, closed stdin, module cwd, a timeout, and bounded output reads (1 MiB per stream).
 Unexpected inventory lines are rejected instead of being treated as extension IDs.
-
-## Development
-
-Tests load a copied bundle through Etch's real source loader and use an executable
-fake CLI. No test requires an installed VS Code, network access, or real extensions.
-Ruff and strict mypy include this bundle, and CI runs its tests on the same Python
-3.9–3.14 Linux/macOS matrix as core.
 
 Inventory inspection is shared across actions within one planning snapshot for
 matching CLI targets (and VS Code profiles). Apply always reads current inventory

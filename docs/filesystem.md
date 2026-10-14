@@ -1,8 +1,16 @@
+---
+title: "Directory and link providers"
+description: "Create directories and link owned sources with explicit conflict and path behavior."
+publishedAt: 2026-10-14
+tags: [Etch, Reference]
+draft: false
+---
+
 # Directory and link providers
 
-`create` and `link` register as core action providers through the shared registry.
-They validate and inspect without mutation, produce CHANGE/SKIP plans with ownership
-claims, and implement idempotent application. The CLI executor remains upcoming work.
+Use `create` to ensure directories exist and `link` to connect module-owned files
+to their destinations. Plan and doctor inspect them without changing files; apply
+rechecks current state before making changes and skips already-correct state.
 
 ## Create
 
@@ -21,7 +29,7 @@ currently accepted for create.
 ```python
 {"link": {"~/.gitconfig": "files/gitconfig"}}
 {"link": {"~/.config/tool/config": {
-    "path": "files/config", "create": True, "relink": True,
+  "path": "files/config", "create": True, "relink": True,
 }}}
 ```
 
@@ -44,14 +52,13 @@ for repository-scoped links. Existing parent creation, conflict refusal, relink,
 receipts and ownership rules still apply. No schema-version or format change is
 required for existing configurations.
 
-The consumer launcher must support invocation through symlinks; the older template
-launcher assumes its invocation directory is the checkout. Update to the
-symlink-aware template launcher before exposing it. Installing a link does not
+Use the template's symlink-aware consumer launcher before exposing it through a
+user-local link. The core engine alone does not infer its consumer from that link. Installing a link does not
 add its directory to PATH or modify any shell startup file.
 When a linked directory contains Git submodules, inspection checks their pinned
 checkouts before planning or applying the link. Missing, uninitialized, or
 different revisions report the affected path and the Git initialization command;
-Etch never runs that command itself. See [submodule-backed assets](submodules.md)
+Inspection never initializes submodules. Use the explicit update commands when needed. See [submodule-backed assets](submodules.md)
 for a Vim/tmux migration layout.
 Destinations use the common destination resolver. Links point to the resolved
 absolute source; moving a module and planning again uses its new location.
@@ -75,7 +82,7 @@ can be set in provider defaults:
 ```
 
 Each link entry overrides those defaults independently. Unknown options,
-nonboolean `create`/`relink`, invalid `target_match` values,
+non-boolean `create`/`relink`, invalid `target_match` values,
 missing or escaping sources, duplicate or nested destinations, and destinations
 that overwrite sources in the same action fail validation. Recursive directory
 links into their own source are rejected. Each destination has an exclusive claim;
@@ -88,12 +95,8 @@ including when applying a previously satisfied plan. It refuses changed parent
 resolution and regular files that appeared since planning. Repeated application of
 unchanged desired state returns `changed=False`.
 
-These are defensive checks, not filesystem transactions. Relinking removes the old
-symlink and creates its replacement; a later I/O failure can leave partial changes.
+These are defensive checks, not filesystem transactions. Relinking creates a candidate link before replacing the old link;
+a later I/O or receipt-write failure can still leave partial changes.
 Concurrent external filesystem changes remain possible between inspection and
-mutation. The executor must validate ownership/dependencies before apply and respect
-resource constraints; these providers do not supply an independent execution engine.
-
-Directory behavior, link behavior and shared filesystem inspection live in focused
-files under `etchlib/providers/filesystem/`. `etchlib/core.py` composes core actions
-and facts; provider-specific dispatch is not added to the executor.
+mutation. Apply validates ownership and dependencies before execution. Source aliases and
+changed destination parents are rechecked rather than treated as stable paths.

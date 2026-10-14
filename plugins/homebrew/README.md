@@ -1,3 +1,11 @@
+---
+title: "Homebrew reference plugin"
+description: "Ensure requested formulae and casks are present without inferred upgrades or removals."
+publishedAt: 2026-10-14
+tags: [Etch, Reference]
+draft: false
+---
+
 # Homebrew reference plugin
 
 This source bundle registers `brew`, plus `brew.command`, `brew.version`,
@@ -19,7 +27,7 @@ explicitly in `defaults.conf`:
 ```
 
 The entrypoint reports bundle name `etch-homebrew`, release `0.1.0`, and plugin API
-1. Bundle releases and API compatibility are independent from Etch's release.
+`1`. Bundle releases and API compatibility are independent from Etch's release.
 `etch plan --verbose` identifies the external provider origin. The initial
 [repository decision](../../docs/decisions/0001-foundation.md) keeps reference
 bundles in `plugins/` while allowing consumers to vendor each bundle independently.
@@ -127,15 +135,6 @@ fresh observations. Package-manager changes do not rewrite the parent PATH.
 Subprocesses use argv, module cwd, closed stdin, per-call timeouts and bounded output
 reads (1 MiB per stream). Planning only performs inventory inspection. The bundle
 keeps no mutable provider state and changes no process-wide cwd or environment.
-
-## Verification
-
-The suite loads a copied bundle with the real plugin loader and uses an executable
-fake CLI. It covers absence, normalized inventories, batches, preserved packages,
-upgrade-suppression environment, failed installs, command/version refresh, dependencies,
-second-run skips, and resource serialization while unrelated work progresses.
-No tests invoke real Homebrew, install packages, or access the network. Ruff, strict
-mypy, and the Python 3.9–3.14 Linux/macOS matrix include this bundle.
 
 Inventory inspection is shared across actions within one planning snapshot for
 matching CLI targets (and VS Code profiles). Apply always reads current inventory
