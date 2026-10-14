@@ -34,3 +34,15 @@ normally; existing destination conflict and repeat-apply rules are unchanged.
 module snapshot and cannot preserve a submodule pin without adding a separate
 Git dependency and checkout policy. Keep these modules in the consumer repository
 and initialize them with Git instead of importing them.
+
+`etch doctor` also performs a read-only repository-wide check before loading
+consumer configuration or plugins. This catches missing or uninitialized
+submodules even when they are not used by a selected link action, including new
+submodules added by a pulled change. Non-pinned revisions and merge conflicts are
+reported with the affected paths and initialization guidance. No fetch, checkout,
+or initialization is performed. Git is needed for the full submodule audit; when unavailable, doctor warns that
+submodules were not verified without requiring Git just to run the initialized
+engine. Repositories without `.gitmodules` skip the audit. Resolve merge
+conflicts before running the suggested recursive update command. A missing engine
+still prevents the consumer launcher from starting and is reported by the
+launcher itself.
