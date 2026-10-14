@@ -5,11 +5,11 @@ import subprocess
 from pathlib import Path
 
 
-def update(root: Path) -> int:
+def require_root(root: Path, operation: str) -> Path:
     root = root.resolve()
     if shutil.which("git") is None:
         raise ValueError(
-            "Git is required for submodules update; install Git and retry."
+            "Git is required for {}; install Git and retry.".format(operation)
         )
     try:
         checkout = subprocess.run(
@@ -25,6 +25,11 @@ def update(root: Path) -> int:
         raise ValueError(
             "--repo must select the consumer Git repository root: {}".format(root)
         )
+    return root
+
+
+def update(root: Path) -> int:
+    root = require_root(root, "submodules update")
     result = subprocess.run(
         ["git", "-C", str(root), "submodule", "update", "--init", "--recursive"],
         check=False,
