@@ -54,23 +54,33 @@ def target(config: Any) -> Target:
     return Target(command, profile, float(timeout))
 
 
-def action_options(config: Any, context: Context) -> tuple[Target, tuple[str, ...]]:
+def action_options(
+    config: Any, context: Context
+) -> tuple[Target, tuple[str, ...], int]:
     if not isinstance(config, dict) or set(config) - {
         "extensions",
+        "retries",
         "command",
         "profile",
         "timeout",
     }:
         raise ValueError(
-            "vscode accepts extensions, command, profile and timeout; removal is unsupported"
+            "vscode accepts extensions, command, profile, timeout and retries; removal is unsupported"
         )
     values = compose_defaults(
         "vscode",
         dict(context.defaults.get("vscode", {})),
         config,
-        ("command", "profile", "timeout"),
+        ("command", "profile", "timeout", "retries"),
     )
     desired = values.pop("extensions", None)
     if not isinstance(desired, list):
         raise ValueError("vscode extensions must be a list")
-    return target(values), tuple(sorted({identifier(value) for value in desired}))
+    retries = values.pop("retries", 0)
+    if type(retries) is not int or not 0 <= retries <= 3:
+        raise ValueError("retries must be an integer between 0 and 3")
+    return (
+        target(values),
+        tuple(sorted({identifier(value) for value in desired})),
+        retries,
+    )

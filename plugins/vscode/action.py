@@ -7,7 +7,8 @@ from etchlib.providers.contracts import Context
 from etchlib.providers.observations import Inspection, InspectionState
 from etchlib.providers.plans import ApplyResult, Plan, PlanStatus
 
-from .cli import installed, locate, run
+from .cli import installed, locate
+from .retry import install
 from .schema import Target, action_options
 
 
@@ -17,6 +18,7 @@ class Reconciliation:
     executable: str
     desired: tuple[str, ...]
     missing: tuple[str, ...]
+    retries: int
 
 
 class VSCodeAction:
@@ -26,7 +28,7 @@ class VSCodeAction:
         action_options(config, context)
 
     def inspect(self, config: Any, context: Context) -> Inspection:
-        target, desired = action_options(config, context)
+        target, desired, retries = action_options(config, context)
         executable = locate(target, context)
         if executable is None:
             raise ValueError(
@@ -38,7 +40,7 @@ class VSCodeAction:
         missing = tuple(extension for extension in desired if extension not in current)
         return Inspection(
             InspectionState.CHANGE if missing else InspectionState.SATISFIED,
-            Reconciliation(target, executable, desired, missing),
+            Reconciliation(target, executable, desired, missing, retries),
             "{} installed; {} requested extensions missing".format(
                 len(current), len(missing)
             ),
@@ -69,19 +71,10 @@ class VSCodeAction:
         changed = []
         for extension in state.desired:
             if extension not in current:
-                run(
-                    executable,
-                    state.target,
-                    ("--install-extension", extension),
-                    context,
+                current = install(
+                    executable, state.target, extension, state.retries, context
                 )
                 changed.append(extension)
-                current = set(installed(executable, state.target, context))
-                if extension not in current:
-                    raise ValueError(
-                        "VS Code reported success but extension remains missing: "
-                        + extension
-                    )
         if changed:
             remaining = set(state.desired) - current
             if remaining:

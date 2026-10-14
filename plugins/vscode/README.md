@@ -72,8 +72,9 @@ Action options:
 | `command` | One executable, default `code`; absolute or module-relative paths and PATH names are accepted. No shell command strings or extra arguments. |
 | `profile` | Optional VS Code profile name; passed as one argument to listing/install calls. Omission uses the CLI default profile. |
 | `timeout` | Positive finite seconds per CLI invocation, default 120. |
+| `retries` | Integer from 0 to 3, default 0. Additional attempts per missing extension for recognized temporary service errors. |
 
-Only `command`, `profile` and `timeout` accept action defaults. An action's value
+`command`, `profile`, `timeout` and `retries` accept action defaults. An action's value
 replaces that default. Fact configurations accept the same three target options,
 with their own built-in defaults; they do not inherit action defaults. Keep action
 and fact targets aligned when using an alternate command or VS Code profile.
@@ -94,9 +95,28 @@ avoids reinstalling requested members already brought in by an extension pack.
 It does not parse localized installation-success messages or silently accept an
 exit-zero response that leaves an extension absent.
 
-A CLI error or timeout stops the action without retry. Extensions successfully
-installed before a later failure remain installed; no rollback or removal occurs.
-Reapplying observes that state and installs only what is still missing.
+By default, a CLI error or timeout fails the action without retry. For bounded
+recovery, set `retries: 2` in the action payload or its defaults. Retries apply only
+to install failures containing the English CLI message `Server returned 429`,
+`502`, `503` or `504`. Classification uses captured CLI output, not a structured
+HTTP response. Localized messages, unrecognized transport errors, timeouts,
+invalid IDs, missing executables, permissions and inventory failures are not retried.
+
+After a recognized error, fresh inventory is read before another attempt. If the
+extension is already present, it is not installed again. Otherwise retries wait
+1, 2 and 4 seconds (depending on the configured count), with an explicit stderr
+message naming the extension and retry number. At most three additional attempts
+and seven seconds of backoff are allowed per missing extension. Every CLI call has
+its own `timeout`; with three retries the install/reinspection loop can consume up
+to eight call timeouts plus seven seconds per extension, in addition to initial
+inventory and planning calls. It is not a whole-action deadline.
+
+The action retains `application:vscode` while retrying, preventing another VS Code
+mutation from racing it; unrelated resources can keep progressing. Exhaustion
+fails the action with its last error. Successfully installed extensions and
+unlisted extensions remain installed; no rollback or removal occurs. Etch blocks
+the failed module's dependent chain while independent modules continue. Reapplying
+observes real state and installs only what is still missing.
 
 All actions reserve `application:vscode`, including alternate commands/profiles.
 This conservative application-wide resource serializes VS Code changes across
