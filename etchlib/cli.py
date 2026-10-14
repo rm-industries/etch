@@ -13,6 +13,7 @@ from etchlib.core import core_registry
 from etchlib.diagnostics.doctor import diagnose
 from etchlib.diagnostics.facts import gather, render_facts
 from etchlib.diagnostics.render import render_doctor
+from etchlib.diagnostics.submodules import submodule_errors
 from etchlib.execution.render import render_apply
 from etchlib.execution.runner import apply_repository
 from etchlib.facts.repository import repository_facts
@@ -134,6 +135,12 @@ def main(argv: Optional[List[str]] = None) -> int:
 
         if args.command in ("plan", "apply"):
             write_output("Preparing {}...".format(args.command), flush=True)
+        if args.command == "doctor":
+            setup_errors = submodule_errors(args.repo)
+            if setup_errors:
+                for error in setup_errors:
+                    write_output("Doctor: " + error, sys.stderr)
+                return 1
         repository = load_repository(args.repo, args.profile, args.modules)
         loaded = load_plugins(
             repository.root, repository.defaults.get("plugins", []), core_registry()

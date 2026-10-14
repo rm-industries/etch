@@ -22,7 +22,7 @@ def git(directory: Path, *args: str) -> str:
     return result.stdout
 
 
-class LinkSubmoduleTests(unittest.TestCase):
+class SubmoduleFixture(unittest.TestCase):
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
@@ -77,6 +77,8 @@ class LinkSubmoduleTests(unittest.TestCase):
     def plan(self) -> Plan:
         return plan_action(self.action, self.config, self.context)
 
+
+class LinkSubmoduleTests(SubmoduleFixture):
     def test_uninitialized_submodule_is_diagnosed_without_mutation(self) -> None:
         git(self.context.repo_root, "submodule", "deinit", "-f", "--all")
         with self.assertRaisesRegex(

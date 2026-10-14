@@ -11,11 +11,13 @@ case "$selection" in
   *) echo "Unknown selection: $selection" >&2; exit 2 ;;
 esac
 
-# The template pins a released engine. Substitute this checkout to verify the
-# candidate engine against the real starter without changing its Git pin.
+# Initialize the real pinned checkout so doctor can verify its Git metadata.
+git -C "$consumer_root" submodule update --init --recursive vendor/etch
+
+# Overlay candidate sources without changing the consumer's engine gitlink.
 mkdir -p "$consumer_root/vendor/etch"
 cp "$engine_root/etch" "$consumer_root/vendor/etch/etch"
-cp -R "$engine_root/etchlib" "$consumer_root/vendor/etch/etchlib"
+cp -R "$engine_root/etchlib/." "$consumer_root/vendor/etch/etchlib"
 
 export HOME
 HOME=$(mktemp -d)

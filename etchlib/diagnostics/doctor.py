@@ -1,6 +1,7 @@
 """Validate declarations and the current plan, preserving probe diagnostics."""
 
 import platform
+import shutil
 import sys
 from copy import deepcopy
 from dataclasses import dataclass
@@ -20,6 +21,7 @@ from etchlib.providers.registry import Registry
 from etchlib.scheduling.resources import requirements
 
 from .facts import gather, label
+from .submodules import submodule_errors
 
 
 @dataclass(frozen=True)
@@ -31,8 +33,15 @@ class Diagnosis:
 
 
 def diagnose(repository: Repository, registry: Registry) -> Diagnosis:
+    setup_errors = submodule_errors(repository.root)
+    if setup_errors:
+        return Diagnosis({}, setup_errors, (), None)
     errors: list[str] = []
     warnings: list[str] = []
+    if (repository.root / ".gitmodules").is_file() and shutil.which("git") is None:
+        warnings.append(
+            "Submodules not verified: Git is unavailable; install Git to inspect repository setup."
+        )
     if sys.version_info < (3, 9):
         errors.append(
             "Python 3.9 or newer is required; select a supported interpreter."
