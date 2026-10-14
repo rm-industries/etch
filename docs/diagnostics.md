@@ -1,3 +1,11 @@
+---
+title: "Facts and doctor"
+description: "Use facts and doctor to understand observations, setup errors and inspection limits."
+publishedAt: 2026-10-14
+tags: [Etch, Reference]
+draft: false
+---
+
 # Facts and doctor
 
 Run diagnostics against a consumer repository before applying changes:
@@ -34,14 +42,13 @@ their configured argv, and plugin facts run trusted plugin code.
 
 Doctor loads explicitly declared plugins and reports their paths, release
 versions, compatible API, and all registered action/fact provider origins.
-Separate `providers` and `plugins` commands remain deferred for the initial
-release; these essential details are always available here, including when the
-current plan fails. Configuration or plugin-loading failures are reported before
+These details remain available here even when the current plan fails.
+Configuration or plugin-loading failures are reported before
 any plan can be built, with a nonzero exit status.
 
 Doctor checks:
 
-- Python 3.9 or newer and the supported Linux/macOS platform family.
+- Python 3.9 or newer and the supported Linux/macOS/Windows platform family.
 - Configuration schemas, module/plugin paths, API compatibility, duplicate and
   missing providers through normal configuration and plugin loading.
 - All selected action schemas, including actions behind false/deferred gates.
@@ -60,13 +67,13 @@ claims cannot be validated until they activate. Missing soft `after` dependencie
 remain warnings. Ordinary pending changes are not failures.
 
 Doctor exits 0 with no errors, including when warnings exist; otherwise it exits
-1. Argument usage errors exit 2. Fix reported errors and rerun: declaration
+`1`. Argument usage errors exit `2`. Fix reported errors and rerun: declaration
 errors are collected where possible, but plan construction stops at its first
 failure, so additional plan errors may emerge afterward.
 
 No action is applied, installer downloaded, link changed, or cache receipt
 written. Core inspection and version probes and external plugin probes may run
-commands; plugins are trusted code, not sandboxed. Opaque shell/script bodies,
+commands; plugins are trusted code, not isolated in a sandbox. Opaque shell/script bodies,
 network availability, eventual install success, and later filesystem changes
 cannot be certified. Declare command/version facts for tools you need diagnosed.
 Privileged plans can be inspected without granting permission to execute them.

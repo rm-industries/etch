@@ -1,3 +1,11 @@
+---
+title: "Windows runtime baseline"
+description: "Configure Windows paths, symlinks, native commands, PowerShell and Registry preferences."
+publishedAt: 2026-10-14
+tags: [Etch, Reference]
+draft: false
+---
+
 # Windows runtime baseline
 
 The initial baseline targets Windows 11 x64 with CPython 3.9–3.14. Start Etch
@@ -19,13 +27,6 @@ PowerShell invocation is described below; batch-file execution is unsupported.
 Home expansion follows Python's Windows `USERPROFILE`/`HOMEDRIVE`/`HOMEPATH`
 behavior rather than assuming the Unix `HOME` variable. Python configuration
 strings must escape backslashes or use forward slashes.
-
-The authoritative Project gate includes Windows provider and consumer-profile
-integration tests on Python 3.9 and 3.14, exercising configuration, OS conditions,
-command discovery, facts, planning, diagnostics and startup with site packages
-disabled. Shared graph, condition, provider record/registration, version and
-output regression tests also run on Windows. The final required `Quality Gate`
-depends on both Windows matrix entries.
 
 This is a bounded Windows contract. Do not assume POSIX shell commands,
 sudo, executable permission bits, Homebrew, Git import, or Unix-only reference
@@ -67,7 +68,8 @@ rather than skip when the required capability is unavailable.
 
 Etch prefers PowerShell 7 (`pwsh`) on PATH and falls back to Windows
 PowerShell 5.1 (`powershell.exe`) when it is unavailable. It never falls back to
-`cmd.exe` or a POSIX shell. If neither interpreter is available, planning fails with installation guidance. Etch respects the machine's
+`cmd.exe` or a POSIX shell. If neither interpreter is available, planning fails
+with installation guidance. Etch respects the machine's
 execution policy and does not add `ExecutionPolicy Bypass`.
 
 Use a module-owned `.ps1` file with the existing script action:
@@ -101,14 +103,9 @@ Every child runs from the module directory with inherited environment plus the
 configured values and existing `ETCH_*` context. Output is captured by default, with a bounded diagnostic tail on failure.
 Use `apply --verbose` for live output; `quiet` suppresses verbose streaming.
 Interactive input or elevation requests keep live output for prompts. Input is disabled unless `stdin` is enabled; PowerShell
-remains noninteractive. Timeouts and nonzero exits fail the action. Checks retain
+remains without interactive prompts. Timeouts and nonzero exits fail the action. Checks retain
 the existing skip/idempotence behavior. `sudo` is unsupported on Windows: Etch
 never launches an elevation prompt or changes the account automatically.
-
-Windows CI runs the same local `.ps1` fixture with PowerShell 7 and the forced
-5.1 fallback to verify arguments, quotes, empty values,
-environment, working directory, checks, string commands and exit-code failures
-without network access. Shared invocation tests also run on macOS/Linux.
 
 ## Downloaded installers
 
@@ -140,9 +137,8 @@ policy bypass or automatic elevation is added.
 
 Temporary artifacts are removed after success, nonzero exit, hash failure, or
 timeout. Script-created files and other installer side effects are not rolled
-back. Checks skip already satisfied installers before interpreter resolution or
-network access. Windows CI uses a local HTTPS server and fake installer scripts
-for both PowerShell versions; it never downloads a live vendor installer.
+back. Checks skip already satisfied installers before interpreter resolution
+or network access.
 
 ## Registry preferences
 
@@ -150,33 +146,3 @@ Use the optional [Windows Registry reference plugin](../plugins/windows_registry
 for typed current-user preferences. It uses native Python `winreg` access,
 shows current and desired values in plans, and leaves undeclared values intact.
 System hives, deletion, elevation and automatic restarts are unsupported.
-
-## Integration qualification
-
-The checked-in `tests/fixtures/windows-profile` is a test consumer, not a live
-workstation setup. `tests.test_windows_profile` copies it into a temporary
-repository, loads the Registry plugin, generates a unique test Registry key,
-and points the installer at the existing local HTTPS fixture with its own CA
-and SHA-256. It does not contact a vendor, install software or edit real user
-preferences. It runs `validate`, `facts`, `plan`, `doctor` and two `apply` calls
-through `python -S etch`, including an OS-guarded Unix module that must be
-skipped. Inspection must not create files, Registry state or network requests.
-The first apply creates directories and file/directory links, runs a local
-PowerShell script and downloaded fixture, and reconciles typed Registry values.
-The second apply must skip matching state and make no further installer request.
-
-Run the profile test on Windows with:
-
-```powershell
-python -S -m unittest tests.test_windows_profile -v
-```
-
-PowerShell and symlink creation privileges are required, along with permission
-to bind a loopback HTTPS server. Hosted runners must provide those capabilities;
-missing capabilities fail tests rather than silently skip them. Local users can
-enable Developer Mode or grant Create symbolic links privilege before running
-filesystem/profile tests. Registry tests use writable current-user disposable
-keys and do not need elevation. PowerShell execution policy is respected; an
-organization policy that prohibits test scripts will fail the execution tests.
-Windows-specific tests skip on macOS/Linux. Native ARM64, Windows Server, WSL
-and consumer template qualification remain outside this Windows test matrix.

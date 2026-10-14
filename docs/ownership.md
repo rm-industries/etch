@@ -1,3 +1,11 @@
+---
+title: "Destination ownership and activation validation"
+description: "Understand destination conflicts and why satisfied or shared paths still matter."
+publishedAt: 2026-10-14
+tags: [Etch, Reference]
+draft: false
+---
+
 # Destination ownership and activation validation
 
 Each active destination has one exclusive owner. A provider may instead declare
@@ -29,29 +37,19 @@ limits of path-based ownership; providers must not advertise claims that conceal
 the effects of their actions. Filesystem state may change after a snapshot, so
 providers still need state inspection and defensive application logic.
 
-## Fresh validation after activation
+## Newly active work and failures
 
-`validate_snapshot(repository, selections, registry, facts, fact_links,
-elevated_actions)` processes the current condition results. For every TRUE action
-in a TRUE module it resolves the provider, validates configuration, inspects state
-and obtains a new normalized plan. It then checks action-specific privilege
-authorization, rebuilds and cycle-checks the graph, and validates all active claims.
-There is no cached-plan argument and no call to provider apply.
+False or deferred actions do not claim destinations until they become active.
+After a successful producer refreshes a fact, Etch reevaluates pending conditions
+and validates newly active paths, dependencies and privilege requests before running
+that work. Claims from completed and already-satisfied actions still participate.
+A newly active action cannot take ownership of a path another selected action owns.
 
-FALSE and DEFERRED actions do not contribute ownership claims. Reevaluate conditions
-after refresh, then call this API again before newly active work is executed. An
-invalid provider, payload, path, dependency, privilege request or overlapping claim
-prevents the snapshot from being returned. Unchanged active actions are revalidated
-too, including their ownership of already-satisfied destinations.
+`--allow-sudo` authorizes declared elevation for the invocation, including newly
+active actions; it does not bypass ownership checks. More parallel jobs do not
+permit conflicting owners or authorize arbitrary script side effects.
 
-Privilege defaults to disallowed. The caller can supply the exact `NodeId`s whose
-elevation has been authorized; this API neither prompts nor invokes sudo. The
-executor must preserve the authorization context and scheduling constraints.
-
-The returned snapshot contains plans, normalized claims and the validated graph.
-It is evidence for the planner/executor, not an apply capability or a guarantee that
-the filesystem cannot change. Planner orchestration, execution, race handling and
-clean-provider ownership provenance remain separate issues.
-
-Claim normalization/conflict checks and snapshot orchestration live in separate
-modules under `etchlib/ownership/`.
+These checks do not create a filesystem transaction. Providers recheck current
+state before mutation, but outside processes can still change it. Earlier effects
+are not rolled back on failure. See [applying](applying.md), [cleanup](clean.md) and
+[scheduling](scheduling.md) for operational behavior.

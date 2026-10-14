@@ -69,7 +69,7 @@ test('keeps documentation code within a small viewport', async ({ page }) => {
 });
 
 test('preserves focus and disabled pagination in every flavor', async ({ page }) => {
-  await page.goto(resolvePreviewPath('/docs/user-guide/'));
+  await page.goto(resolvePreviewPath('/docs/getting-started/'));
   const navigation = page.getByRole('navigation', { name: 'Doc navigation' });
   const disabled = navigation.locator('[aria-disabled="true"]');
   const link = navigation.getByRole('link');

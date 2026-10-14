@@ -20,11 +20,11 @@
     "lint:code:fix": "oxlint --fix",
     "lint:css": "stylelint \"**/*.css\" --ignore-path .gitignore",
     "lint:css:fix": "stylelint --fix \"**/*.css\" --ignore-path .gitignore",
-    "lint:markdown": "markdownlint \"**/*.md\" --ignore-path .gitignore && markdownlint \"../docs/guides/**/*.md\"",
+    "lint:markdown": "markdownlint \"**/*.md\" --ignore-path .gitignore && node scripts/check-documentation.ts markdown",
     "lint:markdown:fix": "markdownlint --fix \"**/*.md\" --ignore-path .gitignore",
     "lighthouse:autorun": "lhci autorun",
     "lighthouse:ci": "node scripts/run-lighthouse.ts",
-    "spellcheck": "cspell \"**\" \"../docs/guides/**/*.md\"",
+    "spellcheck": "cspell \"**\" && node scripts/check-documentation.ts spelling",
     "typecheck": "astro check",
     "test": "npm run test:unit",
     "test:a11y": "playwright test tests/accessibility.spec.ts",
@@ -38,6 +38,7 @@
     "quality:static:ci": "npm run lint:code && npm run lint:css && npm run lint:markdown && npm run audit:unused && npm run typecheck"
   },
   "dependencies": {
+    "@astrojs/markdown-satteri": "0.4.3",
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.4",
     "@fontsource/fira-code": "^5.3.0",

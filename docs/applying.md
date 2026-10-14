@@ -1,3 +1,11 @@
+---
+title: "Applying a staged plan"
+description: "Apply a fresh plan with explicit privilege, refresh, output and failure behavior."
+publishedAt: 2026-10-14
+tags: [Etch, Reference]
+draft: false
+---
+
 # Applying a staged plan
 
 ```sh

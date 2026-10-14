@@ -63,15 +63,15 @@ from etchlib.providers.lifecycle import apply_action, inspect_action
 from etchlib.providers.plans import PlanStatus
 
 with TemporaryDirectory() as directory:
-    root = Path(directory).resolve()
-    context = Context(root, root, "example", {})
-    entry = core_registry().action("create")
-    _, plan = inspect_action(entry, ["config"], context)
-    assert plan.status is PlanStatus.CHANGE
-    assert not (root / "config").exists()
-    assert apply_action(entry, plan, context).changed
-    _, second = inspect_action(entry, ["config"], context)
-    assert second.status is PlanStatus.SKIP
+  root = Path(directory).resolve()
+  context = Context(root, root, "example", {})
+  entry = core_registry().action("create")
+  _, plan = inspect_action(entry, ["config"], context)
+  assert plan.status is PlanStatus.CHANGE
+  assert not (root / "config").exists()
+  assert apply_action(entry, plan, context).changed
+  _, second = inspect_action(entry, ["config"], context)
+  assert second.status is PlanStatus.SKIP
 ```
 
 `Context` gives the consumer root, owning module root/name, declared fact
@@ -163,11 +163,11 @@ prerequisites and referenced facts must be supplied in the owning consumer.
 ```python
 {"create": ["~/.config/example"]}
 {"link": {"~/.config/example/settings": {
-    "path": "files/settings", "create": True
+  "path": "files/settings", "create": True
 }}}
 {"installer": {
-    "url": "https://example.invalid/install-tool",
-    "check": {"command": "example-tool"}
+  "url": "https://example.invalid/install-tool",
+  "check": {"command": "example-tool"}
 }, "refresh": ["tool_version"]}
 {"vscode": {"extensions": ["editorconfig.editorconfig"]}}
 {"brew": {"formulae": ["git", "tmux"]}}
@@ -178,7 +178,7 @@ installer in the consumer, then declare `tool_version` there, for example:
 
 ```python
 {"facts": {"tool_version": {
-    "provider": "version", "command": ["example-tool", "--version"]
+  "provider": "version", "command": ["example-tool", "--version"]
 }}}
 ```
 

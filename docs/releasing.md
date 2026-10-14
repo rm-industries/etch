@@ -48,7 +48,7 @@ After publication, update the template's engine submodule pin in its own
 reviewed PR and run its CI. Consumers choose when to adopt the new pin. Record
 the exact release tag, schema version, plugin API version, reference-plugin
 versions, supported runtime matrix, and known limitations in the release
-notes. The real-world evidence required by issue #23 is complete.
+notes. Consumer examples and integration checks are documented in the source test suite.
 
 ## Optional GitLab sync
 

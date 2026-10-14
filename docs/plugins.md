@@ -1,92 +1,64 @@
-# Loading source plugins
+---
+title: "Loading source plugins"
+description: "Load trusted source bundles explicitly and select their supported provider options."
+publishedAt: 2026-10-14
+tags: [Etch, Reference]
+draft: false
+---
 
-Reference bundles include [Homebrew](../plugins/homebrew/README.md),
-[VS Code](../plugins/vscode/README.md),
-[macOS preferences](../plugins/macos_defaults/README.md), and
-[Windows Registry preferences](../plugins/windows_registry/README.md).
+Plugins add action or fact providers. They are trusted executable Python, including
+import-time code; review them before declaring them. Plan, validate, doctor and
+facts can load declared plugins even though they do not apply configuration.
 
-Declare roots explicitly in the consumer's `defaults.conf`:
+## Bundled providers
+
+| Bundle | Action | Usage |
+| --- | --- | --- |
+| [Homebrew](../plugins/homebrew/README.md) | `brew` | Ensure requested formulae/casks are installed |
+| [VS Code](../plugins/vscode/README.md) | `vscode` | Install missing Marketplace extensions |
+| [macOS preferences](../plugins/macos_defaults/README.md) | `macos_defaults` | Reconcile declared current-user preference keys |
+| [Windows Registry](../plugins/windows_registry/README.md) | `windows_registry` | Reconcile typed current-user Registry values |
+
+These bundles ship with the engine but are not automatically registered. If the
+engine is at `vendor/etch`, declare the bundles you need in `defaults.conf`:
 
 ```python
 {
-    "schema_version": 1,
-    "plugins": ["vendor/etch-example"],
+  'schema_version': 1,
+  'plugins': ['vendor/etch/plugins/homebrew', 'vendor/etch/plugins/vscode'],
 }
 ```
 
-A root is a directory containing `etch_plugin.py`. Its entrypoint exports:
+Each root contains `etch_plugin.py`. Relative roots use the consumer root;
+absolute roots are accepted for explicit local use. Aliases of the same root,
+duplicate plugin/provider names, incompatible APIs and attempts to override
+core providers are errors. Declared order determines registration order.
 
-```python
-from .implementation import ExampleAction
+## Installation and versions
 
-PLUGIN = {"name": "etch-example", "version": "0.1.0", "api": 1}
+The loader imports only declared source bundles. It does not discover installed
+packages, fetch sources, install dependencies or add plugin roots to your Python
+search path. Vendored directories and initialized Git submodules work the same
+after acquisition. Plugin code may itself execute other code; this is not a sandbox.
 
-def actions():
-    return [ExampleAction()]
+Plugin release versions, plugin API and the engine release are independent. Pin
+external bundles deliberately. Explicit [update commands](submodules.md) synchronize
+the consumer's recorded pins; they do not choose newer plugin releases or solve
+dependencies. [Compatibility](compatibility.md) describes supported version axes.
 
-def facts():
-    return []
-```
+## Defaults, checks and diagnostics
 
-Factories return iterables of providers. Both factories are required, even when
-empty. Metadata contains exactly the three shown fields; application releases,
-plugin releases and the plugin API remain independently versioned. Version strings
-are informational; this loader does not perform release dependency solving.
+Provider options and supported defaults belong to that provider's reference.
+For example, a CLI target must resolve to the executable the provider expects;
+Etch does not infer an installation from its provider name. Modules using a
+platform-specific provider should declare an OS condition and any prerequisites.
+Dependencies select ordering, not implicit module selection.
 
-## Imports and distribution
+Run `etch doctor --profile developer` to see loaded bundles, provider origins,
+API compatibility and probe/plan errors. Loading failures stop the command;
+there is no fallback provider or silent override. Removing an old external
+bundle is necessary if a provider has moved into core under the same name.
 
-The loader executes only explicitly named entrypoints. Helpers use relative imports
-inside a private package namespace, so multiple plugins can have an
-`implementation.py` without collisions. It does not add plugin roots to `sys.path`,
-scan arbitrary Python files, discover installed packages or install dependencies.
-Plugin code can itself import or execute other code; this is a trust boundary, not
-an import sandbox.
-
-Relative paths resolve against the consumer repository root. Absolute paths are
-accepted for explicitly configured local development; relative paths preserve
-portability. Resolved aliases of the same root are rejected. Vendored directories
-and initialized Git submodules behave identically at runtime. Pin a plugin's Git
-revision independently of Etch's revision; no Git command or network access is
-needed by the loader after the sources have been retrieved.
-
-## Validation and failure behavior
-
-All root paths are checked before importing the first plugin. For each declared
-plugin, loading then imports its entrypoint, validates metadata and API compatibility,
-calls factories, and registers its providers. Duplicate plugin names, duplicate
-provider names, attempted core shadowing, incomplete providers and factory/import
-failures produce contextual errors. Declared order determines registration order.
-
-`load_plugins(repo_root, paths, core_registry)` builds a separate registry and returns
-it with plugin metadata. On failure, the caller's registry remains unchanged and
-private imported modules from this load are removed. Previously loaded core provider
-instances are shared; this is registration isolation, not isolation of arbitrary code.
-Successful loads retain their private modules so subsequent relative imports work.
-The normal CLI loads once per process; this is not a hot-reload/unload system.
-
-Plugins are trusted executable Python. Their top-level code runs before compatibility
-can be checked. Neither failures nor cleanup undo plugin side effects. The loader
-does not call provider validation, inspection, planning, application or fact gathering.
-It cannot guarantee that third-party factories refrain from performing those effects
-themselves. Review plugin source before declaring it, including when running doctor.
-
-## Diagnostics and scope
-
-`etch doctor` loads declared plugins and reports their name, release, compatible API
-and resolved root. It validates selected action schemas and facts, then checks the
-current dependency graph and destination claims. Core providers register before
-plugins. See [diagnostics](diagnostics.md) for deferred work and inspection limits.
-
-The implementation separates metadata validation (`metadata.py`), Python imports
-(`source.py`) and loading/registration orchestration (`loader.py`). Tests include
-relative-import isolation, rollback of registrations, core shadowing, incompatible
-metadata, and a recursive local clone with independently pinned engine/plugin sources.
-
-## Authoring and promotion
-
-The [provider authoring guide](provider-authoring.md) connects the shipped core and
-reference-plugin implementations to lifecycle, facts, claims and scheduler
-contracts. It also documents independent version axes and explicit consumer
-migration when a provider moves into core. Promotion preserves provider names and
-configuration; an old plugin registering the same name must be removed or updated,
-not silently overridden.
+For writing a provider rather than consuming one, use the repository's
+[provider authoring guide](provider-authoring.md). It covers lifecycle contracts,
+claims, resources and tests separately from this user reference.

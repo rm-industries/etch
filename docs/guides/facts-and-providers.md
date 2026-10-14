@@ -28,5 +28,8 @@ Providers declare dependencies, owned paths, fact inputs, refreshes, and shared
 execution resources. Homebrew operations share `package-manager:brew`, allowing
 unrelated work to proceed without overlapping package-manager mutations.
 
-The [provider authoring guide](https://github.com/rm-industries/etch/blob/main/docs/provider-authoring.md)
-connects these contracts to the shipped implementations and their tests.
+Use the [fact reference](../facts.md), [conditions](../conditions.md), and
+[plugin guide](../plugins.md) for declaration syntax and bundled provider options.
+[Configuration](../configuration.md) explains the difference between dependency
+ordering and refresh. Provider authors can use the repository's
+[authoring guide](../provider-authoring.md) separately from these consumer references.

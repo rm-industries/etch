@@ -1,3 +1,11 @@
+---
+title: "Environment facts"
+description: "Declare and inspect observations, understand missing values, and refresh changed state."
+publishedAt: 2026-10-14
+tags: [Etch, Reference]
+draft: false
+---
+
 # Environment facts
 
 Core fact providers and plugin facts share the same registry. Core registrations
@@ -33,10 +41,10 @@ One fact name can choose between platform-specific providers or configurations:
 
 ```python
 "facts": {
-    "version": [
-        {"when": {"os": "linux"}, "provider": "version", "command": ["/usr/local/bin/tool", "--version"]},
-        {"when": {"os": "macos"}, "provider": "version", "command": ["tool", "--version"]},
-    ]
+  "version": [
+    {"when": {"os": "linux"}, "provider": "version", "command": ["/usr/local/bin/tool", "--version"]},
+    {"when": {"os": "macos"}, "provider": "version", "command": ["tool", "--version"]},
+  ]
 }
 ```
 
@@ -58,10 +66,10 @@ provider payload, use `config`; it cannot be mixed with flat options. The names
 whose own options use one of those names can place its complete payload under
 `config`, for example `{"provider": "custom", "config": {"provider": "source"}}`.
 The former one-key provider declaration is no longer accepted.
-`repository_facts(repository, registry)` binds global os/distro/arch and selected
-module declarations without probing. Local instances use `FactRef("git", "available")`;
-globals use `FactRef(None, "os")`, avoiding collisions with real module names.
-Plugin providers resolve through the same registry.
+Global `os`, `distro` and `arch` are distinct from module-scoped facts. Conditions
+and refresh entries use names declared by their own module. A module named
+`global` still has its own scope; it does not replace the global platform facts.
+Plugin fact providers use the same declaration syntax.
 
 - VALUE holds successful observations. Missing filesystem paths are VALUE(False).
 - UNAVAILABLE represents missing commands, unset environment variables and
@@ -70,22 +78,16 @@ Plugin providers resolve through the same registry.
   provider output, with reasons. Permission failures are not absence.
 - STALE represents an explicitly invalidated cached observation.
 
-`FactStore.get` gathers lazily and caches values, unavailable observations and errors.
-`peek` never probes. `invalidate` marks only a previously observed fact stale;
-the next get refreshes it. Unknown references and duplicate declarations fail
-explicitly. Unused facts remain unobserved, including unavailable software.
+Plan and apply gather facts lazily and cache observations until explicitly
+refreshed. Unused facts remain unobserved. Successful execution invalidates only
+its declared refresh targets; even a successful unchanged execution may refresh
+facts, while a skipped or failed action does not. The next consumer observes
+fresh state. Inline command/environment conditions inspect current state each
+time they are evaluated.
 
-Declarations, returned values and context snapshots are deep-copied to prevent
-accidental cache mutation. Plugin values must support deepcopy. Context snapshots
-have read-only mappings and fully qualified keys; trusted plugins can inspect
-other cached facts, so this is scope correctness rather than access control.
-
-The store is synchronous. Concurrent access, action-driven refresh and fact dependency
-graphs are executor work. The [condition evaluator](conditions.md) supports deferral
-using explicit earlier-producer evidence. The planner will decide whether
-a required unavailable fact has a producer or is an unresolved error. Version
-probes are implemented; the facts CLI remains #22. Arbitrary shell/Python gatherers are
-not core configuration features; explicitly loaded plugins are executable code.
-
-Platform probes, local probes, core registration, repository binding and scoped
-caching live in separate modules under `etchlib/facts/`.
+`facts` and `doctor` intentionally gather all declared facts in selected modules,
+including unused ones. A version probe runs its declared command; choose a
+read-only version query. Environment facts can contain secrets, and diagnostics
+print their values. Neither a fact nor a version constraint installs software.
+Read [conditions](conditions.md), [versions](versions.md) and [diagnostics](diagnostics.md)
+for missing-observation, deferral and output behavior.

@@ -6,6 +6,7 @@ import Pagination from '../../components/navigation/Pagination.astro';
 import Container from '../../components/ui/Container.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getDocNeighbors, getDocs, type Doc } from '../../lib/docs';
+import { resolveSiteHref } from '../../lib/paths';
 
 export const getStaticPaths = (async () => {
   const docs = await getDocs({ includeDrafts: import.meta.env.DEV });
@@ -22,13 +23,10 @@ interface Props {
 }
 
 const { article, docs } = Astro.props;
-const { Content } = await render(article);
+const { Content, headings } = await render(article);
+const sections = headings.filter((heading) => heading.depth === 2);
 const { previous, next } = getDocNeighbors(article.id, docs);
 const publishedAt = article.data.publishedAt.toISOString();
-const formattedDate = article.data.publishedAt.toLocaleDateString('en', {
-  dateStyle: 'long',
-  timeZone: 'UTC',
-});
 ---
 
 <BaseLayout
@@ -38,14 +36,27 @@ const formattedDate = article.data.publishedAt.toLocaleDateString('en', {
   publishedTime={publishedAt}
 >
   <Container size="md" class="space-y-10 pt-10 pb-16">
+    <details class="rounded-box border border-base-300 p-4">
+      <summary class="cursor-pointer font-semibold">Browse documentation</summary>
+      <nav aria-label="Documentation topics" class="mt-4">
+        <ul class="grid gap-2 md:grid-cols-2">
+          {docs.map((doc) => <li><a class="link link-hover" href={resolveSiteHref(`/docs/${doc.id}/`)} aria-current={doc.id === article.id ? 'page' : undefined}>{doc.data.title}</a></li>)}
+        </ul>
+      </nav>
+    </details>
     <article class="prose prose-h1:text-4xl prose-h1:leading-tight prose-h1:font-bold prose-h1:tracking-tight prose-h2:text-2xl md:prose-h1:text-5xl md:prose-h2:text-3xl mx-auto">
       {article.data.draft && <div class="badge badge-warning">Draft preview</div>}
       <h1>{article.data.title}</h1>
-      <p><time datetime={publishedAt}>{formattedDate}</time></p>
       <p class="lead">{article.data.description}</p>
       <div class="card-actions" aria-label="Doc tags">
         {article.data.tags.map((tag) => <span class="badge badge-outline">{tag}</span>)}
       </div>
+      {sections.length > 0 && (
+        <nav aria-label="On this page" class="not-prose my-6 rounded-box border border-base-300 p-4">
+          <p class="mb-3 font-semibold">On this page</p>
+          <ul class="space-y-2">{sections.map((section) => <li><a class="link link-hover" href={`#${section.slug}`}>{section.text}</a></li>)}</ul>
+        </nav>
+      )}
       <Content />
     </article>
 

@@ -4,14 +4,13 @@ import { dirname, join } from 'node:path';
 
 import { afterEach, describe, expect, test } from 'vitest';
 
+import { documentation } from '../src/config/documentation';
 import { validateBuild } from './validate-build';
 
 const requiredPaths = [
   '404.html',
   'about/index.html',
-  'docs/facts-and-providers/index.html',
-  'docs/modules-and-profiles/index.html',
-  'docs/getting-started/index.html',
+  ...documentation.map(({ id }) => `docs/${id}/index.html`),
   'docs/index.html',
   'index.html',
   'robots.txt',
@@ -44,8 +43,8 @@ describe('generated build validation', () => {
 
   test('reports a missing required output path', async () => {
     const fixture = await createFixture();
-    await rm(join(fixture, 'rss.xml'));
-    await expect(validateBuild(fixture)).rejects.toThrow('rss.xml');
+    await rm(join(fixture, 'docs/cli/index.html'));
+    await expect(validateBuild(fixture)).rejects.toThrow('docs/cli/index.html');
   });
 
   test('rejects unresolved generator tokens', async () => {

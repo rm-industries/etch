@@ -1,19 +1,28 @@
+---
+title: "Shell and script actions"
+description: "Run shell commands and module scripts with checks, output, timeouts and privilege options."
+publishedAt: 2026-10-14
+tags: [Etch, Reference]
+draft: false
+---
+
 # Shell and script actions
 
 Use shell for small inline commands and script for executable assets owned by a
-module. Both use shared provider validation, plans and application interfaces.
+module. Use a `check` when a successful repeat should skip execution.
 
 ```python
 {"shell": [{
-    "description": "Prepare application state",
-    "command": ["example", "init"],
-    "check": {"directory_exists": "~/.example"},
+  "description": "Prepare application state",
+  "command": ["example", "init"],
+  "check": {"directory_exists": "~/.example"},
 }]}
 {"script": {"path": "scripts/setup.sh", "args": ["--yes"]}}
 ```
 
-Shell accepts one option dictionary or an ordered list. A command string executes
-through `/bin/sh -c`; a command argument list bypasses shell parsing. Script accepts
+Shell accepts one option dictionary or an ordered list. On Linux/macOS a command string executes
+through `/bin/sh -c`; a command argument list bypasses shell parsing. Windows uses
+its supported PowerShell behavior; see [Windows commands](windows.md). Script accepts
 one dictionary with a module-relative `path` and optional `args` list. Its file must
 be executable and remain within the module root; interpreters come from its shebang.
 Large local workflows belong in script files rather than long command strings.
@@ -52,17 +61,16 @@ not treated as reconciled declarative state. Without a check, reruns execute aga
 Known input requirements produce stdin-interactive and sudo-interactive resource
 metadata. Opaque commands may use network resources the provider cannot infer.
 
-sudo True requests elevation in plan metadata but does not authorize it. Application
-also requires `Context.elevation_allowed=True`, supplied by the future executor
-after authorization and snapshot validation. The runner then prefixes `sudo -E --`
+`sudo: True` requests elevation but does not authorize it. Application
+also requires `etch apply --allow-sudo`. Etch prefixes `sudo -E --`
 to that command only. Sudo policy controls environment preservation and may reject
 the request; errors propagate. Etch never elevates the whole process or defaults to
-privilege. The executor must serialize interactive work and supply authorization to
-the correct action context. Tests mock elevated execution; they never invoke sudo.
+privilege. Interactive input and elevation remain serialized even with multiple jobs.
+Windows does not support sudo actions.
 
 ## Failures and scope
 
-Application preflights runnable scripts and elevation requirements, then processes
+Application checks runnable scripts and elevation requirements, then processes
 entries in order. A nonzero exit or timeout raises an error and stops later entries.
 Earlier side effects are not rolled back. Checks can allow a second run to skip;
 the returned changed flag means a command ran, not that Etch understood its effects.
@@ -70,11 +78,7 @@ Rebuild plans after relevant state changes, as with other providers.
 
 Only the launched process is covered by subprocess timeout handling; this is not
 process-tree orchestration. Scripts and commands are trusted executable content.
-CLI plan/apply and resource scheduling remain separate issues.
-
-Option normalization, runtime context/checks, and provider lifecycle are separated
-under `etchlib/providers/commands/`.
-
+See [applying](applying.md) and [scheduling](scheduling.md) for failure and parallelism behavior.
 
 Plan and apply print a flushed startup line and one `Checking <module>...` line
 before module inspection, including potentially slow facts/provider probes.

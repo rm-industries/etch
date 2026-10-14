@@ -41,3 +41,11 @@ there is no runtime pip installation. Individual providers may require external 
 
 The [template README](https://github.com/rm-industries/etch-template#readme)
 explains submodule initialization, CI checks, and updating the engine.
+
+## Next steps
+
+Read [modules and profiles](modules-and-profiles.md), then the [user guide](user-guide.md).
+The [CLI reference](../cli.md) explains selection and output options. For Windows,
+review [the supported launcher, paths and privilege rules](../windows.md) before
+using a POSIX consumer template. Use [updates and submodules](../submodules.md)
+when maintaining an initialized checkout; updating does not apply configuration.

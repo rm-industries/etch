@@ -1,3 +1,11 @@
+---
+title: "Managed-link cleanup"
+description: "Remove only broken or retired links whose ownership Etch can prove."
+publishedAt: 2026-10-14
+tags: [Etch, Reference]
+draft: false
+---
+
 # Managed-link cleanup
 
 `clean` removes only receipt-backed links that are broken or explicitly retired.
@@ -50,7 +58,3 @@ the repository's local state are trusted. Checks are not atomic against concurre
 external filesystem changes; I/O errors can leave a partially applied action.
 Likewise, a failure to write a receipt after link creation leaves a link without
 cleanup proof and reports the error. Clean preserves anything it cannot prove owned.
-
-Receipt persistence and cleanup behavior are separate modules under
-`etchlib/providers/filesystem/`. The executor remains responsible for fresh ownership,
-dependency and privilege validation before invoking provider application.

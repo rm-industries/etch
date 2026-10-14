@@ -1,78 +1,66 @@
-# Conditions
+---
+title: "Conditions"
+description: "Select modules and actions with platform, presence, boolean and version conditions."
+publishedAt: 2026-10-14
+tags: [Etch, Reference]
+draft: false
+---
 
-Conditions select module and action behavior using observations. The evaluator
-returns TRUE, FALSE or DEFERRED; a result cannot be implicitly converted to a
-Python boolean. Inspect `result.outcome` explicitly so deferred work is not dropped.
-This API supports the forthcoming graph/planner; it does not execute actions.
+Use `when` on a module or action to select behavior from observed state.
+Conditions evaluate as true, false or deferred. False skips work; deferred waits
+for an eligible earlier producer to establish a required fact.
 
-## Vocabulary
+## Predicates
 
 ```python
-{"os": ["linux", "macos"]}
-{"os": "linux", "distro": "ubuntu", "arch": "x86_64"}
-{"command": "git"}
-{"env": "CI"}
-{"env": {"name": "CI", "equals": "true"}}
-{"fact": {"name": "tmux_version", "matches": ">=2.1,<4"}}
-{"fact": {"name": "enabled", "equals": True}}
-{"not": {"command": "starship"}}
+{'os': ['linux', 'macos']}
+{'os': 'linux', 'distro': 'ubuntu', 'arch': 'x86_64'}
+{'command': 'git'}
+{'env': 'CI'}
+{'env': {'name': 'CI', 'equals': 'true'}}
+{'fact': {'name': 'tmux_version', 'matches': '>=2.1,<4'}}
+{'fact': {'name': 'enabled', 'equals': True}}
+{'not': {'command': 'starship'}}
 ```
 
-Dictionary keys are AND. List values are OR alternatives for that key, including
-lists of fact predicates. `not` takes a condition dictionary, not a list. Empty
-conditions, empty alternatives, unknown keys and invalid predicate shapes fail
-validation before any probe. Version constraint syntax is validated even if the
-branch would not apply.
+Dictionary keys are AND. List values are OR alternatives for that key. `not`
+takes one condition dictionary. Empty conditions/alternatives, unknown keys and
+invalid values fail validation; version constraints are validated even if a
+branch is inactive.
 
-Platform predicates compare exact strings to the global facts. Command predicates
-test executable presence. An environment name tests whether it is set, including
-an empty value; `{name, equals}` compares its string value. Absent commands,
-environment variables or unavailable platform properties return FALSE.
+Platform predicates compare exact normalized strings. `command` tests executable
+presence without running it. An environment name tests whether it is set, even
+to an empty string; `{name, equals}` compares the string value. Absent commands,
+unset variables and unavailable platform properties are false.
 
-Fact predicates resolve names only in the evaluator's module. `{name}` requires
-a boolean fact; `{name, equals}` compares value and type (True does not equal 1).
-`{name, matches}` uses the [version comparison grammar](versions.md). Supplying both
-comparators is invalid. Missing declarations, probe ERROR states and inappropriate
-value types raise `ConditionError` with context.
+Fact names refer to declarations in the same module. `{name}` requires a boolean;
+`{name, equals}` compares type as well as value, so `True` does not equal `1`.
+`{name, matches}` uses [version comparisons](versions.md). Comparators cannot be
+combined. Undeclared names, probe failures and inappropriate types are errors.
 
-## Deferral and refresh
+## Module and action conditions
 
-Required named facts are different from presence checks: an unavailable version
-must not silently choose a branch. `Evaluator(store, context, earlier_refresh=...)`
-accepts an optional mapping from scoped `FactRef` to an earlier producer's identifier.
-With such evidence, unavailable facts return DEFERRED and record the waiting facts
-and producer descriptions. Without it, unresolved required observations raise an
-actionable error. Merely declaring a fact or refresh target does not enable deferral.
+A false module condition skips its actions. A deferred module condition defers
+all its actions. With a true module condition, action conditions evaluate
+individually; absent `when` means enabled. These gates do not waive declaration,
+path, dependency or privilege validation when work becomes active.
 
-The caller must provide only producer paths validated as eligible and earlier for
-this consumer. The evaluator does not infer ordering or treat every installer as
-eligible. The [action graph](graph.md) establishes that evidence from validated
-predecessor paths. Once a producer
-has run, invalidate the affected observations, remove it from pending evidence and
-reevaluate. A producer that still leaves a required fact unavailable then yields an
-unresolved error rather than endless deferral.
+## Missing facts, dependencies and refresh
 
-A stale fact with a pending producer stays deferred until that producer finishes.
-Without a pending producer, the store refreshes stale observations before evaluation.
-Fact inputs remain scoped and cached; inline command/environment checks inspect
-current state on each evaluation.
+A missing command-presence predicate is false. An unavailable *required named
+fact*, such as a tool version, is different: it must not silently choose a version
+branch. Etch defers it only when an enabled earlier action proposes actual work
+and explicitly refreshes that fact along a valid dependency path. A skipped,
+later, self or unrelated producer cannot justify waiting. Otherwise the required
+unavailable fact is an error.
 
-`not DEFERRED` remains DEFERRED. FALSE dominates an AND; TRUE dominates an OR.
-An unavailable named fact that proves irrelevant to the final boolean result does
-not cause an unresolved error or retain a waiting reference. Evaluation short-circuits
-in declaration order. Actual ERROR observations encountered during evaluation remain
-errors; they are not downgraded to absent or deferred observations.
+Declare the fact, order its producer before its consumer, and add `refresh` to
+the producer. A module dependency supplies ordering; it does not refresh facts
+by itself. After successful execution, pending conditions observe the refreshed
+value. If the required fact remains unavailable, apply stops rather than waiting
+forever. See [facts](facts.md) and [applying](applying.md).
 
-## Module and action gates
-
-`select_module(module, evaluator)` validates the module/action condition syntax,
-evaluates the module gate first, and returns ordered action results. The evaluator
-must belong to that module. A FALSE module gate skips action observations; a
-DEFERRED module gate keeps every action deferred with the module's waiting facts.
-With a TRUE module gate, action conditions evaluate individually; absent gates are
-TRUE. These results do not replace provider schema, ownership or dependency validation
-when an action becomes active.
-
-Schema validation, result types, predicate evaluation and module/action selection
-are separate files under `etchlib/conditions/`. Graph integration, plan/apply CLI and
-execution remain separate roadmap issues.
+`not` of a deferred condition stays deferred. False dominates AND and true
+dominates OR; an unavailable observation irrelevant to the final boolean result
+does not force deferral. Evaluation short-circuits in declaration order. Probe
+errors actually encountered remain errors, rather than being treated as absence.

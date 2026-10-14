@@ -1,3 +1,11 @@
+---
+title: "Importing a module"
+description: "Copy and review a module from a public Git source without applying it."
+publishedAt: 2026-10-14
+tags: [Etch, Reference]
+draft: false
+---
+
 # Importing a module
 
 Import copies one module from a public HTTPS Git repository into your existing
@@ -19,8 +27,10 @@ before retrying; there is no force, rename, merge or update option.
 
 ## Requirements and refs
 
-Only import needs Git 2.25 or newer. Core still uses Python 3.9+ and the standard
-library; other commands do not require Git. The consumer directory must already
+Import needs Git 2.25 or newer. The explicit consumer/submodule update commands
+also need Git, and submodule-backed links/doctor use it for pin checks. Ordinary
+initialized consumers without Git-dependent actions use Python and its standard
+library without requiring Git. The consumer directory must already
 exist. Symlinks in its destination parent chain are rejected; use the physical
 path when the repository is reached through a symlink.
 
@@ -98,5 +108,3 @@ Exit 1 means input, acquisition, validation or publication failed. Argument synt
 errors exit 2. To compare a future upstream version, import into a separate empty
 consumer and review the difference. There is no registry, lockfile, dependency
 solver, automatic update or implicit synchronization.
-
-The [design decision](decisions/0002-module-import.md) records the contract.

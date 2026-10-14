@@ -48,6 +48,6 @@ Dependencies describe ordering and required selected modules. They do not silent
 select modules or fetch remote dependencies. Imports copy a module into the fixed
 `modules/<name>/` destination and refuse an existing destination.
 
-See the [configuration reference](https://github.com/rm-industries/etch/blob/main/docs/decisions/0001-foundation.md)
+See the [configuration reference](../configuration.md)
 and the [import guide](https://github.com/rm-industries/etch/blob/main/docs/importing.md)
 for current syntax and limits.

@@ -20,11 +20,11 @@ module looks like this:
 
 ```python
 {
-    "schema_version": 1,
-    "name": "git",
-    "actions": [
-        {"link": {"~/.gitconfig": "files/gitconfig"}},
-    ],
+  "schema_version": 1,
+  "name": "git",
+  "actions": [
+    {"link": {"~/.gitconfig": "files/gitconfig"}},
+  ],
 }
 ```
 
@@ -64,7 +64,8 @@ applying to a real home directory.
 ## Add commands and installers deliberately
 
 Use `shell` for a short command and `script` for an executable module-owned file. A command argument list bypasses shell
-parsing; a command string runs through `/bin/sh -c`. A script path stays within its module. Both support checks,
+parsing; on Linux/macOS a command string runs through `/bin/sh -c`. See
+[Windows usage](../windows.md) for PowerShell behavior. A script path stays within its module. Both support checks,
 timeouts, environment overrides, and explicit interactive or privilege settings. Plans cannot know their arbitrary side
 effects. See the [command reference](https://github.com/rm-industries/etch/blob/main/docs/commands.md).
 
@@ -90,4 +91,34 @@ the copied files, then run `doctor` and `plan`. Imports are copies, not a packag
 For observed versions, declare a version fact and use a condition to choose configuration. Etch does not solve package
 dependencies or manage tool upgrades from version constraints. Provider plugins, such as the reference Homebrew and VS
 Code plugins, are trusted executable code and must be explicitly declared. See [facts and
-providers](/etch/docs/facts-and-providers/) and the [architecture reference](/etch/docs/architecture/).
+providers](facts-and-providers.md) and the [architecture reference](architecture.md).
+
+## Options and their interactions
+
+Use the [CLI reference](../cli.md) for every command and flag. `--profile` and
+explicit module selection are alternatives; `requires` does not select missing
+modules. A passing provider `check` skips execution, while `when` controls whether
+an action is eligible at all. `refresh` updates declared facts after successful
+execution so pending conditions can change; module dependencies alone do not
+refresh observations.
+
+`apply --jobs 2` permits independent work to overlap but preserves shared-tool
+locks and does not grant privilege. `--allow-sudo` authorizes only actions that
+request it. `plan --verbose` explains more of the snapshot; `apply --verbose`
+streams command output. `--timings` measures provider work without enabling that
+streaming. A failed apply can leave earlier effects; rerun after resolving the
+reported error rather than assuming an automatic rollback.
+
+## Maintain the consumer
+
+```sh
+etch update
+etch submodules update
+```
+
+Through an exposed consumer launcher, both commands target that consumer from
+any directory. `update` fast-forwards its configured upstream using Git's
+tracked-edit autostash behavior, then synchronizes recorded submodule pins.
+`submodules update` synchronizes the pins already recorded locally without pulling.
+Neither applies configuration or upgrades installed packages. Conflicts require
+attention; see [updates and submodules](../submodules.md).
