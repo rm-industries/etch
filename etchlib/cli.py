@@ -24,6 +24,7 @@ from etchlib.planning.render import render_plan
 from etchlib.plugins.loader import load_plugins
 from etchlib.providers.errors import ProviderError
 from etchlib.providers.observations import FactState
+from etchlib.submodules import update as update_submodules
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -91,11 +92,27 @@ def main(argv: Optional[List[str]] = None) -> int:
         "validate", help="validate module and profile configuration"
     )
     validator.add_argument("--repo", type=Path, default=Path.cwd())
+    submodules = commands.add_parser(
+        "submodules", help="initialize pinned consumer submodules"
+    )
+    submodule_commands = submodules.add_subparsers(
+        dest="submodule_command", required=True
+    )
+    submodule_update = submodule_commands.add_parser(
+        "update", help="initialize and check out recorded submodule commits"
+    )
+    submodule_update.add_argument("--repo", type=Path, default=Path.cwd())
     args = parser.parse_args(argv)
     if args.command is None:
         parser.print_help()
         return 0
     try:
+        if args.command == "submodules":
+            write_output(
+                "Updating pinned submodules in {}...".format(args.repo.resolve()),
+                flush=True,
+            )
+            return update_submodules(args.repo)
         if args.command == "format":
             changed = format_repository(args.repo, check=args.check, files=args.files)
             if changed:

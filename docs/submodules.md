@@ -46,3 +46,32 @@ engine. Repositories without `.gitmodules` skip the audit. Resolve merge
 conflicts before running the suggested recursive update command. A missing engine
 still prevents the consumer launcher from starting and is reported by the
 launcher itself.
+
+## Initialize from any directory
+
+Once the consumer's pinned engine can start, use the explicit setup command:
+
+```sh
+etch submodules update
+etch submodules update --repo /path/to/consumer
+```
+
+A symlink-aware consumer launcher selects its own checkout even when invoked
+from another directory. When running the engine directly, the default repository
+is the current directory; `--repo` must select the consumer Git repository root.
+The command delegates to `git -C <root> submodule update --init --recursive`,
+without reading module configuration, loading consumer plugins or applying actions.
+Git's progress, authentication prompts and errors remain visible, and its failure
+exit status is returned. Git is required for this explicit setup command only.
+
+This initializes missing/nested checkouts and aligns them to the consumer's
+recorded pins. It does not advance gitlinks to newer upstream branches, use
+`--remote`/`--force`, stage changes, commit, or discard dirty worktrees. Network
+access and worktree changes may occur; resolve Git's reported conflicts yourself.
+If the engine submodule changes, this invocation exits after setup rather than
+continuing with configuration actions. Rerunning already-aligned setup is safe.
+No setup runs implicitly during plan, doctor, apply or launcher startup.
+
+If the engine itself is absent, `etch` cannot provide this command yet. Bootstrap
+with `git submodule update --init --recursive` from the checkout, as the launcher
+instructs. Doctor retains that raw command and also offers the Etch equivalent.
