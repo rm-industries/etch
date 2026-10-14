@@ -122,7 +122,9 @@ class SchedulerTests(ExecutionFixture):
         self.assertTrue(report.succeeded, report.error)
         self.assertEqual(self.action.applied, ["first", "second"])
 
-    def test_failure_stops_admission_and_drains_inflight_results(self) -> None:
+    def test_failure_continues_independent_work_and_drains_inflight_results(
+        self,
+    ) -> None:
         failure_collected = threading.Event()
         self.module(
             "a",
@@ -158,7 +160,7 @@ class SchedulerTests(ExecutionFixture):
         self.assertEqual(outcomes["a:action[0]"], Status.FAILED)
         self.assertEqual(outcomes["b:action[0]"], Status.CHANGED)
         self.assertEqual(outcomes["a:action[1]"], Status.BLOCKED)
-        self.assertEqual(outcomes["c:action[0]"], Status.BLOCKED)
+        self.assertEqual(outcomes["c:action[0]"], Status.CHANGED)
 
     def test_refresh_and_configuration_progress_while_unrelated_action_runs(
         self,

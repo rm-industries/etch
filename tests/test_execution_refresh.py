@@ -74,19 +74,18 @@ class ExecutionRefreshTests(ExecutionFixture):
     def test_producer_failure_does_not_refresh_or_run_dependents(self) -> None:
         self.staged(fail=True)
         self.module("independent", actions=[{"establish": {"name": "independent"}}])
-        with patch.object(
-            FactStore,
-            "invalidate",
-            side_effect=AssertionError("invalidated after failure"),
-        ):
-            report = self.apply_repo()
+        report = self.apply_repo()
         self.assertFalse(report.succeeded)
-        self.assertEqual(self.action.applied, ["install"])
-        self.assertEqual(
-            [r.status for r in report.actions],
-            [Status.FAILED, Status.BLOCKED, Status.BLOCKED],
-        )
+        self.assertEqual(self.action.applied, ["install", "independent"])
+        outcomes = {str(result.node): result.status for result in report.actions}
+        self.assertEqual(outcomes["demo:action[0]"], Status.FAILED)
+        self.assertEqual(outcomes["demo:action[1]"], Status.BLOCKED)
+        self.assertEqual(outcomes["independent:action[0]"], Status.CHANGED)
         self.assertEqual(self.fact.calls, ["tool"])
+        self.assertEqual(report.actions[0].refreshed, ())
+        observed = report.facts[FactRef("demo", "tool")]
+        assert observed is not None
+        self.assertEqual(observed.state, FactState.STALE)
 
     def test_successful_producer_with_still_unavailable_fact_fails(self) -> None:
         self.staged()

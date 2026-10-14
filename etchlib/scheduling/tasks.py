@@ -57,6 +57,7 @@ def invoke(
             key,
             Status.FAILED,
             "Interrupted; action may have partially changed the system",
+            interrupted=True,
         )
 
 
