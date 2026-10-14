@@ -144,11 +144,16 @@ def main(argv: Optional[List[str]] = None) -> int:
             )
             return 0
         inspected: set[str] = set()
+        rechecking = False
 
         def progress(module: str) -> None:
+            nonlocal rechecking
             if module not in inspected:
                 write_output("Checking {}...".format(module), flush=True)
                 inspected.add(module)
+            elif not rechecking:
+                write_output("Rechecking remaining actions...", flush=True)
+                rechecking = True
 
         if args.command in ("plan", "apply"):
             write_output("Preparing {}...".format(args.command), flush=True)

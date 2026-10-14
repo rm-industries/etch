@@ -51,7 +51,8 @@ class ApplyCliTests(PlanningFixture):
                 self.assertIn("Apply complete:", lines[-1])
                 self.assertEqual(lines.count("Checking a..."), 1)
                 self.assertEqual(lines.count("Checking b..."), 1)
-                self.assertEqual(output.flushes, 5)
+                self.assertEqual(lines.count("Rechecking remaining actions..."), 1)
+                self.assertEqual(output.flushes, 6)
 
     def test_verbose_reaches_serial_and_parallel_commands(self) -> None:
         self.module(
