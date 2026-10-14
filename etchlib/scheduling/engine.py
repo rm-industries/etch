@@ -7,6 +7,7 @@ from typing import Callable, Optional
 from etchlib.conditions.render import describe_condition
 from etchlib.conditions.results import Outcome
 from etchlib.config import Repository
+from etchlib.diagnostics.timing import TimingSink
 from etchlib.execution.results import ActionResult, ExecutionReport, Status
 from etchlib.execution.validation import validate_progress, validate_refresh
 from etchlib.facts.repository import repository_facts
@@ -31,13 +32,14 @@ class Scheduler:
         on_start: Optional[Callable[[str], None]] = None,
         on_inspect: Optional[Callable[[str], None]] = None,
         verbose: bool = False,
+        timings: Optional[TimingSink] = None,
     ) -> None:
         self.repository, self.registry = repository, registry
         self.settings, self.allow_sudo = settings, allow_sudo
         self.on_start = on_start
         self.on_inspect, self.verbose = on_inspect, verbose
         self.announced: set[str] = set()
-        self.store = repository_facts(repository, registry)
+        self.store = repository_facts(repository, registry, timings)
         self.resources = Resources(settings.capacities)
         self.results: dict[NodeId, ActionResult] = {}
         self.started: dict[NodeId, set[NodeId]] = {}

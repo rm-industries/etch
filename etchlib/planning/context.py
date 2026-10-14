@@ -25,4 +25,5 @@ def provider_context(
         MappingProxyType(deepcopy(repository.defaults.get("defaults", {}))),
         elevation_allowed,
         verbose,
+        store.timings,
     )

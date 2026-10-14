@@ -1,5 +1,6 @@
 """Checked observation and planning calls; this is not an executor."""
 
+from time import perf_counter
 from typing import Any
 
 from .contracts import Context
@@ -10,6 +11,8 @@ from .registry import Registration
 
 
 def _call(entry: Registration, method: str, *args: Any) -> Any:
+    context: Context = args[-1]
+    started = perf_counter() if context.timings is not None else 0.0
     try:
         return getattr(entry.provider, method)(*args)
     except Exception as exc:
@@ -18,6 +21,11 @@ def _call(entry: Registration, method: str, *args: Any) -> Any:
                 entry.kind, entry.name, entry.origin.name, method, exc
             )
         ) from exc
+    finally:
+        if context.timings is not None:
+            context.timings(
+                context.module_name, entry.name, method, perf_counter() - started
+            )
 
 
 def _validate(entry: Registration, kind: str, config: Any, context: Context) -> None:

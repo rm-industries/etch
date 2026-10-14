@@ -2,7 +2,9 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Mapping, Protocol
+from typing import Any, Mapping, Optional, Protocol
+
+from etchlib.diagnostics.timing import TimingSink
 
 from .observations import FactRef, FactResult, Inspection
 from .plans import ApplyResult, Plan
@@ -17,6 +19,7 @@ class Context:
     defaults: Mapping[str, Any] = field(default_factory=dict)
     elevation_allowed: bool = False
     verbose: bool = False
+    timings: Optional[TimingSink] = None
 
 
 class ActionProvider(Protocol):
