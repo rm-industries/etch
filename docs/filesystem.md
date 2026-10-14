@@ -26,6 +26,28 @@ currently accepted for create.
 ```
 
 Sources are existing module-relative assets, contained within the module root.
+Existing string and dictionary entries retain this default. Explicitly set
+`source_scope: "repo"` on an entry to select a source relative to the consumer
+repository instead, for example its repository-owned launcher:
+
+```python
+{'link': {'~/.local/bin/etch': {
+  'path': 'etch', 'source_scope': 'repo', 'create': True,
+}}}
+```
+
+Repository-scoped sources must resolve inside the consumer checkout, including
+through symlinks, and containment is rechecked before applying. Absolute and
+escaping sources are rejected. This option is entry-only: it cannot change
+source interpretation through provider defaults. Plan/doctor show the source
+for repository-scoped links. Existing parent creation, conflict refusal, relink,
+receipts and ownership rules still apply. No schema-version or format change is
+required for existing configurations.
+
+The consumer launcher must support invocation through symlinks; the older template
+launcher assumes its invocation directory is the checkout. Update to the
+symlink-aware template launcher before exposing it. Installing a link does not
+add its directory to PATH or modify any shell startup file.
 When a linked directory contains Git submodules, inspection checks their pinned
 checkouts before planning or applying the link. Missing, uninitialized, or
 different revisions report the affected path and the Git initialization command;
