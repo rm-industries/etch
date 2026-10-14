@@ -1,5 +1,6 @@
 """Read-only repository-wide checks before loading consumer modules or plugins."""
 
+import shlex
 import shutil
 import subprocess
 from pathlib import Path
@@ -39,6 +40,9 @@ def submodule_errors(root: Path) -> tuple[str, ...]:
                     reason,
                     root,
                     " after resolving the conflict" if line[0] == "U" else "",
+                )
+                + " Alternatively: etch submodules update --repo {}".format(
+                    shlex.quote(str(root))
                 )
             )
     return tuple(errors)
