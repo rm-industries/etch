@@ -27,7 +27,7 @@ compatibility decision; changing the application version alone does not change
 either contract.
 
 Each external plugin has its own `PLUGIN.version` and `PLUGIN.api` metadata.
-The bundled Homebrew, macOS preferences and Windows Registry plugins declare
+The bundled Codex, Homebrew, macOS preferences and Windows Registry plugins declare
 version `0.1.0`; VS Code declares `0.2.0`. All use API 1. Their version is not derived from the Etch application
 version. Consumers must pin and update an engine and each plugin deliberately;
 Etch does not solve plugin dependencies. Explicit consumer/submodule update

@@ -18,6 +18,7 @@ export const documentation = [
   { id: 'downloads', source: 'docs/downloads.md', section: 'Actions and plugins' },
   { id: 'plugins', source: 'docs/plugins.md', section: 'Actions and plugins' },
   { id: 'homebrew', source: 'plugins/homebrew/README.md', section: 'Actions and plugins' },
+  { id: 'codex', source: 'plugins/codex/README.md', section: 'Actions and plugins' },
   { id: 'vscode', source: 'plugins/vscode/README.md', section: 'Actions and plugins' },
   { id: 'macos-defaults', source: 'plugins/macos_defaults/README.md', section: 'Actions and plugins' },
   { id: 'windows-registry', source: 'plugins/windows_registry/README.md', section: 'Actions and plugins' },
