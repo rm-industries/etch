@@ -224,12 +224,13 @@ jobs:
           version=${GITHUB_REF_NAME#v}
           read -r schema api < <(python3 -S -c 'from etchlib import SCHEMA_VERSION, PLUGIN_API_VERSION; print(SCHEMA_VERSION, PLUGIN_API_VERSION)')
           plugins=$(python3 -S - <<'PYTHON'
+          from plugins.codex.etch_plugin import PLUGIN as codex
           from plugins.homebrew.etch_plugin import PLUGIN as homebrew
           from plugins.macos_defaults.etch_plugin import PLUGIN as macos_defaults
           from plugins.vscode.etch_plugin import PLUGIN as vscode
           from plugins.windows_registry.etch_plugin import PLUGIN as windows_registry
 
-          print(", ".join("{} {} (API {})".format(plugin["name"], plugin["version"], plugin["api"]) for plugin in (homebrew, macos_defaults, vscode, windows_registry)))
+          print(", ".join("{} {} (API {})".format(plugin["name"], plugin["version"], plugin["api"]) for plugin in (codex, homebrew, macos_defaults, vscode, windows_registry)))
           PYTHON
           )
           notes="Supported: Linux and macOS, Python 3.9–3.14; Windows 11 x64, Python 3.9 and 3.14 under docs/windows.md. Configuration schema: ${schema}; plugin API: ${api}.

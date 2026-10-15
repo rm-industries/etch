@@ -15,6 +15,7 @@ facts can load declared plugins even though they do not apply configuration.
 | Bundle | Action | Usage |
 | --- | --- | --- |
 | [Homebrew](../plugins/homebrew/README.md) | `brew` | Ensure requested formulae/casks are installed |
+| [Codex](../plugins/codex/README.md) | `codex` | Register native marketplaces and install missing user plugins |
 | [VS Code](../plugins/vscode/README.md) | `vscode` | Install missing Marketplace extensions |
 | [macOS preferences](../plugins/macos_defaults/README.md) | `macos_defaults` | Reconcile declared current-user preference keys |
 | [Windows Registry](../plugins/windows_registry/README.md) | `windows_registry` | Reconcile typed current-user Registry values |
