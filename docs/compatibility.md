@@ -41,7 +41,7 @@ The supported runtime matrix is Python 3.9 through 3.14 on Linux and macOS.
 Core startup and execution use the Python standard library; a checkout can
 run with site packages disabled. The `import` command additionally requires
 Git 2.25 or newer and a public HTTPS source. The [Windows contract](windows.md)
-covers Windows 11 x64 on Python 3.9 and 3.14, including filesystem actions, native commands, PowerShell scripts,
+covers Windows 11 x64 on Python 3.9–3.14, including filesystem actions, native commands, PowerShell scripts,
 downloaded PowerShell installers and the optional Registry preferences plugin.
 The runtime is qualified on Linux/macOS and the bounded Windows contract.
 A consumer launcher or reference profile can have additional OS requirements.

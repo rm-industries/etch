@@ -60,7 +60,7 @@ cannot be redirected by junctions. Existing parent aliases resolve to their
 actual location before ownership checks. There is no recursive cleanup.
 
 Windows CI exercises file/directory symlinks, creation, cleanup, path conflicts,
-privilege diagnostics and idempotence on Python 3.9 and 3.14. Hosted Windows
+privilege diagnostics and idempotence on every supported Python version (3.9–3.14). Hosted Windows
 runners must permit symlink creation; those integration checks deliberately fail
 rather than skip when the required capability is unavailable.
 
@@ -146,3 +146,20 @@ Use the optional [Windows Registry reference plugin](../plugins/windows_registry
 for typed current-user preferences. It uses native Python `winreg` access,
 shows current and desired values in plans, and leaves undeclared values intact.
 System hives, deletion, elevation and automatic restarts are unsupported.
+
+## Continuous integration coverage
+
+Every pull request runs the Windows regression and native provider suites on
+CPython 3.9–3.14, alongside the full Linux and macOS suites. Windows checks include
+configuration validation and formatting, plugin loading, conditions, dependency
+graphs, fact caching, provider contracts, output, concurrent execution, partial
+failure recovery, planning efficiency, and the native consumer profile.
+Real local Git repositories exercise `update` and `submodules update`, including
+autostash conflicts, local-edit preservation, nested submodules and pinned revisions.
+Only tests for the POSIX consumer shell launcher are skipped in those Git suites;
+Windows consumers invoke the Python entrypoint directly. These checks are required
+by the Project gate.
+
+Windows coverage is still a selected suite rather than full test discovery.
+Git import remains outside the Windows contract; Unix-specific installer,
+Homebrew and macOS preference integrations remain covered on their target hosts.

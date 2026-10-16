@@ -216,7 +216,9 @@ class ConfigTests(unittest.TestCase):
         self.assertEqual(
             destination("dir/../new", self.repo), self.repo.resolve() / "new"
         )
-        with patch.dict(os.environ, {"HOME": str(self.repo)}):
+        with patch.dict(
+            os.environ, {"HOME": str(self.repo), "USERPROFILE": str(self.repo)}
+        ):
             self.assertEqual(
                 destination("~/.gitconfig", Path("/unrelated")),
                 self.repo.resolve() / ".gitconfig",

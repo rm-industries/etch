@@ -1,5 +1,6 @@
 import contextlib
 import io
+import re
 import shutil
 import sys
 import tempfile
@@ -58,7 +59,9 @@ class PluginErrorTests(unittest.TestCase):
             write_plugin(self.root / location, entry)
             with (
                 self.subTest(index=index),
-                self.assertRaisesRegex(PluginError, str(self.root / location)),
+                self.assertRaisesRegex(
+                    PluginError, re.escape(str(self.root / location))
+                ),
             ):
                 load_plugins(self.root, [location], Registry())
 

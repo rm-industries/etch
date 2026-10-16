@@ -88,6 +88,7 @@ class SubmoduleUpdateTests(SubmoduleFixture):
         )
         self.assertEqual(git(root, "ls-files", "--stage"), before)
 
+    @unittest.skipIf(os.name == "nt", "POSIX consumer launcher")
     def test_exposed_launcher_uses_consumer_from_unrelated_directory(self) -> None:
         source = Path(__file__).resolve().parents[1]
         root = self.root / "consumer with spaces"
