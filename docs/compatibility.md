@@ -41,7 +41,7 @@ The supported runtime matrix is Python 3.9 through 3.14 on Linux and macOS.
 Core startup and execution use the Python standard library; a checkout can
 run with site packages disabled. The `import` command additionally requires
 Git 2.25 or newer and a public HTTPS source. The [Windows contract](windows.md)
-covers Windows 11 x64 on Python 3.9 and 3.14, including filesystem actions, native commands, PowerShell scripts,
+covers Windows 11 x64 on Python 3.9–3.14, including filesystem actions, native commands, PowerShell scripts,
 downloaded PowerShell installers and the optional Registry preferences plugin.
 The runtime is qualified on Linux/macOS and the bounded Windows contract.
 A consumer launcher or reference profile can have additional OS requirements.
@@ -64,7 +64,7 @@ automatically converted by the loader.
 ## Current limits
 
 Windows qualification does not cover ARM64, Windows Server, native EXE/MSI
-installers, batch commands, system Registry hives or Git import. Etch has no
+installers, batch commands or system Registry hives. Etch has no
 package dependency solver, automatic engine or module updates, general lifecycle
 hooks, or automatic Dotbot translation.
 `import` copies one public Git module and does not apply it or import its

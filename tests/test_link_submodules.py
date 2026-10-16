@@ -26,7 +26,7 @@ class SubmoduleFixture(unittest.TestCase):
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
-        self.root = Path(self.temp.name)
+        self.root = Path(self.temp.name).resolve()
         plugin = self.root / "plugin"
         plugin.mkdir()
         git(plugin, "init", "-q")

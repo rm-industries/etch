@@ -9,6 +9,7 @@ from unittest.mock import patch
 
 from etchlib.importing.git import Git
 from etchlib.importing.source import parse
+from etchlib.providers.filesystem.state import kind
 from tests.import_fixtures import ImportFixture
 
 
@@ -82,7 +83,9 @@ class ImportSourceTests(unittest.TestCase):
             self.assertEqual(git.env["GIT_ALLOW_PROTOCOL"], "https")
             with (
                 patch("etchlib.importing.git.subprocess.Popen") as popen,
-                patch("etchlib.importing.git.os.killpg") as kill,
+                patch("etchlib.importing.git.os.killpg", create=True) as kill,
+                patch("etchlib.importing.git.signal.SIGKILL", 9, create=True),
+                patch("etchlib.importing.git.platform.system", return_value="Linux"),
             ):
                 process = popen.return_value.__enter__.return_value
                 process.communicate.side_effect = subprocess.TimeoutExpired("git", 1)
@@ -101,8 +104,8 @@ class ImportBoundaryTests(ImportFixture):
         with self.assertRaisesRegex(ValueError, "symlinks/submodules"):
             self.run_import()
         asset.unlink()
-        asset.write_text(
-            "version https://git-lfs.github.com/spec/v1\noid sha256:abc\nsize 1\n"
+        asset.write_bytes(
+            b"version https://git-lfs.github.com/spec/v1\noid sha256:abc\nsize 1\n"
         )
         self.save()
         with self.assertRaisesRegex(ValueError, "LFS pointer"):
@@ -142,6 +145,56 @@ class ImportBoundaryTests(ImportFixture):
         with self.assertRaisesRegex(ValueError, "collision"):
             self.run_import()
 
+    def test_windows_unsafe_entries_are_rejected_without_checkout(self) -> None:
+        asset = self.git("rev-parse", "HEAD:modules/demo/files/asset")
+        config = self.git("rev-parse", "HEAD:modules/demo/module.conf")
+        for name in ("NUL.txt", "asset:stream", "trailing."):
+            with self.subTest(name=name):
+                files = self.git(
+                    "mktree", input_data="100644 blob {}\t{}\n".format(asset, name)
+                )
+                module = self.git(
+                    "mktree",
+                    input_data=(
+                        "040000 tree {}\tfiles\n100644 blob {}\tmodule.conf\n".format(
+                            files, config
+                        )
+                    ),
+                )
+                modules = self.git(
+                    "mktree", input_data="040000 tree {}\tdemo\n".format(module)
+                )
+                tree = self.git(
+                    "mktree", input_data="040000 tree {}\tmodules\n".format(modules)
+                )
+                commit = self.git("commit-tree", tree, "-m", "Unsafe Windows entry")
+                with self.assertRaisesRegex(ValueError, "unsafe import path"):
+                    self.run_import(commit)
+                self.assertFalse((self.consumer / "modules").exists())
+
+    def test_reparse_parent_is_refused_before_acquisition(self) -> None:
+        for parent in (
+            self.consumer,
+            self.consumer / "modules",
+            self.consumer / "modules/demo",
+        ):
+            with (
+                self.subTest(parent=parent),
+                patch(
+                    "etchlib.importing.copy.kind",
+                    side_effect=lambda path, parent=parent: "reparse point"
+                    if path == parent
+                    else kind(path),
+                ),
+                patch(
+                    "etchlib.importing.copy.Git", side_effect=AssertionError("fetched")
+                ),
+                self.assertRaisesRegex(
+                    ValueError, "real directory|reparse point|already exists"
+                ),
+            ):
+                self.run_import()
+
     def test_file_and_total_limits(self) -> None:
         for limit in ("MAX_FILE", "MAX_TOTAL", "MAX_FILES"):
             with (
@@ -153,7 +206,9 @@ class ImportBoundaryTests(ImportFixture):
         self.assertFalse((self.consumer / "modules/demo").exists())
 
     def test_parent_symlink_refused(self) -> None:
-        (self.consumer / "modules").symlink_to(self.upstream / "modules")
+        (self.consumer / "modules").symlink_to(
+            self.upstream / "modules", target_is_directory=True
+        )
         with self.assertRaisesRegex(ValueError, "real directory"):
             self.run_import()
         self.assertTrue((self.module_path / "module.conf").exists())

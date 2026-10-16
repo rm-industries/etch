@@ -1,5 +1,6 @@
 import contextlib
 import io
+import re
 import shutil
 import sys
 import tempfile
@@ -18,7 +19,7 @@ class PluginErrorTests(unittest.TestCase):
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
-        self.root = Path(self.temp.name)
+        self.root = Path(self.temp.name).resolve()
 
     def test_bad_metadata_and_incompatible_api(self) -> None:
         for index, entry in enumerate(
@@ -58,7 +59,9 @@ class PluginErrorTests(unittest.TestCase):
             write_plugin(self.root / location, entry)
             with (
                 self.subTest(index=index),
-                self.assertRaisesRegex(PluginError, str(self.root / location)),
+                self.assertRaisesRegex(
+                    PluginError, re.escape(str(self.root / location))
+                ),
             ):
                 load_plugins(self.root, [location], Registry())
 

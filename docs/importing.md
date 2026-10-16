@@ -27,11 +27,18 @@ before retrying; there is no force, rename, merge or update option.
 
 ## Requirements and refs
 
-Import needs Git 2.25 or newer. The explicit consumer/submodule update commands
+Import works on Linux, macOS and Windows with Git 2.25 or newer on PATH.
+On Windows, invoke the Python entrypoint, for example
+`python -S vendor/etch/etch import github:owner/dotfiles --path modules/git --repo C:/dotfiles`.
+Imported module actions still need appropriate OS conditions; copying a module
+does not make its shell scripts portable.
+
+The explicit consumer/submodule update commands
 also need Git, and submodule-backed links/doctor use it for pin checks. Ordinary
 initialized consumers without Git-dependent actions use Python and its standard
 library without requiring Git. The consumer directory must already
-exist. Symlinks in its destination parent chain are rejected; use the physical
+exist. Symlinks and Windows reparse points (including junctions) in its
+destination parent chain are rejected; use the physical
 path when the repository is reached through a symlink.
 
 `--ref` defaults to remote HEAD. To pin a branch/tag, use `refs/heads/main` or
@@ -55,10 +62,14 @@ IDs. When filtering is unavailable, it reports that extra data was transferred.
 All subsequent reads use the resolved commit, even if the branch moves. It does
 not use Git hooks, checkout filters, LFS downloads or submodule initialization.
 
-Files retain their bytes, relative locations and executable distinction. Import
+Files retain their bytes and relative locations; Unix executable bits are
+preserved on Unix hosts. Windows does not preserve that permission distinction. Import
 rejects symlinks, submodules, LFS pointers, unsafe paths, reserved provenance,
 and case/Unicode-normalization collisions. Collision rejection is conservative
-on every platform so the same module remains portable to macOS and Linux.
+on every platform so the same module remains portable across supported hosts.
+Windows drive paths, alternate data streams, reserved device names, invalid
+filename characters, and trailing dots/spaces are rejected before copying files,
+even when importing on Unix.
 
 Structural checks reuse the configuration loader and condition validator. They
 cover literal syntax, duplicate keys, schema/version, module identity and generic
@@ -100,8 +111,10 @@ Acquisition has a 120-second total deadline and a 1 MiB diagnostic/metadata capt
 limit. Selected content is limited to 10,000 files, 16 MiB per file and 128 MiB
 total before materialization. Git may download more pack data, particularly when
 filtering is unsupported; these are not bounds on all network or temporary disk
-usage. Timeouts terminate Git's helper process group. There are no automatic
-retries or persistent caches.
+usage. Timeouts terminate Git and its helper processes using a process group on
+Unix and the built-in Windows process-tree termination command on Windows.
+Windows cleanup has an additional 10-second timeout before falling back to
+terminating Git itself. There are no automatic retries or persistent caches.
 
 Exit 0 means a structurally valid copy succeeded, possibly with setup warnings.
 Exit 1 means input, acquisition, validation or publication failed. Argument syntax

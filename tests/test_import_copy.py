@@ -3,6 +3,7 @@
 import contextlib
 import io
 import json
+import os
 import shutil
 from unittest.mock import patch
 
@@ -15,13 +16,22 @@ class ImportCopyTests(ImportFixture):
         executable = self.module_path / "setup.py"
         executable.write_text("raise RuntimeError('must not execute')\n")
         executable.chmod(0o755)
+        self.git("add", "modules/demo/setup.py")
+        self.git("update-index", "--chmod=+x", "modules/demo/setup.py")
         pinned = self.save()
         (self.module_path / "files/asset").write_text("new branch content")
         self.save()
         output = self.run_import(pinned)
         destination = self.consumer / "modules/demo"
         self.assertEqual((destination / "files/asset").read_text(), "original\n")
-        self.assertEqual((destination / "setup.py").stat().st_mode & 0o777, 0o755)
+        self.assertTrue(
+            self.git("ls-tree", pinned, "modules/demo/setup.py").startswith("100755")
+        )
+        self.assertEqual(
+            (destination / "setup.py").read_bytes(), executable.read_bytes()
+        )
+        if os.name != "nt":
+            self.assertEqual((destination / "setup.py").stat().st_mode & 0o777, 0o755)
         metadata = json.loads((destination / ".etch-import.json").read_text())
         self.assertEqual(metadata["resolved_commit"], pinned)
         self.assertEqual(metadata["source"], "https://github.com/example/dotfiles.git")

@@ -64,7 +64,8 @@ class ConfigFormatTests(unittest.TestCase):
             profile.parent.mkdir(parents=True)
             module.write_text("{'schema_version': 1, 'name': 'git'}")
             profile.write_text(
-                "# profile\n{'schema_version': 1, # keep this\n 'name': 'déveloper'}"
+                "# profile\n{'schema_version': 1, # keep this\n 'name': 'déveloper'}",
+                encoding="utf-8",
             )
             self.assertEqual(format_repository(root), [module, profile])
             self.assertIn("# profile", profile.read_text())

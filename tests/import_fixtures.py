@@ -3,7 +3,7 @@
 import os
 import subprocess
 from dataclasses import replace
-from typing import Any
+from typing import Any, Optional
 from unittest.mock import patch
 
 from etchlib.importing.copy import import_module
@@ -17,9 +17,13 @@ class ImportFixture(PlanningFixture):
         super().setUp()
         self.upstream = self.root / "upstream"
         self.upstream.mkdir()
+        (self.root / "disabled-hooks").mkdir()
         self.consumer = self.root / "consumer"
         self.consumer.mkdir()
         self.git("init", "-b", "main")
+        self.git("config", "core.autocrlf", "false")
+        self.git("config", "core.filemode", "false")
+        self.git("config", "core.symlinks", "true")
         self.git("config", "user.name", "Import Test")
         self.git("config", "user.email", "import@example.invalid")
         self.git("config", "uploadpack.allowFilter", "true")
@@ -41,16 +45,17 @@ class ImportFixture(PlanningFixture):
         transport.start()
         self.addCleanup(transport.stop)
 
-    def git(self, *args: str) -> str:
+    def git(self, *args: str, input_data: Optional[str] = None) -> str:
         result = subprocess.run(
-            ["git", "-c", "core.hooksPath=/dev/null", *args],
+            ["git", "-c", "core.hooksPath=" + str(self.root / "disabled-hooks"), *args],
             cwd=self.upstream,
             env=dict(os.environ, GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL=os.devnull),
+            # Git plumbing requires literal LF bytes, including on Windows.
+            input=input_data.encode("utf-8") if input_data is not None else None,
             capture_output=True,
-            text=True,
             check=True,
         )
-        return result.stdout.strip()
+        return result.stdout.decode("utf-8").strip()
 
     def config(self, **values: Any) -> None:
         (self.module_path / "module.conf").write_text(

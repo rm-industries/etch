@@ -12,9 +12,8 @@ from tests.provider_fixtures import MemoryAction, MemoryFact
 
 class LifecycleTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.context = Context(
-            Path("/consumer"), Path("/consumer/modules/example"), "example", {}
-        )
+        root = Path.cwd() / "consumer"
+        self.context = Context(root, root / "modules/example", "example", {})
         self.registry = Registry()
 
     def test_core_and_external_actions_share_contract(self) -> None:
