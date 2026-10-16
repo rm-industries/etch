@@ -20,6 +20,7 @@ from etchlib.providers.registry import Registry
 from etchlib.scheduling.resources import options
 
 from .failures import blocked_actions, blocked_result, failed_snapshot, failure_summary
+from .housekeeping import finish
 from .results import ActionResult, ExecutionReport, Status
 from .validation import validate_progress, validate_refresh
 
@@ -39,7 +40,7 @@ def apply_repository(
     if settings.jobs > 1:
         from etchlib.scheduling.engine import Scheduler
 
-        return Scheduler(
+        scheduler = Scheduler(
             repository,
             registry,
             settings,
@@ -48,7 +49,8 @@ def apply_repository(
             on_inspect,
             verbose,
             timings,
-        ).run()
+        )
+        return finish(repository, scheduler.run(), scheduler.report)
     store = repository_facts(repository, registry, timings)
     modules = {module.name: module for module in repository.modules}
     results: dict[NodeId, ActionResult] = {}
@@ -167,9 +169,11 @@ def apply_repository(
                         ),
                     ),
                 )
-    return ExecutionReport(
+    result = ExecutionReport(
         tuple(results.values()),
         MappingProxyType({ref: store.peek(ref) for ref in store.references()}),
         tuple(warnings),
         error or failure_summary(results),
     )
+
+    return finish(repository, result, report)

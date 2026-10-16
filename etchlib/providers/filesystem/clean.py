@@ -9,7 +9,7 @@ from etchlib.providers.contracts import Context
 from etchlib.providers.observations import Inspection, InspectionState
 from etchlib.providers.plans import ApplyResult, PathClaim, Plan, PlanStatus
 
-from .receipts import identity, owned
+from .receipts import discard, identity, owned
 from .state import kind
 
 
@@ -97,6 +97,7 @@ class CleanProvider:
             if destination(str(item.path), context.repo_root) != item.path:
                 raise ValueError("clean destination parent changed since planning")
             if kind(item.path) == "missing":
+                pending.append(item)
                 continue
             if (
                 not owned(context.repo_root, item.path)
@@ -110,6 +111,9 @@ class CleanProvider:
             pending.append(item)
         changed = False
         for item in pending:
+            if kind(item.path) == "missing":
+                changed = discard(context.repo_root, item.path, item.proof) or changed
+                continue
             if (
                 not owned(context.repo_root, item.path)
                 or identity(item.path) != item.proof
@@ -118,6 +122,7 @@ class CleanProvider:
             if not item.retired and not broken(item.path):
                 continue
             item.path.unlink()
+            discard(context.repo_root, item.path, item.proof)
             changed = True
         return ApplyResult(
             changed, "Managed links removed" if changed else "No managed links removed"

@@ -91,7 +91,15 @@ directory-creation requirements. Non-filesystem claims are deferred.
 Ancestor/descendant and symlink normalization are specified in
 [ownership](../ownership.md).
 Clean must establish evidence of managed ownership; absence of evidence means
-preserve. Link receipts provide that proof; Etch does not assume every broken
+preserve. Checkout-local ignored receipts are intentional ownership evidence,
+not a general execution database. The lifecycle uses current declarations and
+these receipts to retire unchanged links when selected modules drop destinations,
+or when a full run proves an owning module directory was removed. Partial or
+failed inspection does not prove absence. Successful removals discard matching
+receipts; automatic housekeeping prunes obsolete metadata without extra consumer
+configuration. Downloaded outputs are retained; their records are pruned when the
+recorded destination disappears. See [cleanup](../clean.md) for the precise scope.
+Link receipts provide proof; Etch does not assume every broken
 link is managed. Directories are not recursively owned simply because Etch creates them.
 
 `requires` must be local and active; `after` orders active references and emits a
