@@ -225,6 +225,30 @@ combination. Keep Python 3.9 syntax and standard-library runtime imports in offi
 bundles; use isolated subprocesses/fake tools for bounded provider verification.
 The engine matrix exercises the reference implementations on Linux/macOS.
 
+## Keep inventory work bounded
+
+Native CLI startup and remote inventory requests often cost more than the Python
+reconciliation loop. Query only inventories needed by the action; empty categories
+should not launch a command. Normalize inventories once into sets or mappings for
+repeated membership checks, and batch supported operations without inferring upgrades.
+
+Use `Context.inspection_cache` for validated inventory shared within one planning
+snapshot. Include every input that affects the native result in the key: executable,
+profile or prefix, timeout, working directory and user environment as appropriate.
+Keep cached values immutable or return detached copies. The engine creates a new
+cache per snapshot; do not introduce a process-global or persistent inventory cache.
+
+Apply must recheck real state before mutation and verify requested results after
+mutation. Bypass planning caches at that boundary and do not reuse pre-mutation
+inventory as proof of success. Keep `Plan.reusable` for stable intent only when
+apply reconciles fresh state and scheduling metadata remains valid. Do not bypass
+refresh, ownership or resource checks to save calls.
+
+Test subprocess counts for a satisfied action, empty/partial requests, repeated
+actions sharing a target, different effective targets, a fresh snapshot, unrelated
+execution and post-mutation verification. Use deterministic call-count assertions;
+wall-clock measurements are diagnostic, not timing-sensitive pass/fail gates.
+
 ## Promote a provider into core without renaming configuration
 
 Promotion changes distribution, not the consumer-facing provider name, payload,
