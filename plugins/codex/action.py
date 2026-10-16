@@ -1,6 +1,6 @@
 """Presence-only user plugin reconciliation through the native Codex CLI."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
 from etchlib.providers.contracts import Context
@@ -36,8 +36,10 @@ class CodexAction:
                     target.command
                 )
             )
-        markets = marketplaces(executable, target, context)
-        current = plugins(executable, target, context)
+        markets = marketplaces(executable, target, context) if desired_markets else {}
+        current = (
+            set(plugins(executable, target, context)) if desired_plugins else set()
+        )
         missing = tuple(
             "marketplace " + item
             for item in desired_markets
@@ -67,10 +69,19 @@ class CodexAction:
 
     def apply(self, plan: Plan, context: Context) -> ApplyResult:
         state: Reconciliation = plan.payload
+        context = replace(context, inspection_cache=None)
         if locate(state.target, context) != state.executable:
             raise ValueError("Codex executable changed since planning")
-        markets = marketplaces(state.executable, state.target, context)
-        current = set(plugins(state.executable, state.target, context))
+        markets = (
+            marketplaces(state.executable, state.target, context)
+            if state.marketplaces
+            else {}
+        )
+        current = (
+            set(plugins(state.executable, state.target, context))
+            if state.plugins
+            else set()
+        )
         changed = []
         for item in state.marketplaces:
             if item not in markets.values():

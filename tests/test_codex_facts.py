@@ -111,7 +111,7 @@ class CodexFactTests(CodexFixture):
     def test_timeout_output_bound_and_python39_stdlib_contract(self) -> None:
         self.state(sleep=1)
         with self.assertRaisesRegex(ValueError, "timed out"):
-            self.codex_plan(timeout=0.02)
+            self.codex_plan(plugins=["hello@catalog"], timeout=0.02)
         module = __import__(
             type(self.entry.provider).__module__.rsplit(".", 1)[0] + ".cli",
             fromlist=["run"],
@@ -121,7 +121,7 @@ class CodexFactTests(CodexFixture):
             patch.object(module, "OUTPUT_LIMIT", 64),
             self.assertRaisesRegex(ValueError, "exceeds"),
         ):
-            self.codex_plan()
+            self.codex_plan(marketplaces=["owner/repo"])
         allowed = {
             "dataclasses",
             "json",

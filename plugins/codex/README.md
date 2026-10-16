@@ -93,13 +93,18 @@ by Etch; native policies can reject installation and that error is reported.
 
 ## Reconciliation and failures
 
-Plan reads `plugin marketplace list --json` and `plugin list --json`. It does not
-add marketplaces or plugins. Only rows in the native **installed** list count;
+Plan reads `plugin marketplace list --json` only when marketplace sources are
+requested, and `plugin list --json` only when plugins are requested. An empty
+action performs no inventory calls. Matching actions share validated inventory
+within one planning snapshot when their executable, timeout, working directory
+and user-home environment match. This cache does not survive a new snapshot.
+Plan does not add marketplaces or plugins. Only rows in the native **installed** list count;
 available catalog entries are not installed plugins. Disabled installed plugins
 are satisfied and remain disabled. Existing versions and unlisted entries are
 preserved; Etch does not infer an upgrade, removal, or enable/disable operation.
 
-Apply locates the same executable and reads fresh inventory. It adds missing
+Apply locates the same executable and reads only the requested inventories,
+bypassing the planning cache so mutation checks and verification remain fresh. It adds missing
 marketplaces first with `plugin marketplace add SOURCE --json`, verifies their
 sources, then installs missing selectors with `plugin add NAME@MARKETPLACE --json`.
 A marketplace name already registered from another source is a native error;
