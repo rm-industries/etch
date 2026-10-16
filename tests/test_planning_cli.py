@@ -3,12 +3,107 @@ import sys
 from unittest.mock import patch
 
 from etchlib.graph.model import NodeId
+from etchlib.providers.errors import ProviderError
 from etchlib.providers.observations import FactRef, FactState
 from tests.planning_fixtures import PlanningFixture
 from tests.plugin_fixtures import write_plugin
 
 
 class PlanningCliTests(PlanningFixture):
+    def test_reports_all_failures_and_later_changes_without_mutation(self) -> None:
+        for name in ("first", "second"):
+            (self.root / name).write_text("preserve")
+        self.module("a", actions=[{"create": ["first"]}])
+        self.module("b", actions=[{"create": ["second"]}, {"create": ["new"]}])
+        for args in ((), ("--verbose",)):
+            status, output, error = self.cli(*args)
+            self.assertEqual(status, 1)
+            for name in ("first", "second", "new"):
+                self.assertIn(name, output + error)
+            self.assertIn("Plan summary:", output)
+            self.assertIn("ERROR", output)
+            self.assertFalse((self.root / "new").exists())
+            for name in ("first", "second"):
+                self.assertEqual((self.root / name).read_text(), "preserve")
+        with self.assertRaises(ProviderError):
+            self.plan()
+        for name in ("first", "second"):
+            (self.root / name).unlink()
+        self.assertEqual(self.cli()[0], 0)
+
+    def test_reports_every_conflict_and_continues_after_failed_action(self) -> None:
+        self.module(
+            actions=[
+                {"create": ["blocked"]},
+                {"link": {"one": "module.conf", "two": "module.conf"}},
+                {"link": {"one": "module.conf", "two": "module.conf"}},
+                {"create": ["later"]},
+            ]
+        )
+        (self.root / "blocked").write_text("preserve")
+        status, output, error = self.cli()
+        self.assertEqual(status, 1)
+        self.assertIn("later", output)
+        self.assertIn("blocked", output)
+        self.assertEqual(output.count("destination conflict:"), 2)
+        self.assertFalse((self.root / "one").exists())
+        self.assertFalse((self.root / "later").exists())
+
+    def test_reports_all_blocked_paths_in_one_action(self) -> None:
+        for provider in ("link", "create"):
+            for name in ("first", "second"):
+                (self.root / name).write_text("preserve")
+            config = (
+                {"first": "module.conf", "second": "module.conf"}
+                if provider == "link"
+                else ["first", "second"]
+            )
+            self.module(actions=[{provider: config}])
+            status, output, error = self.cli()
+            self.assertEqual(status, 1)
+            self.assertIn("first", output + error)
+            self.assertIn("second", output + error)
+
+    def test_dependency_failure_preserves_verbose_inspection_results(self) -> None:
+        self.module(actions=[{"create": ["new"], "requires": ["missing"]}])
+        status, output, error = self.cli("--verbose")
+        self.assertEqual(status, 1)
+        self.assertIn("Create directories: " + str(self.root / "new"), output)
+        self.assertIn("Dependency checks incomplete", output)
+        self.assertNotIn("no conflicts", output)
+
+    def test_bad_condition_does_not_hide_other_modules(self) -> None:
+        self.module("a", actions=[{"create": ["blocked"], "when": {"unknown": True}}])
+        self.module("b", actions=[{"create": ["later"]}])
+        status, output, error = self.cli()
+        self.assertEqual(status, 1)
+        self.assertIn("later", output)
+        self.assertIn("ERROR", output)
+        self.assertFalse((self.root / "later").exists())
+
+    def test_reports_each_unresolved_condition(self) -> None:
+        for name in ("a", "b"):
+            self.module(
+                name,
+                facts={
+                    "tool": {
+                        "provider": "version",
+                        "command": ["etch-missing-plan-test-tool"],
+                    }
+                },
+                actions=[
+                    {
+                        "create": [name],
+                        "when": {"fact": {"name": "tool", "matches": ">=1"}},
+                    }
+                ],
+            )
+        status, output, error = self.cli()
+        self.assertEqual(status, 1)
+        self.assertIn("a:action[0]", output)
+        self.assertIn("b:action[0]", output)
+        self.assertEqual(output.count("no earlier producer"), 2)
+
     def test_module_groups_and_multiline_links(self) -> None:
         self.module(
             actions=[
@@ -123,8 +218,8 @@ class PlanningCliTests(PlanningFixture):
         )
         status, output, error = self.cli()
         self.assertEqual(status, 1)
-        self.assertEqual(output, "Preparing plan...\nChecking demo...\n")
-        self.assertIn("conflict", error)
+        self.assertIn("Plan summary:", output)
+        self.assertIn("conflict", output + error)
         self.assertFalse((self.root / "target").exists())
 
     def test_profile_and_explicit_selection(self) -> None:

@@ -57,12 +57,17 @@ def render_plan(
                     PLUGIN_API_VERSION,
                 )
             )
+    shown_errors = set()
     lines.append("")
     if not verbose:
         lines.append("Here's what Etch found:")
         for module in repository.modules:
             selection = report.selections[module.name]
             lines.append("{}:".format(module.name))
+            if NodeId(module.name, "start") in report.errors:
+                lines.append("  ERROR — " + report.errors[NodeId(module.name, "start")])
+                shown_errors.add(NodeId(module.name, "start"))
+                continue
             if selection.module.outcome is not Outcome.TRUE:
                 detail = describe_condition(module.config.get("when", {}))
                 label = (
@@ -73,7 +78,10 @@ def render_plan(
             for index, result in enumerate(selection.actions):
                 key = NodeId(module.name, "action", index)
                 plan = report.plans.get(key)
-                if plan is not None:
+                if key in report.errors:
+                    lines.append("  ERROR — {}: {}".format(key, report.errors[key]))
+                    shown_errors.add(key)
+                elif plan is not None:
                     lines.extend(
                         action_lines(plan.status.value.upper(), plan.description, "  ")
                     )
@@ -112,14 +120,26 @@ def render_plan(
                 lines.extend("    " + reason for reason in result.reasons)
     if verbose:
         lines.append("")
-        lines.append("Actions (dependency order):")
+        lines.append(
+            "Actions (inspection order; dependency checks incomplete):"
+            if not report.graph.order() and report.issues
+            else "Actions (dependency order):"
+        )
     shown = 0
-    for key in report.graph.order() if verbose else ():
-        node = report.graph.node(key)
+    order = report.graph.order()
+    if not order and report.issues:
+        order = tuple(dict.fromkeys((*report.plans, *report.errors)))
+    for key in order if verbose else ():
         plan = report.plans.get(key)
+        if key in report.errors:
+            lines.append("  ERROR — {}: {}".format(key, report.errors[key]))
+            shown_errors.add(key)
+            shown += 1
+            continue
         if plan is None:
             if not verbose:
                 continue
+            node = report.graph.node(key)
             suffix = "" if node.outcome is Outcome.TRUE else " [deferred]"
             if key.kind == "refresh":
                 producer = report.plans.get(NodeId(key.module, "action", key.index))
@@ -171,7 +191,11 @@ def render_plan(
         lines.append("  None.")
     if verbose:
         lines.append("")
-        lines.append("Ownership: no conflicts among currently active actions.")
+        lines.append(
+            "Ownership: checks incomplete or blocked; see errors."
+            if report.errors or report.issues
+            else "Ownership: no conflicts among currently active actions."
+        )
         for claim in report.claims:
             lines.append(
                 "  {}: {} {}".format(
@@ -193,6 +217,7 @@ def render_plan(
         status: sum(plan.status.value == status for plan in report.plans.values())
         for status in ("change", "run", "skip")
     }
+    counts["errors"] = len(report.errors) + len(report.issues)
     counts["deferred"] = sum(
         result.outcome is Outcome.DEFERRED
         for selection in report.selections.values()
@@ -206,6 +231,12 @@ def render_plan(
     )
     lines.append("")
     lines.append("Plan summary: {}.".format(summary))
+    lines.extend(
+        "Error: {}: {}".format(key, reason)
+        for key, reason in report.errors.items()
+        if key not in shown_errors
+    )
+    lines.extend("Error: " + issue for issue in report.issues)
     lines.extend("Warning: " + warning for warning in report.graph.warnings)
     if any(
         result.outcome is Outcome.DEFERRED

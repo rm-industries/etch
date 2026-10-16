@@ -1,6 +1,6 @@
-"""One validated observation and dependency snapshot."""
+"""An observation snapshot; diagnostic reports may contain blocking errors."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Mapping, Optional
 
 from etchlib.conditions.module import Selection
@@ -22,3 +22,6 @@ class Report:
     facts: Mapping[FactRef, Optional[FactResult]]
     claims: tuple[OwnedClaim, ...]
     registrations: tuple[Registration, ...]
+
+    errors: Mapping[NodeId, str] = field(default_factory=dict)
+    issues: tuple[str, ...] = ()

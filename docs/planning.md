@@ -32,9 +32,19 @@ colors them only in an interactive terminal; `NO_COLOR` disables color.
 
 Planning returns zero for a valid snapshot, including valid deferred work. Invalid
 configuration, provider errors, unresolved required facts, missing hard dependencies,
-cycles and ownership conflicts return one and a diagnostic on stderr. Missing soft
-`after` targets produce warnings. [Doctor](diagnostics.md) checks this current
-snapshot alongside all selected declarations and fact probes.
+cycles and ownership conflicts return one. Once inspection starts, the report
+collects independent failures and shows `ERROR` entries with reasons alongside the
+changes it could inspect. Grouped `link` and `create` actions inspect every
+configured destination before reporting blocked paths. Fix the reported issues,
+then run a follow-up plan before applying.
+
+If dependency checks cannot complete, the report says so and retains available
+inspection results; it cannot promise a complete execution order or validate
+provider-derived metadata for actions whose inspection failed. Configuration or
+plugin-loading failures can prevent planning from starting and are reported on
+stderr. Missing soft `after` targets produce warnings. [Doctor](diagnostics.md)
+includes these current-plan errors alongside all selected declarations and fact
+probes. Apply still requires a valid snapshot before executing actions.
 
 ## What inspection means
 

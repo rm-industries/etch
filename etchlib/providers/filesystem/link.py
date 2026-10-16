@@ -132,7 +132,15 @@ class LinkProvider:
 
     def inspect(self, config: Any, context: Context) -> Inspection:
         links = entries(config, context)
-        changes = [needed(link) for link in links]
+        changes = []
+        errors = []
+        for item in links:
+            try:
+                changes.append(needed(item))
+            except (ValueError, OSError) as exc:
+                errors.append(str(exc))
+        if errors:
+            raise ValueError("; ".join(errors))
         return Inspection(
             InspectionState.CHANGE if any(changes) else InspectionState.SATISFIED, links
         )

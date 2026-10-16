@@ -81,7 +81,14 @@ def diagnose(repository: Repository, registry: Registry) -> Diagnosis:
     report = None
     try:
         validate_refresh(repository, store)
-        report = plan_repository(repository, registry, store=store)
+    except (ValueError, ProviderError, OSError) as exc:
+        errors.append("Refresh declarations: {}".format(exc))
+    try:
+        report = plan_repository(repository, registry, store=store, collect_errors=True)
+        errors.extend(
+            "{}: {}".format(key, reason) for key, reason in report.errors.items()
+        )
+        errors.extend(report.issues)
         for plan in report.plans.values():
             requirements(plan)
         warnings.extend(report.graph.warnings)
