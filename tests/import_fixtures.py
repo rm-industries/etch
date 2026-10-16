@@ -50,12 +50,12 @@ class ImportFixture(PlanningFixture):
             ["git", "-c", "core.hooksPath=" + str(self.root / "disabled-hooks"), *args],
             cwd=self.upstream,
             env=dict(os.environ, GIT_CONFIG_NOSYSTEM="1", GIT_CONFIG_GLOBAL=os.devnull),
-            input=input_data,
+            # Git plumbing requires literal LF bytes, including on Windows.
+            input=input_data.encode("utf-8") if input_data is not None else None,
             capture_output=True,
-            text=True,
             check=True,
         )
-        return result.stdout.strip()
+        return result.stdout.decode("utf-8").strip()
 
     def config(self, **values: Any) -> None:
         (self.module_path / "module.conf").write_text(
