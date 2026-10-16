@@ -8,7 +8,7 @@ from typing import Optional
 from unittest.mock import patch
 
 from etchlib.providers.contracts import Context
-from etchlib.providers.installer.provider import command
+from etchlib.providers.installer.provider import InstallerProvider, command
 from etchlib.providers.installer.schema import normalize
 from tests.installer_fixtures import InstallerFixture
 
@@ -37,7 +37,7 @@ class WindowsInstallerSchemaTests(unittest.TestCase):
             )
             for shell in ("/bin/sh", "cmd.exe", "msiexec.exe"):
                 with self.assertRaisesRegex(ValueError, "PowerShell scripts only"):
-                    normalize(
+                    InstallerProvider().inspect(
                         {"url": "https://example.com/install", "shell": shell}, context
                     )
 

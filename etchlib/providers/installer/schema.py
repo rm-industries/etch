@@ -49,10 +49,6 @@ def normalize(config: Any, context: Context) -> Installer:
     shell = values.get("shell", "pwsh" if platform.system() == "Windows" else "/bin/sh")
     if not isinstance(shell, str) or not shell.strip() or "\x00" in shell:
         raise ValueError("installer shell must name one executable")
-    if platform.system() == "Windows" and shell not in ("pwsh", "powershell.exe"):
-        raise ValueError(
-            "Windows installers support PowerShell scripts only; shell must be pwsh or powershell.exe"
-        )
     args = arguments(values.get("args", []), allow_empty=True)
     if values.get("expand_home", False):
         home = str(Path.home())
