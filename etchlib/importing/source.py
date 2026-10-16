@@ -12,10 +12,18 @@ def relative(value: str) -> tuple[str, ...]:
     parts = value.split("/")
     if (
         any(
-            not part or part in (".", "..") or part.casefold() == ".git"
+            not part
+            or part in (".", "..")
+            or part.casefold() == ".git"
+            or part.endswith((".", " "))
+            or re.fullmatch(
+                r"CON|PRN|AUX|NUL|CONIN\$|CONOUT\$|COM[1-9¹²³]|LPT[1-9¹²³]",
+                part.split(".")[0].rstrip(" "),
+                re.IGNORECASE,
+            )
             for part in parts
         )
-        or "\\" in value
+        or any(c in value for c in '\\<>:"|?*')
         or any(ord(c) < 32 or ord(c) == 127 for c in value)
     ):
         raise ValueError("unsafe import path {!r}".format(value))

@@ -6,6 +6,8 @@ import shutil
 import tempfile
 from pathlib import Path
 
+from etchlib.providers.filesystem.state import kind
+
 from .git import Git
 from .report import inventory, validate_module
 from .source import parse
@@ -16,10 +18,10 @@ def destination(root: Path, name: str) -> Path:
     if not root.is_dir():
         raise ValueError("consumer repository must be an existing directory")
     modules = root / "modules"
-    if modules.is_symlink() or (modules.exists() and not modules.is_dir()):
+    if kind(modules) not in ("missing", "directory"):
         raise ValueError("consumer modules parent must be a real directory")
     target = modules / name
-    if target.exists() or target.is_symlink():
+    if kind(target) != "missing":
         raise ValueError(
             "import destination already exists: {}; inspect/remove it explicitly before retrying (it may be an incomplete import)".format(
                 target
@@ -51,8 +53,13 @@ def import_module(
 ) -> str:
     spec = parse(source, ref, path)
     absolute = root.absolute()
-    if any(part.is_symlink() for part in (absolute, *absolute.parents)):
-        raise ValueError("consumer destination parent components must not be symlinks")
+    if any(
+        kind(part) in ("link", "reparse point")
+        for part in (absolute, *absolute.parents)
+    ):
+        raise ValueError(
+            "consumer destination parent components must not be symlinks or reparse points"
+        )
     root = root.resolve()
     destination(root, spec.name)
     with tempfile.TemporaryDirectory(prefix="etch-import-") as temporary:

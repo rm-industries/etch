@@ -135,6 +135,10 @@ jobs:
         run: >-
           python -S -m unittest
           tests.test_repository_update tests.test_submodule_update -v
+      - name: Git import isolation, boundaries and publication
+        run: >-
+          python -S -m unittest
+          tests.test_import_platform tests.test_import_boundaries tests.test_import_copy -v
       - name: Native Windows providers and consumer profile
         run: >-
           python -S -m unittest

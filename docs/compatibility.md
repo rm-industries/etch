@@ -64,7 +64,7 @@ automatically converted by the loader.
 ## Current limits
 
 Windows qualification does not cover ARM64, Windows Server, native EXE/MSI
-installers, batch commands, system Registry hives or Git import. Etch has no
+installers, batch commands or system Registry hives. Etch has no
 package dependency solver, automatic engine or module updates, general lifecycle
 hooks, or automatic Dotbot translation.
 `import` copies one public Git module and does not apply it or import its

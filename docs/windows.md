@@ -29,7 +29,7 @@ behavior rather than assuming the Unix `HOME` variable. Python configuration
 strings must escape backslashes or use forward slashes.
 
 This is a bounded Windows contract. Do not assume POSIX shell commands,
-sudo, executable permission bits, Homebrew, Git import, or Unix-only reference
+sudo, executable permission bits, Homebrew, or Unix-only reference
 profiles work on Windows.
 Windows Server and WSL are outside the native baseline; WSL follows Linux rules.
 
@@ -160,6 +160,12 @@ Only tests for the POSIX consumer shell launcher are skipped in those Git suites
 Windows consumers invoke the Python entrypoint directly. These checks are required
 by the Project gate.
 
+The import suites exercise real Git object acquisition, pinned copies, structural
+validation, path boundaries, publication cleanup, and native timeout cleanup.
+Import requires Git for Windows on PATH; use the Python entrypoint, for example
+`python -S vendor/etch/etch import github:owner/dotfiles --path modules/git --repo C:/dotfiles`.
+Imported actions still need to support Windows or have appropriate OS conditions.
+
 Windows coverage is still a selected suite rather than full test discovery.
-Git import remains outside the Windows contract; Unix-specific installer,
-Homebrew and macOS preference integrations remain covered on their target hosts.
+Unix-specific installer, Homebrew and macOS preference integrations remain
+covered on their target hosts.

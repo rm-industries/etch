@@ -1,6 +1,7 @@
 """Bounded Git plumbing in an isolated repository, without checkout or hooks."""
 
 import os
+import platform
 import re
 import shutil
 import signal
@@ -33,11 +34,15 @@ class Git:
             "GIT_CONFIG_NOSYSTEM": "1",
             "GIT_CONFIG_GLOBAL": os.devnull,
             "GIT_TERMINAL_PROMPT": "0",
-            "GIT_ASKPASS": "/usr/bin/false",
+            "GIT_ASKPASS": "",
             "GIT_NO_REPLACE_OBJECTS": "1",
             "GIT_LITERAL_PATHSPECS": "1",
             "GIT_ALLOW_PROTOCOL": "https",
         }
+        if platform.system() == "Windows":
+            self.env["SystemRoot"] = os.environ["SystemRoot"]
+            self.env["USERPROFILE"] = str(root)
+        (root / "disabled-hooks").mkdir()
         version = self.run("--version")
         match = re.search(rb"git version (\d+)\.(\d+)", version)
         if match is None or (int(match[1]), int(match[2])) < (2, 25):
@@ -61,7 +66,7 @@ class Git:
                         "-c",
                         "credential.helper=",
                         "-c",
-                        "core.hooksPath=/dev/null",
+                        "core.hooksPath=" + str(self.root / "disabled-hooks"),
                         "-c",
                         "http.followRedirects=false",
                         "-c",
@@ -73,7 +78,7 @@ class Git:
                     stdin=subprocess.PIPE,
                     stdout=output if output is not None else stdout,
                     stderr=stderr,
-                    start_new_session=True,
+                    start_new_session=platform.system() != "Windows",
                 ) as process:
                     try:
                         process.communicate(
@@ -81,11 +86,34 @@ class Git:
                             timeout=remaining,
                         )
                     except subprocess.TimeoutExpired:
-                        # Git HTTPS helpers belong to the same fresh process group.
-                        try:
-                            os.killpg(process.pid, signal.SIGKILL)
-                        except ProcessLookupError:
-                            pass
+                        if platform.system() == "Windows":
+                            # Kill Git's HTTPS helpers too, before temporary files close.
+                            try:
+                                subprocess.run(
+                                    [
+                                        str(
+                                            Path(os.environ["SystemRoot"])
+                                            / "System32"
+                                            / "taskkill.exe"
+                                        ),
+                                        "/F",
+                                        "/T",
+                                        "/PID",
+                                        str(process.pid),
+                                    ],
+                                    stdout=subprocess.DEVNULL,
+                                    stderr=subprocess.DEVNULL,
+                                    check=False,
+                                    timeout=10,
+                                )
+                            finally:
+                                if process.poll() is None:
+                                    process.kill()
+                        else:
+                            try:
+                                os.killpg(process.pid, signal.SIGKILL)
+                            except ProcessLookupError:
+                                pass
                         process.wait()
                         raise
                     returncode = process.returncode
