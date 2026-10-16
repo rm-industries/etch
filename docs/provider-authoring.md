@@ -274,3 +274,25 @@ shadowing, fail registration. There is no override, alias or silent fallback. Th
 loader's rollback protects its registry changes, not side effects of executing
 untrusted plugin code. This is a documented migration procedure, not automatic
 promotion/update behavior in the engine.
+
+## Working-file lifecycle
+
+Providers own their housekeeping; consumers should not need extra cleanup actions
+for a provider's scratch files or obsolete internal records. Keep temporary files
+inside context managers or `finally` cleanup, including failure and cancellation
+paths. Do not retain downloaded installers, old payload versions or per-run logs
+without a defined purpose and lifecycle. Hard termination can bypass Python
+cleanup; document any recovery limits rather than sweeping unrelated temporary
+files or another running process's workspace.
+
+Persistent bookkeeping belongs inside the consumer checkout's ignored `.etch/`
+directory. Keep useful ownership evidence, update records in place, and remove
+the matching evidence when a managed item is removed. A replacement made by the
+user must not inherit ownership from an old record. The core lifecycle handles
+link retirement and obsolete core receipts; it does not infer how to uninstall
+arbitrary plugin-managed resources.
+
+Inspection stays read-only. Recheck ownership before destructive work and do not
+infer removal from a partial selection, false condition or failed inspection.
+Keep observation caches in the invocation's context; housekeeping must not
+reintroduce repeated inventory probes or recursive scans of user directories.

@@ -131,7 +131,7 @@ jobs:
           python -S -m unittest
           tests.test_failure_continuation tests.test_scheduler
           tests.test_scheduler_resources tests.test_execution_efficiency
-          tests.test_planning_reuse -v
+          tests.test_planning_reuse tests.test_housekeeping tests.test_clean_provider -v
       - name: Git updates and submodule synchronization
         if: ${{ !cancelled() }}
         run: >-

@@ -90,7 +90,7 @@ The [ownership validator](docs/ownership.md) checks active destination claims an
 rebuilds provider/graph validation when conditions activate new work.
 Core [create and link providers](docs/filesystem.md) implement idempotent filesystem
 changes through the provider API and staged CLI application.
-The [clean provider](docs/clean.md) uses local link receipts to remove proven broken
+The [link lifecycle and clean provider](docs/clean.md) use local receipts to retire removed declarations and remove proven broken
 or explicitly retired links while preserving unowned content.
 Core [shell and script providers](docs/commands.md) support imperative commands,
 module-owned scripts, checks, environment metadata and explicit privilege requests.

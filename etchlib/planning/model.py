@@ -6,6 +6,7 @@ from typing import Mapping, Optional
 from etchlib.conditions.module import Selection
 from etchlib.graph.dag import ActionGraph
 from etchlib.graph.model import NodeId
+from etchlib.housekeeping.planning import Batch
 from etchlib.ownership.claims import OwnedClaim
 from etchlib.providers.observations import FactRef, FactResult, Inspection
 from etchlib.providers.plans import Plan
@@ -25,3 +26,5 @@ class Report:
 
     errors: Mapping[NodeId, str] = field(default_factory=dict)
     issues: tuple[str, ...] = ()
+
+    maintenance: Optional[Batch] = None
