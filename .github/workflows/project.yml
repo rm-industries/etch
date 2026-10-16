@@ -126,20 +126,24 @@ jobs:
           tests.test_provider_lifecycle tests.test_validation_snapshot
           tests.test_plugin_loading tests.test_plugin_errors tests.test_timing_report -v
       - name: Execution, concurrency and performance regressions
+        if: ${{ !cancelled() }}
         run: >-
           python -S -m unittest
           tests.test_failure_continuation tests.test_scheduler
           tests.test_scheduler_resources tests.test_execution_efficiency
           tests.test_planning_reuse -v
       - name: Git updates and submodule synchronization
+        if: ${{ !cancelled() }}
         run: >-
           python -S -m unittest
           tests.test_repository_update tests.test_submodule_update -v
       - name: Git import isolation, boundaries and publication
+        if: ${{ !cancelled() }}
         run: >-
           python -S -m unittest
           tests.test_import_platform tests.test_import_boundaries tests.test_import_copy -v
       - name: Native Windows providers and consumer profile
+        if: ${{ !cancelled() }}
         run: >-
           python -S -m unittest
           tests.test_platform_baseline tests.test_windows_filesystem
