@@ -90,6 +90,17 @@ def entries(config: Any, context: Context) -> tuple[Link, ...]:
     return tuple(result)
 
 
+def _direct_path(value: str) -> str:
+    value = os.path.normpath(value)
+    if os.name == "nt":
+        # readlink returns Windows substitution paths; compare without resolving aliases.
+        if value[:8].upper() == "\\\\?\\UNC\\":
+            value = "\\\\" + value[8:]
+        elif value.startswith("\\\\?\\") and value[5:7] == ":\\":
+            value = value[4:]
+    return os.path.normcase(os.path.normpath(value))
+
+
 def needed(link: Link) -> bool:
     if not link.source.exists():
         raise ValueError("link source does not exist: {}".format(link.source))
@@ -112,7 +123,7 @@ def needed(link: Link) -> bool:
         target = Path(os.readlink(link.destination))
         if not target.is_absolute():
             target = link.destination.parent / target
-        matched = Path(os.path.normpath(target)) == link.source
+        matched = _direct_path(str(target)) == _direct_path(str(link.source))
     else:
         matched = link.destination.resolve() == link.source
     if matched:

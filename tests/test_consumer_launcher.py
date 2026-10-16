@@ -16,7 +16,7 @@ class ConsumerLauncherTests(BootstrapFixture):
     ) -> None:
         self.vendor()
         launcher = self.consumer / "etch"
-        shutil.copy2(ROOT / "tests/fixtures/consumer-launcher.sh", launcher)
+        shutil.copy2(ROOT / "examples/minimal/etch", launcher)
         env = dict(self.env, PATH=str(self.bin) + os.pathsep + os.defpath)
         absolute = self.bin / "etch"
         absolute.symlink_to(launcher)

@@ -1,17 +1,20 @@
 """Native filesystem contract, also exercised on Unix without optional tools."""
 
+import ntpath
 import os
 import stat
 import tempfile
 import unittest
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from types import SimpleNamespace
+from typing import cast
 from unittest.mock import patch
 
 from etchlib.config import ConfigError, Module, destination
 from etchlib.core import core_registry
 from etchlib.ownership.claims import OwnershipError, validate_claims
 from etchlib.providers.contracts import Context
+from etchlib.providers.filesystem.link import Link, needed
 from etchlib.providers.filesystem.state import kind
 from etchlib.providers.lifecycle import plan_action
 from etchlib.providers.plans import PlanStatus
@@ -62,6 +65,72 @@ class WindowsFilesystemTests(unittest.TestCase):
             self.assertEqual(
                 plan_action(clean, ["targets"], context).status, PlanStatus.SKIP
             )
+
+    def test_direct_matching_accepts_windows_substitution_paths(self) -> None:
+        # Only filesystem observations are stubbed; Windows path comparisons are real.
+        class ExistingFile(PureWindowsPath):
+            def exists(self) -> bool:
+                return True
+
+            def is_dir(self) -> bool:
+                return False
+
+        cases = (
+            (r"C:\repo\settings", r"\\?\C:\repo\settings", False),
+            (r"C:\repo\settings", r"\\?\c:\REPO\settings", False),
+            (
+                r"\\server\share\repo\settings",
+                r"\\?\UNC\server\share\repo\settings",
+                False,
+            ),
+            (r"\\?\C:\repo\settings", r"C:\repo\settings", False),
+            (r"C:\repo\settings", r"\\?\C:\alias\settings", True),
+            (r"C:\repo\settings", r"..\repo\settings", False),
+        )
+        for source, target, expected in cases:
+            with self.subTest(source=source, target=target):
+                link = Link(
+                    cast(Path, ExistingFile(r"C:\home\settings")),
+                    cast(Path, ExistingFile(source)),
+                    False,
+                    True,
+                    "direct",
+                )
+                windows = SimpleNamespace(
+                    name="nt", path=ntpath, readlink=lambda path, target=target: target
+                )
+                with (
+                    patch("etchlib.providers.filesystem.link.os", windows),
+                    patch("etchlib.providers.filesystem.link.Path", ExistingFile),
+                    patch(
+                        "etchlib.providers.filesystem.link.kind", return_value="link"
+                    ),
+                    patch("etchlib.providers.filesystem.link.check_parent"),
+                    patch("etchlib.providers.filesystem.link.check_submodules"),
+                ):
+                    self.assertEqual(needed(link), expected)
+
+    def test_direct_links_are_unchanged_after_apply(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp).resolve()
+            (root / "file").touch()
+            (root / "directory").mkdir()
+            context = Context(
+                root,
+                root,
+                "demo",
+                {},
+                {"link": {"create": True, "relink": True, "target_match": "direct"}},
+            )
+            entry = core_registry().action("link")
+            config = {
+                str(root / (name + "-link")): name for name in ("file", "directory")
+            }
+            first = plan_action(entry, config, context)
+            self.assertTrue(entry.provider.apply(first, context).changed)
+            second = plan_action(entry, config, context)
+            self.assertEqual(second.status, PlanStatus.SKIP)
+            self.assertFalse(entry.provider.apply(second, context).changed)
 
     def test_privilege_failure_preserves_previous_link(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

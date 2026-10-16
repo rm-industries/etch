@@ -33,6 +33,23 @@ sudo, executable permission bits, Homebrew, or Unix-only reference
 profiles work on Windows.
 Windows Server and WSL are outside the native baseline; WSL follows Linux rules.
 
+## Consumer launcher on PATH
+
+The [minimal example](../examples/minimal/) includes `etch.cmd` and `etch.ps1`,
+plus an `etch` module that links both launchers into `~/.local/bin` and adds it to
+Windows user PATH. Copy the example layout, initialize `vendor/etch`, and run
+`.\etch.cmd plan --profile developer`, then `.\etch.cmd apply --profile developer`.
+Open a new terminal to pick up PATH changes. The links resolve back to your
+consumer checkout even when invoked from an unrelated directory.
+
+Before `apply`, the launcher actually creates and removes temporary file and
+directory symlinks using Python, checking the current session rather than assuming
+that elevation or a Developer Mode registry value grants access. Failure stops
+before Etch applies actions and recommends Developer Mode for non-admin use.
+`plan`, `doctor`, and help do not require this capability test. The launcher does
+not enable Developer Mode or elevate. An elevated-session success does not grant
+normal sessions privileges; target-directory ACLs still apply after a probe passes.
+
 ## Filesystem contract
 
 `create` makes directories and is a no-op when the directory exists. `link`
@@ -70,7 +87,10 @@ Etch prefers PowerShell 7 (`pwsh`) on PATH and falls back to Windows
 PowerShell 5.1 (`powershell.exe`) when it is unavailable. It never falls back to
 `cmd.exe` or a POSIX shell. If neither interpreter is available, planning fails
 with installation guidance. Etch respects the machine's
-execution policy and does not add `ExecutionPolicy Bypass`.
+execution policy and its providers do not add `ExecutionPolicy Bypass`. The optional
+consumer `.cmd` launcher sets a process-only policy for its trusted bootstrap;
+child provider processes inherit that session policy. Group Policy still takes
+precedence, and user/machine registry policy is not changed.
 
 Use a module-owned `.ps1` file with the existing script action:
 
@@ -133,7 +153,9 @@ source. Installer arguments and environment follow the command contract above.
 Planning resolves interpreter availability without downloading or executing.
 TLS verification stays enabled by default; module-owned custom CA files and
 explicit verification overrides retain their existing semantics. No execution
-policy bypass or automatic elevation is added.
+policy override is added by the installer provider, and Etch does not elevate.
+When started through the consumer `.cmd` launcher, the installer inherits its
+process-only execution policy.
 
 Temporary artifacts are removed after success, nonzero exit, hash failure, or
 timeout. Script-created files and other installer side effects are not rolled

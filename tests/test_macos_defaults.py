@@ -155,7 +155,9 @@ class MacOSDefaultsTests(unittest.TestCase):
                     side_effect=AssertionError("read"),
                 ),
             ):
-                report = plan_repository(load_repository(root), registry)
+                report = plan_repository(
+                    load_repository(root, selected=["git"]), registry
+                )
             self.assertEqual(report.plans, {})
 
     def test_doctor_reports_missing_keys_without_writing(self) -> None:
