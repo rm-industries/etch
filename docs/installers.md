@@ -115,3 +115,16 @@ not expand URLs, interpreter names or inherited environment variables, and it
 does not create directories. Existing check predicates keep their own path
 expansion behavior. Consumers may set the boolean in installer defaults and
 override it per action with `False`.
+
+## Validate shared platform configuration
+
+`etch validate` checks every installer declaration structurally, including actions
+excluded by module or action conditions. It accepts Unix and PowerShell interpreter
+names on any host, so a shared repository can validate on Windows, macOS and Linux.
+Malformed options and conditions still fail, even in inactive declarations.
+
+Use OS guards to select the appropriate installers. Active installers are checked
+against the current host during inspection and again before application. On Windows,
+only `pwsh` and `powershell.exe` installers are supported; a Unix interpreter is
+rejected before presence checks, downloads or execution. Static validation does not
+prove that an interpreter is installed or supported on the current host.
