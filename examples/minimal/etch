@@ -1,0 +1,47 @@
+#!/bin/sh
+set -eu
+
+# Follow launcher links without GNU-only readlink -f or changing arguments.
+launcher=$0
+case "$launcher" in
+    */*) ;;
+    *) launcher=$(command -v "$launcher") ;;
+esac
+case "$launcher" in
+    /*) ;;
+    *) launcher="$(pwd -P)/$launcher" ;;
+esac
+link_count=0
+while [ -L "$launcher" ]; do
+    link_count=$((link_count + 1))
+    if [ "$link_count" -gt 40 ]; then
+        echo "Etch launcher: symlink cycle or chain exceeds 40 links." >&2
+        exit 1
+    fi
+    link_dir=$(CDPATH= cd -- "${launcher%/*}" && pwd -P)
+    target=$(readlink "$launcher")
+    case "$target" in
+        /*) launcher=$target ;;
+        *) launcher="$link_dir/$target" ;;
+    esac
+done
+if [ ! -f "$launcher" ]; then
+    echo "Etch launcher: missing or dangling launcher: $launcher" >&2
+    exit 1
+fi
+CDPATH= cd -- "${launcher%/*}"
+
+if ! command -v python3 >/dev/null 2>&1; then
+    echo 'Etch requires Python 3.9 or newer.' >&2
+    exit 1
+fi
+if [ ! -f vendor/etch/etch ]; then
+    echo 'Initialize Etch first: git submodule update --init vendor/etch' >&2
+    exit 1
+fi
+
+# Starting the launcher only previews the migrated developer profile.
+if [ "$#" -eq 0 ]; then
+    set -- plan --profile developer
+fi
+exec python3 -S vendor/etch/etch "$@"

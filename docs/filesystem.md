@@ -67,7 +67,9 @@ or broken symlinks require `relink: True`; files and directories are never repla
 By default, `target_match: "resolved"` treats links through intermediate symlinks
 as equivalent. Set `target_match: "direct"` to compare the immediate symlink
 target with the module asset without following intermediate links. Relative
-targets are normalized against the destination's parent. An aliasing legacy
+targets are normalized against the destination's parent. On Windows, ordinary
+and extended-length (`\\?\`) spellings of the same drive or UNC target compare
+as equal. An aliasing legacy
 link then requires `relink: True` to replace it; without `relink`, it reports
 the different-link error.
 Successful creation/relinking records local ownership for the

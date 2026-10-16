@@ -35,7 +35,7 @@ test "$(readlink "$HOME/.gitconfig")" = "$consumer_root/modules/git/files/gitcon
 test "$(git config --file "$HOME/.gitconfig" --get init.defaultBranch)" = main
 
 ./etch apply "$@" > "$HOME/second-apply.log"
-if grep -Eq '^(CHANGED|FAILED|BLOCKED) ' "$HOME/second-apply.log"; then
+if grep -Eq '^[[:space:]]*(CHANGED|FAILED|BLOCKED) ' "$HOME/second-apply.log"; then
   cat "$HOME/second-apply.log" >&2
   echo 'Second apply changed the declarative starter state.' >&2
   exit 1

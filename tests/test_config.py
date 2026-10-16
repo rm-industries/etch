@@ -110,7 +110,9 @@ class ConfigTests(unittest.TestCase):
             "facts": {"installed": {"provider": "custom_fact"}},
         }
         self.write("modules/git/module.conf", repr(config))
-        self.assertEqual(load_repository(self.repo).modules[0].config, config)
+        self.assertEqual(
+            load_repository(self.repo, selected=["git"]).modules[0].config, config
+        )
 
     def test_fact_envelopes(self) -> None:
         for fact in [
@@ -147,7 +149,9 @@ class ConfigTests(unittest.TestCase):
             },
         }
         self.write("modules/git/module.conf", repr(config))
-        self.assertEqual(load_repository(self.repo).modules[0].config, config)
+        self.assertEqual(
+            load_repository(self.repo, selected=["git"]).modules[0].config, config
+        )
         self.assertEqual(fact_provider(config["facts"]["tool"]), ("command", "git"))
         self.assertEqual(
             fact_provider(config["facts"]["plugin"]),

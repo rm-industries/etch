@@ -37,7 +37,10 @@ class FoundationTests(unittest.TestCase):
         moved = self.repo.with_name("moved")
         shutil.move(str(self.repo), str(moved))
         self.assertTrue(
-            load_repository(moved).modules[0].asset("files/gitconfig").is_file()
+            load_repository(moved, selected=["git"])
+            .modules[0]
+            .asset("files/gitconfig")
+            .is_file()
         )
 
     def test_no_configuration_execution(self) -> None:
@@ -77,7 +80,7 @@ class FoundationTests(unittest.TestCase):
             ["zsh", "git"],
         )
         self.assertEqual(
-            [m.name for m in load_repository(self.repo).modules], ["git", "zsh"]
+            [m.name for m in load_repository(self.repo).modules], ["etch", "git", "zsh"]
         )
 
     def test_selection_errors(self) -> None:
