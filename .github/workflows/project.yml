@@ -120,7 +120,7 @@ jobs:
           python -S -m unittest
           tests.test_action_graph tests.test_conditions tests.test_versions
           tests.test_provider_records tests.test_provider_registry tests.test_output
-          tests.test_installer_home tests.test_command_output
+          tests.test_installer_home tests.test_installer_validation tests.test_command_output
           tests.test_config tests.test_config_format tests.test_fact_store
           tests.test_repository_facts tests.test_graph_order_cache tests.test_graph_refresh
           tests.test_provider_lifecycle tests.test_validation_snapshot

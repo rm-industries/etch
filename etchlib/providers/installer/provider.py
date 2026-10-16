@@ -28,6 +28,16 @@ def command(installer: Installer, script: Path) -> dict[str, Any]:
     )
 
 
+def _validate_interpreter(installer: Installer) -> None:
+    if platform.system() == "Windows" and installer.shell not in (
+        "pwsh",
+        "powershell.exe",
+    ):
+        raise ValueError(
+            "Windows installers support PowerShell scripts only; shell must be pwsh or powershell.exe"
+        )
+
+
 class InstallerProvider:
     name = "installer"
 
@@ -36,6 +46,7 @@ class InstallerProvider:
 
     def inspect(self, config: Any, context: Context) -> Inspection:
         installer = normalize(config, context)
+        _validate_interpreter(installer)
         if platform.system() == "Windows" and not checked(installer.options, context):
             options = command(installer, Path("installer.ps1"))
             invocation(options, context, environment(options, context))
@@ -75,6 +86,7 @@ class InstallerProvider:
 
     def apply(self, plan: Plan, context: Context) -> ApplyResult:
         installer: Installer = plan.payload
+        _validate_interpreter(installer)
         if checked(installer.options, context):
             return ApplyResult(False, "Installer check already satisfied")
         if installer.options.get("sudo", False) and not context.elevation_allowed:
