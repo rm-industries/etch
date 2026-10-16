@@ -172,6 +172,15 @@ provenance and refuse existing destinations.
 Provider authors can follow the [authoring guide](docs/provider-authoring.md) for
 shipped examples, execution metadata, plugin distribution and core promotion.
 
+Planning reports independent action inspection failures and destination conflicts in
+one pass, alongside the changes it could inspect, and exits nonzero if blocked.
+Grouped `link` and `create` actions report every blocked destination they inspect.
+Fix the reported issues and run `plan` again before `apply`. `doctor` includes these
+current-plan diagnostics alongside its broader configuration and environment checks.
+If dependency checks cannot complete, the report says so; deferred actions still
+need fresh checks after their prerequisites run. Invalid repository configuration
+or plugin loading can prevent planning from starting.
+
 The [Etch website](website/README.md) is a separate Forge-generated Node project
 under `website/`, targeting `https://www.rm-industries.com/etch/`. Its dependencies
 and build are independent of the Python runtime.

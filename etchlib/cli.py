@@ -220,12 +220,13 @@ def main(argv: Optional[List[str]] = None) -> int:
                 repository,
                 loaded.registry,
                 on_inspect=progress,
+                collect_errors=True,
                 store=repository_facts(
                     repository, loaded.registry, timings.record if timings else None
                 ),
             )
             write_output(render_plan(repository, report, loaded.plugins, args.verbose))
-            return 0
+            return 1 if report.errors or report.issues else 0
     except (ValueError, ProviderError, OSError) as exc:
         write_output("Etch: Error: {}".format(exc), sys.stderr)
         return 1

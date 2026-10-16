@@ -24,7 +24,15 @@ class CreateProvider:
 
     def inspect(self, config: Any, context: Context) -> Inspection:
         paths = tuple(destination(value, context.repo_root) for value in config)
-        needed = [directory_needed(path) for path in paths]
+        needed = []
+        errors = []
+        for item in paths:
+            try:
+                needed.append(directory_needed(item))
+            except (ValueError, OSError) as exc:
+                errors.append(str(exc))
+        if errors:
+            raise ValueError("; ".join(errors))
         return Inspection(
             InspectionState.CHANGE if any(needed) else InspectionState.SATISFIED, paths
         )

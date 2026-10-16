@@ -4,7 +4,7 @@ import os
 import stat
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Mapping, TypeVar
+from typing import Mapping, Optional, TypeVar
 
 from etchlib.providers.plans import ClaimKind, PathClaim, Plan
 
@@ -64,12 +64,20 @@ def normalize(owner: object, claim: PathClaim) -> OwnedClaim:
         ) from exc
 
 
-def validate_claims(plans: Mapping[Owner, Plan]) -> tuple[OwnedClaim, ...]:
+def validate_claims(
+    plans: Mapping[Owner, Plan], *, errors: Optional[list[str]] = None
+) -> tuple[OwnedClaim, ...]:
     """Include every active plan, even SKIP: satisfied state still has an owner."""
     claims: list[OwnedClaim] = []
     for owner, plan in plans.items():
         for claim in plan.claims:
-            current = normalize(owner, claim)
+            try:
+                current = normalize(owner, claim)
+            except OwnershipError as exc:
+                if errors is None:
+                    raise
+                errors.append(str(exc))
+                continue
             for previous in claims:
                 if previous.owner == owner:
                     continue
@@ -87,10 +95,14 @@ def validate_claims(plans: Mapping[Owner, Plan]) -> tuple[OwnedClaim, ...]:
                             right in left.parents and claim.kind is ClaimKind.EXCLUSIVE
                         )
                         if conflict:
-                            raise OwnershipError(
+                            error = OwnershipError(
                                 "destination conflict: {} ({}) and {} ({})".format(
                                     previous.owner, left, owner, right
                                 )
                             )
+                            if errors is None:
+                                raise error
+                            if str(error) not in errors:
+                                errors.append(str(error))
             claims.append(current)
     return tuple(claims)

@@ -16,6 +16,35 @@ class DiagnosticTests(PlanningFixture):
             status = main([command, "--repo", str(self.root), *args])
         return status, out.getvalue(), err.getvalue()
 
+    def test_doctor_collects_inspection_failures_and_apply_stays_strict(self) -> None:
+        for name in ("first", "second"):
+            (self.root / name).write_text("preserve")
+        self.module(
+            actions=[{"create": ["first"]}, {"create": ["second"]}, {"create": ["new"]}]
+        )
+        status, out, err = self.invoke("doctor")
+        self.assertEqual(status, 1)
+        self.assertIn("first", out)
+        self.assertIn("second", out)
+        self.assertEqual(self.invoke("apply")[0], 1)
+        self.assertFalse((self.root / "new").exists())
+        for name in ("first", "second"):
+            self.assertEqual((self.root / name).read_text(), "preserve")
+
+    def test_bad_refresh_does_not_hide_inspection_failures(self) -> None:
+        (self.root / "blocked").write_text("preserve")
+        self.module(
+            actions=[
+                {"create": ["new"], "refresh": ["missing"]},
+                {"create": ["blocked"]},
+            ]
+        )
+        status, out, err = self.invoke("doctor")
+        self.assertEqual(status, 1)
+        self.assertIn("missing", out)
+        self.assertIn("blocked", out)
+        self.assertFalse((self.root / "new").exists())
+
     def test_facts_filter_and_scope_without_actions(self) -> None:
         self.module(
             "global",
