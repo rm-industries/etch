@@ -89,6 +89,7 @@ class WindowsLauncherTests(unittest.TestCase):
             + str(launcher).replace("'", "''")
             + "' "
             + " ".join("'" + arg.replace("'", "''") + "'" for arg in args)
+            + "; exit $LASTEXITCODE"
         )
         return subprocess.run(
             [
