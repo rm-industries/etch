@@ -39,7 +39,7 @@ while [ "$#" -gt 0 ]; do
         --help|-h)
             printf '%s\n' 'Usage: install.sh [--repo URL] [--module NAME] [--no-module]' \
                 'Set your generated repository URL in this script or pass --repo URL.' \
-                'Clone to DOTFILES_DIR (default: ~/.dotfiles); no module runs by default.' \
+                'Clone to DOTFILES_DIR (default: ~/.dotfiles); --module overrides the configured default.' \
                 '--no-module always takes precedence. Existing checkouts are untouched.'
             exit 0
             ;;

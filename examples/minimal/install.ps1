@@ -37,7 +37,7 @@ for ($i = 0; $i -lt $args.Count; $i++) {
         { $_ -in '--help', '-h' } {
             Write-Output 'Usage: install.ps1 [--repo URL] [--module NAME] [--no-module]'
             Write-Output 'Set your generated repository URL in this script or pass --repo URL.'
-            Write-Output 'Clone to DOTFILES_DIR (default: ~/.dotfiles); no module runs by default.'
+            Write-Output 'Clone to DOTFILES_DIR (default: ~/.dotfiles); --module overrides the configured default.'
             Write-Output '--no-module always takes precedence. Existing checkouts are untouched.'
             exit 0
         }
