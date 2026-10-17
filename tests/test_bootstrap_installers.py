@@ -214,14 +214,14 @@ sys.exit(result.returncode)
         shell = self.installer_root / "install.sh"
         shell.write_text(
             shell.read_text()
-            .replace("repository=''", "repository='" + repository + "'")
-            .replace("module=''", "module='" + module + "'")
+            .replace("repository=''", "repository='" + repository + "'", 1)
+            .replace("module=''", "module='" + module + "'", 1)
         )
         powershell = self.installer_root / "install.ps1"
         powershell.write_text(
             powershell.read_text()
-            .replace("$repository = ''", "$repository = '" + repository + "'")
-            .replace("$module = ''", "$module = '" + module + "'")
+            .replace("$repository = ''", "$repository = '" + repository + "'", 1)
+            .replace("$module = ''", "$module = '" + module + "'", 1)
         )
 
     def test_owner_configured_repository_and_default_module(self) -> None:
@@ -308,9 +308,10 @@ sys.exit(result.returncode)
     def test_dangling_destination_is_not_replaced(self) -> None:
         missing = self.base / "missing target"
         self.destination.symlink_to(missing, target_is_directory=True)
+        original_target = os.readlink(self.destination)
         self.run_installer(expected=1)
         self.assertTrue(self.destination.is_symlink())
-        self.assertEqual(self.destination.resolve(), missing.resolve())
+        self.assertEqual(os.readlink(self.destination), original_target)
         self.assertFalse(self.calls())
 
     def test_unrelated_repository(self) -> None:
