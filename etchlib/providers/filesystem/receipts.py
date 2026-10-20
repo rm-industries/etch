@@ -75,3 +75,22 @@ def owned(repo: Path, path: Path) -> bool:
         )
     except (OSError, ValueError, RuntimeError):
         return False
+
+
+def discard(repo: Path, path: Path, proof: Optional[dict[str, object]]) -> bool:
+    """Forget only a removed link's original proof, never a refreshed receipt."""
+    if proof is None or kind(path) != "missing":
+        return False
+    target = receipt_path(repo, path)
+    if kind(target) != "file":
+        return False
+    try:
+        data = json.loads(target.read_text(encoding="utf-8"))
+    except (ValueError, UnicodeError):
+        return False
+    if not isinstance(data, dict) or any(
+        data.get(key) != value for key, value in proof.items()
+    ):
+        return False
+    target.unlink()
+    return True

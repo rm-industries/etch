@@ -213,10 +213,18 @@ def render_plan(
                     else str(fact.reason)
                 )
             lines.append("  {}: {}".format(label, detail))
+    if report.maintenance is not None and report.maintenance.tasks:
+        lines.extend(["", "Automatic cleanup (after successful apply):"])
+        lines.extend(
+            "  CHANGE — " + task.description for task in report.maintenance.tasks
+        )
     counts = {
         status: sum(plan.status.value == status for plan in report.plans.values())
         for status in ("change", "run", "skip")
     }
+    counts["cleanup"] = (
+        len(report.maintenance.tasks) if report.maintenance is not None else 0
+    )
     counts["errors"] = len(report.errors) + len(report.issues)
     counts["deferred"] = sum(
         result.outcome is Outcome.DEFERRED

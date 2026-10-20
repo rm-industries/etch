@@ -61,7 +61,12 @@ def record(repo: Path, destination: Path, module: str, url: str) -> None:
         ) as stream:
             temporary = Path(stream.name)
             json.dump(
-                {"module": module, "url": url, "sha256": _digest(destination)},
+                {
+                    "module": module,
+                    "url": url,
+                    "sha256": _digest(destination),
+                    "destination": str(destination),
+                },
                 stream,
             )
         temporary.replace(receipt)

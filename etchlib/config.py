@@ -190,6 +190,9 @@ class Repository:
     root: Path
     modules: Tuple[Module, ...]
     defaults: Dict[str, Any]
+    catalog: Optional[Tuple[Module, ...]] = None
+    full_selection: bool = False
+    profile: Optional[str] = None
 
 
 def load_repository(
@@ -338,8 +341,17 @@ def load_repository(
     missing = [name for name in chosen if name not in available]
     if missing:
         raise ConfigError("{}: missing modules: {}".format(root, ", ".join(missing)))
-    if not chosen:
+    if not chosen and not (
+        profile is None and not selected and (root / ".etch").is_dir()
+    ):
         raise ConfigError(
             "{}: no modules selected or discovered under modules/".format(root)
         )
-    return Repository(root, tuple(available[name] for name in chosen), defaults)
+    return Repository(
+        root,
+        tuple(available[name] for name in chosen),
+        defaults,
+        tuple(available.values()),
+        profile is None and not selected,
+        profile,
+    )

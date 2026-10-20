@@ -15,6 +15,7 @@ from etchlib.facts.store import FactStore
 from etchlib.graph.builder import build_graph
 from etchlib.graph.dag import ActionGraph
 from etchlib.graph.model import NodeId
+from etchlib.housekeeping.planning import inspect as inspect_housekeeping
 from etchlib.ownership.claims import validate_claims
 from etchlib.providers.errors import ProviderError
 from etchlib.providers.lifecycle import inspect_action
@@ -192,6 +193,14 @@ def plan_repository(
             )
             selections[name] = Selection(module_gate, proven)
     claims = validate_claims(plans, errors=issues if collect_errors else None)
+    maintenance = previous.maintenance if previous is not None else None
+    if previous is None and not errors and not issues:
+        try:
+            maintenance = inspect_housekeeping(repository, selections, plans)
+        except (ValueError, OSError) as exc:
+            if not collect_errors:
+                raise
+            issues.append("Automatic cleanup inspection failed: {}".format(exc))
     return Report(
         MappingProxyType(selections),
         graph,
@@ -203,4 +212,5 @@ def plan_repository(
         registry.entries(),
         MappingProxyType(errors),
         tuple(issues),
+        maintenance,
     )

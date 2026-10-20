@@ -35,10 +35,34 @@ failures leave any prior destination untouched and remove the temporary file.
 
 Etch refuses an existing file or symlink unless it recognizes the file as one
 previously downloaded by the same module. It records the downloaded content in
-`.etch/downloads/`; deleting that receipt or changing the file makes the
+`.etch/downloads/` (module, URL, destination and content checksum); deleting that receipt or changing the file makes the
 destination unmanaged, so Etch will refuse to replace it. A matching `check`
 skips a managed file on subsequent applies. Without a `check`, an unchanged URL
 also skips the managed file. Changing the URL, or failing a configured `check`,
 downloads an owned file again; an unpinned live URL is never refreshed silently on
 each apply. Remove or move an unrelated destination yourself before letting
 Etch take ownership of it.
+
+## Local working files and ownership records
+
+`.etch/downloads/` contains small ownership records, not downloaded archives or
+payload caches. The installed destination is the requested output and remains
+until deliberately removed or replaced. Removing a module or declaration does
+not automatically uninstall downloaded files. Automatic link retirement and
+explicit `clean` actions do not delete ordinary downloaded files.
+
+Transfers use a temporary directory beside the destination so publication stays
+on the same filesystem. Normal completion, failed transfers and handled errors
+release that directory. Downloaded installers use separate temporary storage
+that is removed after execution. Neither path retains a history of old payloads.
+A forced process termination or power loss can leave temporary working files;
+Etch does not sweep arbitrary system temporary directories or other running
+processes' workspaces.
+
+After a successful apply, automatic housekeeping prunes records whose recorded
+download destination is missing. Existing legacy records remain readable. When
+the destination can be identified from the repository's declarations, housekeeping
+adds that path without downloading again or changing the recorded checksum.
+A full run can discard unmatched legacy records; partial runs preserve them.
+Future-version records are preserved rather than interpreted by an older engine.
+See [cleanup](clean.md) for scope, planning and ownership rules.
