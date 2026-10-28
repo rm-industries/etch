@@ -14,6 +14,7 @@ facts can load declared plugins even though they do not apply configuration.
 
 | Bundle | Action | Usage |
 | --- | --- | --- |
+| [npm](../plugins/npm/README.md) | `npm` | Install missing global registry CLI packages |
 | [Homebrew](../plugins/homebrew/README.md) | `brew` | Ensure requested formulae/casks are installed |
 | [Codex](../plugins/codex/README.md) | `codex` | Register native marketplaces and install missing user plugins |
 | [VS Code](../plugins/vscode/README.md) | `vscode` | Install missing Marketplace extensions |
