@@ -31,9 +31,9 @@ def locate(target: Target, context: Context) -> str:
 def run(
     executable: str, target: Target, args: tuple[str, ...], context: Context
 ) -> str:
-    return native.run(
+    return native.capture(
         executable, args, cwd=context.module_root, timeout=target.timeout, label="npm"
-    )
+    ).stdout
 
 
 def cache_key(

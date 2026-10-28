@@ -14,6 +14,7 @@ facts can load declared plugins even though they do not apply configuration.
 
 | Bundle | Action | Usage |
 | --- | --- | --- |
+| [uv tools](../plugins/uv/README.md) | `uv` | Install missing user-level Python CLI tools |
 | [npm](../plugins/npm/README.md) | `npm` | Install missing global registry CLI packages |
 | [Homebrew](../plugins/homebrew/README.md) | `brew` | Ensure requested formulae/casks are installed |
 | [Claude Code](../plugins/claude/README.md) | `claude` | Register native marketplaces and install missing user plugins |
