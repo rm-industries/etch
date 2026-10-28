@@ -124,17 +124,3 @@ def capture(
         raise ValueError(label + " command timed out") from exc
     except (OSError, UnicodeError) as exc:
         raise ValueError("{} command failed: {}".format(label, exc)) from exc
-
-
-def run(
-    executable: str,
-    args: tuple[str, ...],
-    *,
-    cwd: Path,
-    timeout: float,
-    label: str,
-    env: Optional[Mapping[str, str]] = None,
-) -> str:
-    return capture(
-        executable, args, cwd=cwd, timeout=timeout, label=label, env=env
-    ).stdout

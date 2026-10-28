@@ -28,14 +28,14 @@ def run(
             )
         }
     )
-    return native.run(
+    return native.capture(
         executable,
         args,
         cwd=context.module_root,
         timeout=target.timeout,
         label="Homebrew",
         env=env,
-    )
+    ).stdout
 
 
 def installed(

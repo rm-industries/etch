@@ -229,10 +229,10 @@ The engine matrix exercises the reference implementations on Linux/macOS.
 
 New native CLI providers can import `etchlib.providers.native` for
 `locate(command, cwd, env=None)` and
-`run(executable, args, *, cwd, timeout, label, env=None)`. Providers needing
-successful-command diagnostics can use `capture` with the same arguments; it
-returns a checked `subprocess.CompletedProcess[str]` with both streams. `run`
-continues to return only stdout. Lookup anchors relative
+`capture(executable, args, *, cwd, timeout, label, env=None)`. It returns a checked
+`subprocess.CompletedProcess[str]` containing stdout and stderr. Providers that
+only need stdout read `result.stdout`; providers such as uv also inspect stderr
+for successful-command diagnostics. Lookup anchors relative
 commands and PATH entries at the child working directory. Execution preserves
 argv, closes stdin, applies the caller's timeout and drains both output streams
 concurrently into capped buffers. More than 1 MiB per stream terminates the child

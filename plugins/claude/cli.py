@@ -16,13 +16,13 @@ def locate(target: Target, context: Context) -> Optional[str]:
 def run(
     executable: str, target: Target, args: tuple[str, ...], context: Context
 ) -> str:
-    return native.run(
+    return native.capture(
         executable,
         args,
         cwd=context.module_root,
         timeout=target.timeout,
         label="Claude",
-    )
+    ).stdout
 
 
 def document(
