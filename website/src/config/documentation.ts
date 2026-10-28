@@ -17,6 +17,7 @@ export const documentation = [
   { id: 'installers', source: 'docs/installers.md', section: 'Actions and plugins' },
   { id: 'downloads', source: 'docs/downloads.md', section: 'Actions and plugins' },
   { id: 'plugins', source: 'docs/plugins.md', section: 'Actions and plugins' },
+  { id: 'npm', source: 'plugins/npm/README.md', section: 'Actions and plugins' },
   { id: 'homebrew', source: 'plugins/homebrew/README.md', section: 'Actions and plugins' },
   { id: 'codex', source: 'plugins/codex/README.md', section: 'Actions and plugins' },
   { id: 'vscode', source: 'plugins/vscode/README.md', section: 'Actions and plugins' },
