@@ -125,3 +125,21 @@ class NativeCommandTests(unittest.TestCase):
                     str(wrapper), (), cwd=self.root, timeout=1, label="Test tool"
                 )
         self.assertFalse(marker.exists())
+
+    def test_capture_exposes_stderr_without_changing_stdout_only_callers(self) -> None:
+        args = (
+            "-c",
+            "import sys; print('inventory'); sys.stderr.buffer.write(b'warning\\xff')",
+        )
+        result = native.capture(
+            sys.executable, args, cwd=self.root, timeout=5, label="Test tool"
+        )
+        self.assertEqual(result.stdout, "inventory\n")
+        self.assertEqual(result.stderr, "warning\ufffd")
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(
+            native.run(
+                sys.executable, args, cwd=self.root, timeout=5, label="Test tool"
+            ),
+            "inventory\n",
+        )

@@ -229,7 +229,10 @@ The engine matrix exercises the reference implementations on Linux/macOS.
 
 New native CLI providers can import `etchlib.providers.native` for
 `locate(command, cwd, env=None)` and
-`run(executable, args, *, cwd, timeout, label, env=None)`. Lookup anchors relative
+`run(executable, args, *, cwd, timeout, label, env=None)`. Providers needing
+successful-command diagnostics can use `capture` with the same arguments; it
+returns a checked `subprocess.CompletedProcess[str]` with both streams. `run`
+continues to return only stdout. Lookup anchors relative
 commands and PATH entries at the child working directory. Execution preserves
 argv, closes stdin, applies the caller's timeout and drains both output streams
 concurrently into capped buffers. More than 1 MiB per stream terminates the child
@@ -241,7 +244,7 @@ Pass an explicit environment mapping when overriding child configuration; the
 helper never edits the parent environment. Labels identify the tool in errors.
 Provider validation, acceptable inventory/exit-status policy, target selection,
 resource locks and snapshot cache keys stay with the bundle. This helper does not
-register a provider or implement reconciliation. The npm, Codex, Homebrew and Claude bundles use it;
+register a provider or implement reconciliation. The npm, uv, Codex, Homebrew and Claude bundles use it;
 each keeps its native flags, parsing and reconciliation policy.
 
 ## Keep inventory work bounded

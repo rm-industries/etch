@@ -25,7 +25,7 @@ def locate(
     return os.path.abspath(found) if found else None
 
 
-def run(
+def capture(
     executable: str,
     args: tuple[str, ...],
     *,
@@ -33,7 +33,7 @@ def run(
     timeout: float,
     label: str,
     env: Optional[Mapping[str, str]] = None,
-) -> str:
+) -> subprocess.CompletedProcess[str]:
     if os.name == "nt" and os.path.splitext(executable)[1].lower() in (".bat", ".cmd"):
         raise ValueError(
             label + " batch wrappers are unsupported; select a native executable"
@@ -42,7 +42,7 @@ def run(
     interrupted, stopped = Event(), Event()
     read_errors: list[str] = []
 
-    def capture(stream: IO[bytes], buffer: bytearray) -> None:
+    def read_stream(stream: IO[bytes], buffer: bytearray) -> None:
         try:
             while not stopped.is_set():
                 chunk = stream.read(min(65536, OUTPUT_LIMIT + 1 - len(buffer)))
@@ -70,7 +70,7 @@ def run(
         ) as process:
             assert process.stdout is not None and process.stderr is not None
             readers = [
-                Thread(target=capture, args=(stream, buffer), daemon=True)
+                Thread(target=read_stream, args=(stream, buffer), daemon=True)
                 for stream, buffer in (
                     (process.stdout, output),
                     (process.stderr, errors),
@@ -114,8 +114,27 @@ def run(
                     label, process.returncode, detail
                 )
             )
-        return output.decode("utf-8")
+        return subprocess.CompletedProcess(
+            [executable, *args],
+            process.returncode,
+            output.decode("utf-8"),
+            errors.decode("utf-8", errors="replace"),
+        )
     except subprocess.TimeoutExpired as exc:
         raise ValueError(label + " command timed out") from exc
     except (OSError, UnicodeError) as exc:
         raise ValueError("{} command failed: {}".format(label, exc)) from exc
+
+
+def run(
+    executable: str,
+    args: tuple[str, ...],
+    *,
+    cwd: Path,
+    timeout: float,
+    label: str,
+    env: Optional[Mapping[str, str]] = None,
+) -> str:
+    return capture(
+        executable, args, cwd=cwd, timeout=timeout, label=label, env=env
+    ).stdout
