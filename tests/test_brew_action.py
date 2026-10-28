@@ -3,6 +3,7 @@ from dataclasses import replace
 from unittest.mock import patch
 
 from etchlib.core import core_registry
+from etchlib.providers import native
 from etchlib.providers.errors import ProviderError
 from etchlib.providers.lifecycle import apply_action, plan_action
 from etchlib.providers.plans import PlanStatus
@@ -137,3 +138,9 @@ class BrewActionTests(BrewFixture):
             [call["args"] for call in self.calls()],
             [["list", "--formula", "--full-name", "-1"]],
         )
+
+    def test_shared_native_runner_bounds_inventory_output(self) -> None:
+        self.state(output="x" * 100)
+        with patch.object(native, "OUTPUT_LIMIT", 64):
+            with self.assertRaisesRegex(ProviderError, "Homebrew output exceeds"):
+                self.brew_plan(formulae=["git"])
