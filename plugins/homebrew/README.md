@@ -141,3 +141,7 @@ matching CLI targets (and VS Code profiles). Apply always reads current inventor
 without this cache. Executable plans retain their intent across unrelated actions;
 conditions and changed fact inputs still receive reevaluation. No inventory is
 persisted between snapshots or invocations.
+
+Native command execution uses the shared engine helper; standalone vendoring
+requires an engine revision containing that helper. Native command flags,
+inventory and presence behavior remain owned by this bundle.

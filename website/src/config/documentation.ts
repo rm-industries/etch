@@ -19,6 +19,7 @@ export const documentation = [
   { id: 'plugins', source: 'docs/plugins.md', section: 'Actions and plugins' },
   { id: 'npm', source: 'plugins/npm/README.md', section: 'Actions and plugins' },
   { id: 'homebrew', source: 'plugins/homebrew/README.md', section: 'Actions and plugins' },
+  { id: 'claude', source: 'plugins/claude/README.md', section: 'Actions and plugins' },
   { id: 'codex', source: 'plugins/codex/README.md', section: 'Actions and plugins' },
   { id: 'vscode', source: 'plugins/vscode/README.md', section: 'Actions and plugins' },
   { id: 'macos-defaults', source: 'plugins/macos_defaults/README.md', section: 'Actions and plugins' },

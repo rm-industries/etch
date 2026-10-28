@@ -241,8 +241,8 @@ Pass an explicit environment mapping when overriding child configuration; the
 helper never edits the parent environment. Labels identify the tool in errors.
 Provider validation, acceptable inventory/exit-status policy, target selection,
 resource locks and snapshot cache keys stay with the bundle. This helper does not
-register a provider or implement reconciliation. The [npm bundle](../plugins/npm/README.md)
-uses it; existing Codex and Homebrew runners are unchanged.
+register a provider or implement reconciliation. The npm, Codex, Homebrew and Claude bundles use it;
+each keeps its native flags, parsing and reconciliation policy.
 
 ## Keep inventory work bounded
 

@@ -16,6 +16,7 @@ facts can load declared plugins even though they do not apply configuration.
 | --- | --- | --- |
 | [npm](../plugins/npm/README.md) | `npm` | Install missing global registry CLI packages |
 | [Homebrew](../plugins/homebrew/README.md) | `brew` | Ensure requested formulae/casks are installed |
+| [Claude Code](../plugins/claude/README.md) | `claude` | Register native marketplaces and install missing user plugins |
 | [Codex](../plugins/codex/README.md) | `codex` | Register native marketplaces and install missing user plugins |
 | [VS Code](../plugins/vscode/README.md) | `vscode` | Install missing Marketplace extensions |
 | [macOS preferences](../plugins/macos_defaults/README.md) | `macos_defaults` | Reconcile declared current-user preference keys |

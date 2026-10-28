@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 from etchlib.config import load_repository
 from etchlib.execution.runner import apply_repository
+from etchlib.providers import native
 from etchlib.providers.lifecycle import gather_fact, plan_action
 from etchlib.providers.observations import FactRef, FactState
 from tests.codex_fixtures import ROOT, CodexFixture
@@ -112,13 +113,9 @@ class CodexFactTests(CodexFixture):
         self.state(sleep=1)
         with self.assertRaisesRegex(ValueError, "timed out"):
             self.codex_plan(plugins=["hello@catalog"], timeout=0.02)
-        module = __import__(
-            type(self.entry.provider).__module__.rsplit(".", 1)[0] + ".cli",
-            fromlist=["run"],
-        )
         self.state(marketplace_output="x" * 100)
         with (
-            patch.object(module, "OUTPUT_LIMIT", 64),
+            patch.object(native, "OUTPUT_LIMIT", 64),
             self.assertRaisesRegex(ValueError, "exceeds"),
         ):
             self.codex_plan(marketplaces=["owner/repo"])
@@ -155,10 +152,10 @@ class CodexFactTests(CodexFixture):
         )
         options = self.codex_plan().payload.target
         with (
-            patch.object(module.os, "name", "nt"),
-            patch.object(module.subprocess, "run") as run,
+            patch("os.name", "nt"),
+            patch("etchlib.providers.native.subprocess.Popen") as run,
         ):
-            with self.assertRaisesRegex(ValueError, "native codex.exe"):
+            with self.assertRaisesRegex(ValueError, "native executable"):
                 module.run(
                     "codex.cmd", options, ("plugin", "list", "--json"), self.context
                 )

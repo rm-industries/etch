@@ -162,3 +162,7 @@ installation if later actions use them:
 Refresh does not discover a marketplace or install a plugin by itself. The example
 above assumes that marketplace is already registered. Module dependencies express
 ordering; declared refreshes update observations used by conditions.
+
+Native command execution uses the shared engine helper; standalone vendoring
+requires an engine revision containing that helper. Native command flags,
+inventory and presence behavior remain owned by this bundle.
