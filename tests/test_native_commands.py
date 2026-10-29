@@ -18,17 +18,17 @@ class NativeCommandTests(unittest.TestCase):
         self.root = Path(temp.name).resolve()
 
     def run_python(self, code: str, *args: str, timeout: float = 5) -> str:
-        return native.run(
+        return native.capture(
             sys.executable,
             ("-c", code, *args),
             cwd=self.root,
             timeout=timeout,
             label="Test tool",
-        )
+        ).stdout
 
     def test_literal_arguments_closed_stdin_cwd_and_child_environment(self) -> None:
         env = dict(os.environ, ETCH_NATIVE_TEST="child")
-        output = native.run(
+        output = native.capture(
             sys.executable,
             (
                 "-c",
@@ -42,7 +42,7 @@ class NativeCommandTests(unittest.TestCase):
             timeout=5,
             label="Test tool",
             env=env,
-        )
+        ).stdout
         self.assertEqual(
             json.loads(output),
             [
@@ -106,7 +106,7 @@ class NativeCommandTests(unittest.TestCase):
 
     def test_missing_executable_is_actionable(self) -> None:
         with self.assertRaisesRegex(ValueError, "Test tool.*failed"):
-            native.run(
+            native.capture(
                 "/absent/native-command",
                 (),
                 cwd=self.root,
@@ -121,7 +121,19 @@ class NativeCommandTests(unittest.TestCase):
         wrapper.chmod(0o755)
         with patch("os.name", "nt"):
             with self.assertRaisesRegex(ValueError, "batch wrappers"):
-                native.run(
+                native.capture(
                     str(wrapper), (), cwd=self.root, timeout=1, label="Test tool"
                 )
         self.assertFalse(marker.exists())
+
+    def test_capture_exposes_stdout_stderr_and_exit_status(self) -> None:
+        args = (
+            "-c",
+            "import sys; print('inventory'); sys.stderr.buffer.write(b'warning\\xff')",
+        )
+        result = native.capture(
+            sys.executable, args, cwd=self.root, timeout=5, label="Test tool"
+        )
+        self.assertEqual(result.stdout, "inventory\n")
+        self.assertEqual(result.stderr, "warning\ufffd")
+        self.assertEqual(result.returncode, 0)

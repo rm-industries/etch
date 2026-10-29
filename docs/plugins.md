@@ -14,6 +14,7 @@ facts can load declared plugins even though they do not apply configuration.
 
 | Bundle | Action | Usage |
 | --- | --- | --- |
+| [uv tools](../plugins/uv/README.md) | `uv` | Install missing user-level Python CLI tools |
 | [npm](../plugins/npm/README.md) | `npm` | Install missing global registry CLI packages |
 | [WinGet](../plugins/winget/README.md) | `winget` | Install missing Windows packages by exact ID |
 | [Homebrew](../plugins/homebrew/README.md) | `brew` | Ensure requested formulae/casks are installed |
