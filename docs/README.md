@@ -25,6 +25,7 @@ They share the same Markdown sources; the website keeps reference links on-site.
 - [Shell and scripts](commands.md), [installers](installers.md), [downloads](downloads.md)
 - [Loading plugins](plugins.md)
 - [Codex plugins](../plugins/codex/README.md)
+- [WinGet](../plugins/winget/README.md)
 - [Homebrew](../plugins/homebrew/README.md), [VS Code](../plugins/vscode/README.md)
 - [macOS preferences](../plugins/macos_defaults/README.md), [Windows Registry](../plugins/windows_registry/README.md)
 
