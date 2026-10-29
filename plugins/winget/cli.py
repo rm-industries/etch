@@ -27,13 +27,13 @@ def locate(options: Target, context: Context) -> str:
 def run(
     executable: str, options: Target, args: tuple[str, ...], context: Context
 ) -> str:
-    return native.run(
+    return native.capture(
         executable,
         args,
         cwd=context.module_root,
         timeout=options.timeout,
         label="winget",
-    )
+    ).stdout
 
 
 def installed(executable: str, options: Target, context: Context) -> tuple[str, ...]:

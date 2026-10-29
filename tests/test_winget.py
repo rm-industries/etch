@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from dataclasses import replace
 from pathlib import Path
+from subprocess import CompletedProcess
 from typing import Any
 from unittest.mock import patch
 
@@ -40,14 +41,16 @@ class WingetTests(unittest.TestCase):
             "etchlib.providers.native.locate", return_value=self.executable
         ).start()
         self.addCleanup(patch.stopall)
-        patch("etchlib.providers.native.run", side_effect=self.run_winget).start()
+        patch("etchlib.providers.native.capture", side_effect=self.run_winget).start()
 
-    def run_winget(self, executable: str, args: tuple[str, ...], **kwargs: Any) -> str:
+    def run_winget(
+        self, executable: str, args: tuple[str, ...], **kwargs: Any
+    ) -> CompletedProcess[str]:
         self.assertEqual(executable, self.executable)
         self.assertEqual(kwargs["cwd"], self.root)
         self.calls.append(args)
         if args[0] == "--version":
-            return "v1.12.350\n"
+            return CompletedProcess([executable, *args], 0, "v1.12.350\n", "")
         if args[0] == "export":
             output = self.output
             if output is None:
@@ -65,14 +68,19 @@ class WingetTests(unittest.TestCase):
                 output if isinstance(output, str) else json.dumps(output),
                 encoding="utf-8-sig",
             )
-            return "localized warnings/progress are not inventory"
+            return CompletedProcess(
+                [executable, *args],
+                0,
+                "localized warnings/progress are not inventory",
+                "",
+            )
         self.assertEqual(args[0], "install")
         if self.failure or args[args.index("--id") + 1] == self.fail_id:
             raise ValueError("winget command exited with status 8")
         if not self.pretend:
             self.packages.add(args[args.index("--id") + 1])
             self.packages.update(self.dependencies)
-        return "installed"
+        return CompletedProcess([executable, *args], 0, "installed", "")
 
     def plan(self, **values: Any) -> Plan:
         return plan_action(self.entry, values, self.context)
@@ -234,10 +242,15 @@ class WingetTests(unittest.TestCase):
         self.assertEqual([args[2] for args in self.installs()], ["A.App"])
 
     def test_unreadable_export_and_failed_inventory_are_not_empty(self) -> None:
-        with patch("etchlib.providers.native.run", return_value=""):
+        with patch(
+            "etchlib.providers.native.capture",
+            return_value=CompletedProcess([], 0, "", ""),
+        ):
             with self.assertRaisesRegex(ProviderError, "inventory"):
                 self.plan(packages=["A.App"])
-        with patch("etchlib.providers.native.run", side_effect=ValueError("status 5")):
+        with patch(
+            "etchlib.providers.native.capture", side_effect=ValueError("status 5")
+        ):
             with self.assertRaisesRegex(ProviderError, "status 5"):
                 self.plan(packages=["A.App"])
         self.assertEqual(self.installs(), [])
