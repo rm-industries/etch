@@ -15,6 +15,7 @@ facts can load declared plugins even though they do not apply configuration.
 | Bundle | Action | Usage |
 | --- | --- | --- |
 | [npm](../plugins/npm/README.md) | `npm` | Install missing global registry CLI packages |
+| [WinGet](../plugins/winget/README.md) | `winget` | Install missing Windows packages by exact ID |
 | [Homebrew](../plugins/homebrew/README.md) | `brew` | Ensure requested formulae/casks are installed |
 | [Claude Code](../plugins/claude/README.md) | `claude` | Register native marketplaces and install missing user plugins |
 | [Codex](../plugins/codex/README.md) | `codex` | Register native marketplaces and install missing user plugins |

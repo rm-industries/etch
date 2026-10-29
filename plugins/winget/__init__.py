@@ -1,0 +1,1 @@
+"""Optional WinGet source bundle."""

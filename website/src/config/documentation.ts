@@ -18,6 +18,7 @@ export const documentation = [
   { id: 'downloads', source: 'docs/downloads.md', section: 'Actions and plugins' },
   { id: 'plugins', source: 'docs/plugins.md', section: 'Actions and plugins' },
   { id: 'npm', source: 'plugins/npm/README.md', section: 'Actions and plugins' },
+  { id: 'winget', source: 'plugins/winget/README.md', section: 'Actions and plugins' },
   { id: 'homebrew', source: 'plugins/homebrew/README.md', section: 'Actions and plugins' },
   { id: 'claude', source: 'plugins/claude/README.md', section: 'Actions and plugins' },
   { id: 'codex', source: 'plugins/codex/README.md', section: 'Actions and plugins' },
