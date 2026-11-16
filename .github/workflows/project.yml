@@ -73,16 +73,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        python: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
-    runs-on: ${{ matrix.os }}
+        runtime: &python_runtimes
+          - { os: ubuntu-24.04, python: '3.9' } # Python 3.9 is unavailable on Ubuntu 26.04.
+          - { os: ubuntu-latest, python: '3.10' }
+          - { os: ubuntu-latest, python: '3.x' }
+          - { os: macos-latest, python: '3.9' }
+          - { os: macos-latest, python: '3.x' }
+    runs-on: ${{ matrix.runtime.os }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
-          python-version: ${{ matrix.python }}
+          python-version: ${{ matrix.runtime.python }}
       - run: python -m pip install -c requirements/constraints.txt pytest
       - run: python -m pytest
       - run: python -S -m unittest discover -v
@@ -155,14 +159,13 @@ jobs:
   template-consumer:
     permissions:
       contents: read
-    name: ${{ matrix.os }} / Python ${{ matrix.python }} / ${{ matrix.selection }}
-    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.runtime.os }} / Python ${{ matrix.runtime.python }} / ${{ matrix.selection }}
+    runs-on: ${{ matrix.runtime.os }}
     timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        python: ['3.9', '3.14']
+        runtime: *python_runtimes
         selection: [profile, git]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -177,14 +180,14 @@ jobs:
           submodules: false
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
-          python-version: ${{ matrix.python }}
+          python-version: ${{ matrix.runtime.python }}
       - name: Verify the candidate engine with the template
         run: bash tests/template_consumer_smoke.sh "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE/consumer" "${{ matrix.selection }}"
 
   release-candidate:
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # Python 3.9 is unavailable on Ubuntu 26.04.
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -223,7 +226,7 @@ jobs:
   publish:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [project-gate]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # Python 3.9 is unavailable on Ubuntu 26.04.
     timeout-minutes: 10
     permissions:
       contents: write
